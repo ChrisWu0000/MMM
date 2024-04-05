@@ -1,6 +1,6 @@
 import pygame
 pygame.init()
-
+hihiiiiiiiiiiiiiiiiii=0
 class spritedata:
   def __init__(self,width,height,x,y,speedx,speedy):
     self.w=width
