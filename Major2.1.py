@@ -1,6 +1,5 @@
 import pygame
 pygame.init()
-hihiiiiiiiiiiiiiiiiii=0
 class spritedata:
   def __init__(self,width,height,x,y,speedx,speedy):
     self.w=width
@@ -36,7 +35,7 @@ bg_height =bg.get_height()
 spriterects = [create_sprite(bg_width, bg_height, 0,0,'Enemies/DevlinDeving.png')]
 for x in range(1):
   for y in range(1):
-    spriterects.append(create_sprite(15,20,60*x,60*y,'Enemies/DevlinDeving.png'))
+    spriterects.append(create_sprite(15,20,60*x,60*y,'Enemies/Enemy1.png'))
     spritesdata.append(spritedata(15,20,60*x,60*y,0,0))
 #spriterects[0].image.convert_alpha()
 playersprite = player_sprite()
