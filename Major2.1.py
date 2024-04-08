@@ -108,6 +108,7 @@ while True:
 	screen.fill('#71ddee')
 
 	camera_group.update()
+	camera_group.draw(screen)
  
 
 	pygame.display.update()
