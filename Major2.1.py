@@ -12,12 +12,12 @@ pygame.init()
 class Bell(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.image = pygame.image.load('Enemies/Bell.png')
 		self.rect = self.image.get_rect(topleft = pos)
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/DevlinDeving.png').convert_alpha()
+		self.image = pygame.image.load('Enemies/DevlinDeving.png')
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
@@ -89,12 +89,11 @@ pygame.time.set_timer(sparetimer1,5000)
 cooldownup1 = pygame.USEREVENT + 2"""
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
-pygame.event.set_grab(True)
-camera_group = CameraGroup()
+camera_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
 for i in range(20):
-	random_x = randint(1000,2000)
-	random_y = randint(1000,2000)
+	random_x = randint(0,1000)
+	random_y = randint(0,1000)
 	Bell((random_x,random_y),camera_group)
 
 while True:
