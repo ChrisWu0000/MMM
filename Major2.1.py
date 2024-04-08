@@ -1,6 +1,5 @@
 import pygame
 pygame.init()
-
 class spritedata:
   def __init__(self,width,height,x,y,speedx,speedy):
     self.w=width
@@ -9,6 +8,39 @@ class spritedata:
     self.y=float(y)
     self.speedx=float(speedx)
     self.speedy=float(speedy)
+class Bell(pygame.sprite.Sprite):
+	def __init__(self,pos,group):
+		super().__init__(group)
+		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.rect = self.image.get_rect(topleft = pos)
+class Player(pygame.sprite.Sprite):
+	def __init__(self,pos,group):
+		super().__init__(group)
+		self.image = pygame.image.load('graphics/player.png').convert_alpha()
+		self.rect = self.image.get_rect(center = pos)
+		self.direction = pygame.math.Vector2()
+		self.speed = 5
+
+	def input(self):
+		keys = pygame.key.get_pressed()
+
+		if keys[pygame.K_UP]:
+			self.direction.y = -1
+		elif keys[pygame.K_DOWN]:
+			self.direction.y = 1
+		else:
+			self.direction.y = 0
+
+		if keys[pygame.K_RIGHT]:
+			self.direction.x = 1
+		elif keys[pygame.K_LEFT]:
+			self.direction.x = -1
+		else:
+			self.direction.x = 0
+
+	def update(self):
+		self.input()
+		self.rect.center += self.direction * self.speed
 def create_sprite(width, height, x, y,imagedata):
   sprite = pygame.sprite.Sprite()
   size = (width,height)
@@ -36,7 +68,7 @@ bg_height =bg.get_height()
 spriterects = [create_sprite(bg_width, bg_height, 0,0,'DevlinDeving.png')]
 for x in range(1):
   for y in range(1):
-    spriterects.append(create_sprite(15,20,60*x,60*y,'DevlinDeving.png'))
+    spriterects.append(create_sprite(15,20,60*x,60*y,'Enemies/Enemy1.png'))
     spritesdata.append(spritedata(15,20,60*x,60*y,0,0))
 #spriterects[0].image.convert_alpha()
 playersprite = player_sprite()
