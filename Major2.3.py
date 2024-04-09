@@ -111,14 +111,16 @@ for i in range(10):
 	random_x = randint(140,1140)
 	random_y = randint(0,1000)
 	Bell((random_x,random_y),camera_group)
-
-while True:
+running = True
+while running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
-			pygame.quit()
+			running=False
+		if event.type == pygame.WINDOWMAXIMIZED:
+			screen = pygame.display.set_mode((1280,720), pygame.FULLSCREEN)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
-				pygame.quit()
+				running=False
 
 
 	screen.fill('#71ddee')
