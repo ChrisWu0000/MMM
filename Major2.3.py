@@ -1,14 +1,6 @@
 import pygame
 from random import *
 pygame.init()
-"""class spritedata:
-  def __init__(self,width,height,x,y,speedx,speedy):
-    self.w=width
-    self.h=height
-    self.x=float(x)
-    self.y=float(y)
-    self.speedx=float(speedx)
-    self.speedy=float(speedy)"""
 class Bell(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
@@ -36,19 +28,25 @@ class Player(pygame.sprite.Sprite):
 			self.direction.x = 1
 		elif keys[pygame.K_LEFT]:
 			self.direction.x = -1
-	def update(self,testme):
-		for x in range(len(testme)):
-			self.rect.y -= self.direction.y * self.speed
-			if self.rect.colliderect(testme[x]):
-				self.rect.x -= self.direction.x * self.speed
-			self.rect.y += self.direction.y * self.speed
-			if self.rect.colliderect(testme[x]):
-				self.rect.y -= self.direction.y * self.speed
+	def update(self,bells):
+		
+		
 		self.input()
 		
 		
-		self.rect.center += self.direction * self.speed
-
+		self.rect.x += self.direction.x * self.speed
+		if camera_group.bg_rect.contains(self) == False:
+			self.rect.centerx = camera_group.bg_rect.centerx + self.direction.x * (camera_group.bg_rect.centerx - (camera_group.bg_rect.x + 1 + self.rect.width/2))
+		self.rect.y += self.direction.y * self.speed
+		for x in range(len(bells)):
+			self.rect.y -= self.direction.y * self.speed
+			if self.rect.colliderect(bells[x]):
+				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2))
+			self.rect.y += self.direction.y * self.speed
+			if self.rect.colliderect(bells[x]):
+				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2))
+		if camera_group.bg_rect.contains(self) == False:
+			self.rect.centery = camera_group.bg_rect.centery + self.direction.y * (camera_group.bg_rect.centery - (camera_group.bg_rect.y + 1 + self.rect.height/2))
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -61,8 +59,14 @@ class CameraGroup(pygame.sprite.Group):
 		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,-(self.half_h)))
 	def center_target_camera(self,target):
-		self.offset.x = target.rect.centerx - self.half_w
-		self.offset.y = target.rect.centery - self.half_h
+				
+		if target.rect.centerx <=1000 and target.rect.centerx >=360:
+			self.offset.x = target.rect.centerx - self.half_w
+		if target.rect.centery <=self.bg_rect.height-600 and target.rect.centery >=0:
+			self.offset.y = target.rect.centery - self.half_h
+
+
+
 	def custom_draw(self, player):
 		self.center_target_camera(player)
 		ground_offset = self.bg_rect.topleft - self.offset 
@@ -70,75 +74,33 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
-"""def create_sprite(width, height, x, y,imagedata):
-  sprite = pygame.sprite.Sprite()
-  size = (width,height)
-  position = (x,y)
-  sprite.rect = pygame.Rect(position, size)
-  sprite.image = pygame.image.load(imagedata)
-  return sprite
-def player_sprite():
-  players = pygame.sprite.Sprite()
-  size = (20,20)
-  position = (140,90)
-  players.rect = pygame.Rect(position, size)
-  players.image = pygame.Surface(players.rect.size)
-  players.image.fill((100,50,100))
-  return players
-flags = pygame.SCALED
-window = pygame.display.set_mode((300, 200),flags, vsync=1)
-camera = pygame.Rect(0, 0, 300, 200)
-clock = pygame.time.Clock()
-#---DO NOT GO OVER 500 SPRITES!!!!!!---
-spritesdata = [spritedata(300,200,0,0,0,0)]
-bg = pygame.image.load('Enemies/DevlinDeving.png')
-bg_width = bg.get_width()
-bg_height =bg.get_height()
-spriterects = [create_sprite(bg_width, bg_height, 0,0,'Enemies/DevlinDeving.png')]
-for x in range(1):
-  for y in range(1):
-    spriterects.append(create_sprite(15,20,60*x,60*y,'Enemies/Enemy1.png'))
-    spritesdata.append(spritedata(15,20,60*x,60*y,0,0))
-#spriterects[0].image.convert_alpha()
-playersprite = player_sprite()
-playerdata = spritedata(20, 20, 140, 90,0,0)
 
-
-speed=0.8
-running = True
-fox = pygame.key.get_pressed()
-cooldown=0
-timer = pygame.time.Clock() 
-sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1,5000)
-cooldownup1 = pygame.USEREVENT + 2"""
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player = Player((640,360),camera_group)
-testme = []
-for i in range(10):
+bells = []
+for i in range(5):
 	random_x = randint(140,1140)
 	random_y = randint(0,1000)
-	test=Bell((random_x,random_y),camera_group)
-	testme.append(test)
+	extra=Bell((random_x,random_y),camera_group)
+	bells.append(extra)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,500)
+#pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			if player.rect.colliderect(testme[0]):
-				print(testme[0].rect.center)
+			print(camera_group.bg_rect.height,player.rect.y)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 
 
 	screen.fill('#71ddee')
-	camera_group.update(testme)
+	camera_group.update(bells)
 	camera_group.custom_draw(player)
  
 
