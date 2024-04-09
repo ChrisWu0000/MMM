@@ -17,7 +17,7 @@ class Bell(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.image = pygame.image.load('Enemies/DevlinDeving.png').convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
@@ -45,14 +45,14 @@ class Player(pygame.sprite.Sprite):
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
 		super().__init__()
-		self.surface=pygame.display.get_surface()
-		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
-		self.bg_rect = self.background_image.get_rect(topleft = (0,0))
+		self.surface=pygame.display.get_surface()		
 		self.offset = pygame.math.Vector2()
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
+		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
+		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
 	def center_target_camera(self,target):
-		self.offset.x = target.rect.centerx - self.half_w
+		self.offset.x = 0
 		self.offset.y = target.rect.centery - self.half_h
 	def custom_draw(self, player):
 		self.center_target_camera(player)
