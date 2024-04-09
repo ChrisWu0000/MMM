@@ -12,12 +12,12 @@ pygame.init()
 class Bell(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/Bell.png')
+		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
 		self.rect = self.image.get_rect(topleft = pos)
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/DevlinDeving.png')
+		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
@@ -45,6 +45,22 @@ class Player(pygame.sprite.Sprite):
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
 		super().__init__()
+		self.surface=pygame.display.get_surface()
+		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
+		self.bg_rect = self.background_image.get_rect(topleft = (0,0))
+		self.offset = pygame.math.Vector2()
+		self.half_w = self.surface.get_size()[0] // 2
+		self.half_h = self.surface.get_size()[1] // 2
+	def center_target_camera(self,target):
+		self.offset.x = target.rect.centerx - self.half_w
+		self.offset.y = target.rect.centery - self.half_h
+	def custom_draw(self, player):
+		self.center_target_camera(player)
+		ground_offset = self.bg_rect.topleft - self.offset 
+		self.surface.blit(self.background_image,ground_offset)
+		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
+			offset_pos = sprite.rect.topleft - self.offset
+			self.surface.blit(sprite.image,offset_pos)
 """def create_sprite(width, height, x, y,imagedata):
   sprite = pygame.sprite.Sprite()
   size = (width,height)
@@ -89,11 +105,11 @@ pygame.time.set_timer(sparetimer1,5000)
 cooldownup1 = pygame.USEREVENT + 2"""
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
-camera_group = pygame.sprite.Group()
+camera_group = CameraGroup()
 player = Player((640,360),camera_group)
-for i in range(20):
+for i in range(10):
 	random_x = randint(0,1000)
-	random_y = randint(0,1000)
+	random_y = randint(0,500)
 	Bell((random_x,random_y),camera_group)
 
 while True:
@@ -108,7 +124,7 @@ while True:
 	screen.fill('#71ddee')
 
 	camera_group.update()
-	camera_group.draw(screen)
+	camera_group.custom_draw(player)
  
 
 	pygame.display.update()
