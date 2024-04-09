@@ -24,24 +24,33 @@ class Player(pygame.sprite.Sprite):
 
 	def input(self):
 		keys = pygame.key.get_pressed()
-
-		if keys[pygame.K_UP]:
+		if keys[pygame.K_UP] == keys[pygame.K_DOWN]:
+			self.direction.y = 0
+		elif keys[pygame.K_UP]:
 			self.direction.y = -1
 		elif keys[pygame.K_DOWN]:
 			self.direction.y = 1
-		else:
-			self.direction.y = 0
-
-		if keys[pygame.K_RIGHT]:
+		if keys[pygame.K_RIGHT] == keys[pygame.K_LEFT]:
+			self.direction.x = 0
+		elif keys[pygame.K_RIGHT]:
 			self.direction.x = 1
 		elif keys[pygame.K_LEFT]:
 			self.direction.x = -1
-		else:
-			self.direction.x = 0
-
-	def update(self):
+	def update(self,testme):
+		for x in range(len(testme)):
+			self.rect.y -= self.direction.y * self.speed
+			if self.rect.colliderect(testme[x]):
+				self.rect.x -= self.direction.x * self.speed
+			self.rect.y += self.direction.y * self.speed
+			if self.rect.colliderect(testme[x]):
+				self.rect.y -= self.direction.y * self.speed
 		self.input()
+		
+		
 		self.rect.center += self.direction * self.speed
+
+
+
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
 		super().__init__()
@@ -50,9 +59,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
-		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
+		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,-(self.half_h)))
 	def center_target_camera(self,target):
-		self.offset.x = 0
+		self.offset.x = target.rect.centerx - self.half_w
 		self.offset.y = target.rect.centery - self.half_h
 	def custom_draw(self, player):
 		self.center_target_camera(player)
@@ -107,23 +116,29 @@ screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player = Player((640,360),camera_group)
+testme = []
 for i in range(10):
 	random_x = randint(140,1140)
 	random_y = randint(0,1000)
-	Bell((random_x,random_y),camera_group)
-
-while True:
+	test=Bell((random_x,random_y),camera_group)
+	testme.append(test)
+meep = True
+sparetimer1 = pygame.USEREVENT + 1
+#pygame.time.set_timer(sparetimer1,500)
+while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
-			pygame.quit()
+			meep = False
+		if event.type == sparetimer1:
+			if player.rect.colliderect(testme[0]):
+				print(testme[0].rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
-				pygame.quit()
+				meep = False
 
 
 	screen.fill('#71ddee')
-
-	camera_group.update()
+	camera_group.update(testme)
 	camera_group.custom_draw(player)
  
 
