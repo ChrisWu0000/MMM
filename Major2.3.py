@@ -62,8 +62,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.camera_rect = pygame.Rect(l,t,w,h)
 
 	def center_target_camera(self,target):
+		if self.bg_rect __contains__()
 		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = max(target.rect.left, self.bg_rect.x)
+			self.camera_rect.left = max(target.rect.left, min(self.bg_rect.x, 10000))
 			target.rect.left = self.camera_rect.left
 		if target.rect.right > self.camera_rect.right:
 			self.camera_rect.right = min(target.rect.right, self.bg_rect.right)
