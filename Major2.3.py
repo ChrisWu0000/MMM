@@ -25,17 +25,21 @@ class Player(pygame.sprite.Sprite):
 	def input(self):
 		keys = pygame.key.get_pressed()
 
-		if keys[pygame.K_UP]:
-			self.direction.y = -1
+		if keys[pygame.K_DOWN] and keys[pygame.K_UP]:
+			self.direction.y = 0
 		elif keys[pygame.K_DOWN]:
 			self.direction.y = 1
+		elif keys[pygame.K_UP]:
+			self.direction.y = -1
 		else:
 			self.direction.y = 0
 
-		if keys[pygame.K_RIGHT]:
-			self.direction.x = 1
+		if keys[pygame.K_LEFT] and keys[pygame.K_RIGHT]:
+			self.direction.x = 0
 		elif keys[pygame.K_LEFT]:
 			self.direction.x = -1
+		elif keys[pygame.K_RIGHT]:
+			self.direction.x = 1
 		else:
 			self.direction.x = 0
 
@@ -51,9 +55,29 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_h = self.surface.get_size()[1] // 2
 		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
+		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
+		l = self.camera_borders['left']
+		t = self.camera_borders['top']
+		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
+		h = self.surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
+		self.camera_rect = pygame.Rect(l,t,w,h)
+
 	def center_target_camera(self,target):
-		self.offset.x = 0
-		self.offset.y = target.rect.centery - self.half_h
+		if target.rect.left < self.camera_rect.left:
+			self.camera_rect.left = max(target.rect.left, 0)
+			target.rect.left = self.camera_rect.left
+		if target.rect.right > self.camera_rect.right:
+			self.camera_rect.right = min(target.rect.right, max(self.surface.get_size()[0], self.background_image.get_size()[0]))
+			target.rect.right = self.camera_rect.right
+		if target.rect.top < self.camera_rect.top:
+			self.camera_rect.top = max(target.rect.top, 0)
+			target.rect.top = self.camera_rect.top
+		if target.rect.bottom > self.camera_rect.bottom:
+			self.camera_rect.bottom = min(target.rect.bottom, max(self.surface.get_size()[1], self.background_image.get_size()[1]))
+			target.rect.bottom = self.camera_rect.bottom
+			
+		self.offset.x = self.camera_rect.left - self.camera_borders['left']
+		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player):
 		self.center_target_camera(player)
 		ground_offset = self.bg_rect.topleft - self.offset 
@@ -61,6 +85,7 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
+		pygame.draw.rect(self.surface, "red", self.camera_rect,5)
 """def create_sprite(width, height, x, y,imagedata):
   sprite = pygame.sprite.Sprite()
   size = (width,height)
