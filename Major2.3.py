@@ -35,8 +35,6 @@ class Player(pygame.sprite.Sprite):
 		
 		
 		self.rect.x += self.direction.x * self.speed
-		if camera_group.bg_rect.contains(self) == False:
-			self.rect.centerx = camera_group.bg_rect.centerx + self.direction.x * (camera_group.bg_rect.centerx - (camera_group.bg_rect.x + 1 + self.rect.width/2))
 		self.rect.y += self.direction.y * self.speed
 		for x in range(len(bells)):
 			self.rect.y -= self.direction.y * self.speed
@@ -45,8 +43,6 @@ class Player(pygame.sprite.Sprite):
 			self.rect.y += self.direction.y * self.speed
 			if self.rect.colliderect(bells[x]):
 				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2))
-		if camera_group.bg_rect.contains(self) == False:
-			self.rect.centery = camera_group.bg_rect.centery + self.direction.y * (camera_group.bg_rect.centery - (camera_group.bg_rect.y + 1 + self.rect.height/2))
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -67,16 +63,16 @@ class CameraGroup(pygame.sprite.Group):
 
 	def center_target_camera(self,target):
 		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = max(target.rect.left, 0)
+			self.camera_rect.left = max(target.rect.left, self.bg_rect.x)
 			target.rect.left = self.camera_rect.left
 		if target.rect.right > self.camera_rect.right:
-			self.camera_rect.right = min(target.rect.right, max(self.surface.get_size()[0], self.background_image.get_size()[0]))
+			self.camera_rect.right = min(target.rect.right, self.bg_rect.right)
 			target.rect.right = self.camera_rect.right
 		if target.rect.top < self.camera_rect.top:
-			self.camera_rect.top = max(target.rect.top, 0)
+			self.camera_rect.top = max(target.rect.top, self.bg_rect.y)
 			target.rect.top = self.camera_rect.top
 		if target.rect.bottom > self.camera_rect.bottom:
-			self.camera_rect.bottom = min(target.rect.bottom, max(self.surface.get_size()[1], self.background_image.get_size()[1]))
+			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom)
 			target.rect.bottom = self.camera_rect.bottom
 			
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
