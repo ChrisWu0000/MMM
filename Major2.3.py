@@ -57,16 +57,30 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
-		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,-(self.half_h)))
+		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
+		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
+		l = self.camera_borders['left']
+		t = self.camera_borders['top']
+		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
+		h = self.surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
+		self.camera_rect = pygame.Rect(l,t,w,h)
+
 	def center_target_camera(self,target):
-				
-		if target.rect.centerx <=1000 and target.rect.centerx >=360:
-			self.offset.x = target.rect.centerx - self.half_w
-		if target.rect.centery <=self.bg_rect.height-600 and target.rect.centery >=0:
-			self.offset.y = target.rect.centery - self.half_h
-
-
-
+		if target.rect.left < self.camera_rect.left:
+			self.camera_rect.left = max(target.rect.left, 0)
+			target.rect.left = self.camera_rect.left
+		if target.rect.right > self.camera_rect.right:
+			self.camera_rect.right = min(target.rect.right, max(self.surface.get_size()[0], self.background_image.get_size()[0]))
+			target.rect.right = self.camera_rect.right
+		if target.rect.top < self.camera_rect.top:
+			self.camera_rect.top = max(target.rect.top, 0)
+			target.rect.top = self.camera_rect.top
+		if target.rect.bottom > self.camera_rect.bottom:
+			self.camera_rect.bottom = min(target.rect.bottom, max(self.surface.get_size()[1], self.background_image.get_size()[1]))
+			target.rect.bottom = self.camera_rect.bottom
+			
+		self.offset.x = self.camera_rect.left - self.camera_borders['left']
+		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player):
 		self.center_target_camera(player)
 		ground_offset = self.bg_rect.topleft - self.offset 
@@ -105,4 +119,4 @@ while meep:
  
 
 	pygame.display.update()
-	clock.tick(60)
+	clock.tick(120)
