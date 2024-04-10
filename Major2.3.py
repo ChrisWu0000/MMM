@@ -64,13 +64,13 @@ class CameraGroup(pygame.sprite.Group):
 
 	def center_target_camera(self,target):
 		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = max(target.rect.left, 0)
+			self.camera_rect.left = max(target.rect.left, self.bg_rect.left)
 			target.rect.left = self.camera_rect.left
 		if target.rect.right > self.camera_rect.right:
 			self.camera_rect.right = min(target.rect.right, max(self.surface.get_size()[0], self.background_image.get_size()[0]))
 			target.rect.right = self.camera_rect.right
 		if target.rect.top < self.camera_rect.top:
-			self.camera_rect.top = max(target.rect.top, 0)
+			self.camera_rect.top = max(target.rect.top, self.bg_rect.top)
 			target.rect.top = self.camera_rect.top
 		if target.rect.bottom > self.camera_rect.bottom:
 			self.camera_rect.bottom = min(target.rect.bottom, max(self.surface.get_size()[1], self.background_image.get_size()[1]))
