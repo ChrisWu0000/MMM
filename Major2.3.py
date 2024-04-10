@@ -97,9 +97,9 @@ clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player = Player((640,360),camera_group)
 bells = []
-for i in range(5):
-	random_x = randint(140,1140)
-	random_y = randint(0,1000)
+for i in range(50):
+	random_x = randint(camera_group.bg_rect.x,camera_group.background_image.get_size()[0])
+	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1])
 	extra=Bell((random_x,random_y),camera_group)
 	bells.append(extra)
 meep = True
