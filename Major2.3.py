@@ -39,8 +39,6 @@ class Player(pygame.sprite.Sprite):
 		
 		
 		self.rect.x += self.direction.x * self.speed
-		if camera_group.bg_rect.contains(self) == False:
-			self.rect.centerx = camera_group.bg_rect.centerx + self.direction.x * (camera_group.bg_rect.centerx - (camera_group.bg_rect.x + 1 + self.rect.width/2))
 		self.rect.y += self.direction.y * self.speed
 		for x in range(len(bells)):
 			self.rect.y -= self.direction.y * self.speed
@@ -49,8 +47,6 @@ class Player(pygame.sprite.Sprite):
 			self.rect.y += self.direction.y * self.speed
 			if self.rect.colliderect(bells[x].collisionrect):
 				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2))
-		if camera_group.bg_rect.contains(self) == False:
-			self.rect.centery = camera_group.bg_rect.centery + self.direction.y * (camera_group.bg_rect.centery - (camera_group.bg_rect.y + 1 + self.rect.height/2))
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -61,16 +57,30 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
-		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,-(self.half_h)))
+		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
+		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
+		l = self.camera_borders['left']
+		t = self.camera_borders['top']
+		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
+		h = self.surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
+		self.camera_rect = pygame.Rect(l,t,w,h)
+
 	def center_target_camera(self,target):
-				
-		if target.rect.centerx <=1000 and target.rect.centerx >=360:
-			self.offset.x = target.rect.centerx - self.half_w
-		if target.rect.centery <=self.bg_rect.height-600 and target.rect.centery >=0:
-			self.offset.y = target.rect.centery - self.half_h
-
-
-
+		if target.rect.left < self.camera_rect.left:
+			self.camera_rect.left = max(target.rect.left, self.bg_rect.x)
+			target.rect.left = self.camera_rect.left
+		if target.rect.right > self.camera_rect.right:
+			self.camera_rect.right = min(target.rect.right, self.bg_rect.right)
+			target.rect.right = self.camera_rect.right
+		if target.rect.top < self.camera_rect.top:
+			self.camera_rect.top = max(target.rect.top, self.bg_rect.y)
+			target.rect.top = self.camera_rect.top
+		if target.rect.bottom > self.camera_rect.bottom:
+			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom)
+			target.rect.bottom = self.camera_rect.bottom
+			
+		self.offset.x = self.camera_rect.left - self.camera_borders['left']
+		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player):
 		self.center_target_camera(player)
 		ground_offset = self.bg_rect.topleft - self.offset 
@@ -78,14 +88,12 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
-			
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player = Player((640,360),camera_group)
 bells = []
-bellshitbox=[]
 for i in range(5):
 	random_x = randint(140,1140)
 	random_y = randint(0,1000)
@@ -99,7 +107,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(bells[1].collisionrect,bells[1].rect,player.rect)
+			print(camera_group.bg_rect.height,player.rect.y)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
@@ -111,4 +119,4 @@ while meep:
  
 
 	pygame.display.update()
-	clock.tick(60)
+	clock.tick(120)
