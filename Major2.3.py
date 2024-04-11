@@ -6,6 +6,10 @@ class Bell(pygame.sprite.Sprite):
 		super().__init__(group)
 		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
 		self.rect = self.image.get_rect(midtop = pos)
+		self.collisionrect = self.image.get_rect(midtop = pos)
+		self.collisionrect.width -= 60
+		self.collisionrect.height -= 60
+		self.collisionrect.move_ip(30,30)
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
@@ -38,10 +42,10 @@ class Player(pygame.sprite.Sprite):
 		self.rect.y += self.direction.y * self.speed
 		for x in range(len(bells)):
 			self.rect.y -= self.direction.y * self.speed
-			if self.rect.colliderect(bells[x]):
+			if self.rect.colliderect(bells[x].collisionrect):
 				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2))
 			self.rect.y += self.direction.y * self.speed
-			if self.rect.colliderect(bells[x]):
+			if self.rect.colliderect(bells[x].collisionrect):
 				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2))
 
 
@@ -64,22 +68,18 @@ class CameraGroup(pygame.sprite.Group):
 
 	def center_target_camera(self,target):
 		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = max(target.rect.left, self.bg_rect.x+self.camera_borders['left'])
-			if self.bg_rect.x > target.rect.left:
-				target.rect.left = self.camera_rect.left- self.camera_borders['left']
+			self.camera_rect.left = max(target.rect.left, self.bg_rect.x)
+			target.rect.left = self.camera_rect.left
 		if target.rect.right > self.camera_rect.right:
-			self.camera_rect.right = min(target.rect.right, self.bg_rect.right-self.camera_borders['right'])
-			if self.bg_rect.right < target.rect.right:
-				target.rect.right = self.camera_rect.right + self.camera_borders['right']
+			self.camera_rect.right = min(target.rect.right, self.bg_rect.right)
+			target.rect.right = self.camera_rect.right
 		if target.rect.top < self.camera_rect.top:
-			self.camera_rect.top = max(target.rect.top, self.bg_rect.y+self.camera_borders['top'])
-			if self.bg_rect.y > target.rect.top:
-				target.rect.top = self.camera_rect.top-self.camera_borders['top']
+			self.camera_rect.top = max(target.rect.top, self.bg_rect.y)
+			target.rect.top = self.camera_rect.top
 		if target.rect.bottom > self.camera_rect.bottom:
-			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom-self.camera_borders['bottom'])
-			if self.bg_rect.bottom < target.rect.bottom:
-				target.rect.bottom = self.camera_rect.bottom + self.camera_borders['bottom']
-				
+			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom)
+			target.rect.bottom = self.camera_rect.bottom
+			
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player):
