@@ -6,6 +6,10 @@ class Bell(pygame.sprite.Sprite):
 		super().__init__(group)
 		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
 		self.rect = self.image.get_rect(midtop = pos)
+		self.collisionrect = self.image.get_rect(midtop = pos)
+		self.collisionrect.width -= 60
+		self.collisionrect.height -= 60
+		self.collisionrect.move_ip(30,30)
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
@@ -40,10 +44,10 @@ class Player(pygame.sprite.Sprite):
 		self.rect.y += self.direction.y * self.speed
 		for x in range(len(bells)):
 			self.rect.y -= self.direction.y * self.speed
-			if self.rect.colliderect(bells[x]):
+			if self.rect.colliderect(bells[x].collisionrect):
 				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2))
 			self.rect.y += self.direction.y * self.speed
-			if self.rect.colliderect(bells[x]):
+			if self.rect.colliderect(bells[x].collisionrect):
 				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2))
 		if camera_group.bg_rect.contains(self) == False:
 			self.rect.centery = camera_group.bg_rect.centery + self.direction.y * (camera_group.bg_rect.centery - (camera_group.bg_rect.y + 1 + self.rect.height/2))
@@ -74,12 +78,14 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
+			
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player = Player((640,360),camera_group)
 bells = []
+bellshitbox=[]
 for i in range(5):
 	random_x = randint(140,1140)
 	random_y = randint(0,1000)
@@ -93,7 +99,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(camera_group.bg_rect.height,player.rect.y)
+			print(bells[1].collisionrect,bells[1].rect,player.rect)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
