@@ -68,21 +68,33 @@ class CameraGroup(pygame.sprite.Group):
 
 	def center_target_camera(self,target):
 		if target.rect.left < self.camera_rect.left:
-			self.camera_rect.left = max(target.rect.left, self.bg_rect.x)
+			self.camera_rect.left = max(target.rect.left, min(self.bg_rect.x, 10000))
 			target.rect.left = self.camera_rect.left
+			self.camera_rect.left = max(target.rect.left, self.bg_rect.x+self.camera_borders['left'])
+			if self.bg_rect.x > target.rect.left:
+				target.rect.left = self.camera_rect.left- self.camera_borders['left']
 		if target.rect.right > self.camera_rect.right:
 			self.camera_rect.right = min(target.rect.right, self.bg_rect.right)
 			target.rect.right = self.camera_rect.right
+			self.camera_rect.right = min(target.rect.right, self.bg_rect.right-self.camera_borders['right'])
+			if self.bg_rect.right < target.rect.right:
+				target.rect.right = self.camera_rect.right + self.camera_borders['right']
 		if target.rect.top < self.camera_rect.top:
 			self.camera_rect.top = max(target.rect.top, self.bg_rect.y)
 			target.rect.top = self.camera_rect.top
+			self.camera_rect.top = max(target.rect.top, self.bg_rect.y+self.camera_borders['top'])
+			if self.bg_rect.y > target.rect.top:
+				target.rect.top = self.camera_rect.top-self.camera_borders['top']
 		if target.rect.bottom > self.camera_rect.bottom:
 			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom)
 			target.rect.bottom = self.camera_rect.bottom
 			
+			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom-self.camera_borders['bottom'])
+			if self.bg_rect.bottom < target.rect.bottom:
+				target.rect.bottom = self.camera_rect.bottom + self.camera_borders['bottom']
+				
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
-	def custom_draw(self, player):
 		self.center_target_camera(player)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
