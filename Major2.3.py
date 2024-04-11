@@ -43,10 +43,10 @@ class Player(pygame.sprite.Sprite):
 		for x in range(len(bells)):
 			self.rect.y -= self.direction.y * self.speed
 			if self.rect.colliderect(bells[x].collisionrect):
-				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2))
+				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2)-30)
 			self.rect.y += self.direction.y * self.speed
 			if self.rect.colliderect(bells[x].collisionrect):
-				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2))
+				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2)-30)
 
 
 class CameraGroup(pygame.sprite.Group):
