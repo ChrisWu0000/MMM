@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite):
 			self.direction.x = 0
 		elif keys[pygame.K_RIGHT]:
 			self.direction.x = 1
+			pygame.transform.flip(self.image, True, False)
 		elif keys[pygame.K_LEFT]:
 			self.direction.x = -1
 	def update(self,bells):
