@@ -4,7 +4,7 @@ pygame.init()
 class Bell(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.image = pygame.image.load('Enemies/Sax.png').convert_alpha()
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
 		self.collisionrect.width -= 60
@@ -14,6 +14,7 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
 		self.image = pygame.image.load('Player/Trent.png').convert_alpha()
+		self.flip = False
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
@@ -30,9 +31,11 @@ class Player(pygame.sprite.Sprite):
 			self.direction.x = 0
 		elif keys[pygame.K_RIGHT]:
 			self.direction.x = 1
-			pygame.transform.flip(self.image, True, False)
+			self.flip = True
+			self.image=pygame.transform.flip(self.image, True, False)
 		elif keys[pygame.K_LEFT]:
 			self.direction.x = -1
+			self.image=pygame.transform.flip(self.image, True, False)
 	def update(self,bells):
 		
 		
