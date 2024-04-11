@@ -9,11 +9,26 @@ pygame.init()
     self.y=float(y)
     self.speedx=float(speedx)
     self.speedy=float(speedy)"""
-class Bell(pygame.sprite.Sprite):
+class Bell(pygame.sprite.Sprite):#Base enemy class, not Bell specifically
 	def __init__(self,pos,group):
 		super().__init__(group)
 		self.image = pygame.image.load('Enemies/Bell.png').convert_alpha()
 		self.rect = self.image.get_rect(midtop = pos)
+		self.hpmax
+		self.hp
+		self.damage
+		self.speed
+		self.tickspeed
+		#Method to attack:
+			#Different for each enemy
+		#Method to display sprites:
+			#while (y direction != 0 & x direction != 0):
+				#Cycle through walking animation at tickspeed
+			#while (y direction != 0 & x direction != 0):
+				#Cycle through idle animation at tickspeed
+			#if (hp is reduced):
+				#Display damage sprite
+				#Knockback
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
