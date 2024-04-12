@@ -23,8 +23,8 @@ class Bell(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Player/DevlinDeving.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Player/DevlinDeving.png').convert_alpha(), True, False)
+		self.image1 = pygame.image.load('Player/Trent.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Player/Trent.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
@@ -113,7 +113,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.center_target_camera(player)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
-		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
+		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 		#pygame.draw.rect(self.surface, "red", self.surface_rect, 10)
@@ -125,8 +125,8 @@ camera_group = CameraGroup()
 player = Player((640,360),camera_group)
 bells = []
 for i in range(50):
-	random_x = randint(camera_group.bg_rect.x,camera_group.background_image.get_size()[0])
-	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1])
+	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Bell((random_x,random_y),camera_group)
 	bells.append(extra)
 meep = True
