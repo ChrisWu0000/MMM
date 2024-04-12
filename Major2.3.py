@@ -2,15 +2,15 @@ import pygame
 from random import *
 pygame.init()
 class Enemy(pygame.sprite.Sprite):
-	def __init(self, pos, group):
-		super().__init__(group)
+	def __init(self, pos, *group):
+		super().__init__(*group)
 		self.pos = pos
 		
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Enemies/DevlinDeving.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/DevlinDeving.png').convert_alpha(), True, False)
+		self.image1 = pygame.image.load('Enemies/Sax.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Sax.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
@@ -24,7 +24,7 @@ class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
 		self.image1 = pygame.image.load('Player/DevlinDeving.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Player.png').convert_alpha(), True, False)
+		self.image2 = pygame.transform.flip(pygame.image.load('Player/DevlinDeving.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
