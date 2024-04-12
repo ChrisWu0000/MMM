@@ -29,25 +29,45 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
+		self.shoot_cooldown = 0
 
 	def input(self):
 		keys = pygame.key.get_pressed()
-		if keys[pygame.K_UP] == keys[pygame.K_DOWN]:
+
+		if keys[pygame.K_w] == keys[pygame.K_s]:
 			self.direction.y = 0
-		elif keys[pygame.K_UP]:
+		elif  keys[pygame.K_w]:
 			self.direction.y = -1
-		elif keys[pygame.K_DOWN]:
+		elif keys[pygame.K_s]:
 			self.direction.y = 1
-		if keys[pygame.K_RIGHT] == keys[pygame.K_LEFT]:
+		if  keys[pygame.K_d] == keys[pygame.K_a]:
 			self.direction.x = 0
-		elif keys[pygame.K_RIGHT]:
+		elif keys[pygame.K_d]:
 			self.direction.x = 1
 			self.image=self.image2
-		elif keys[pygame.K_LEFT]:
+		elif keys[pygame.K_a]:
 			self.direction.x = -1
 			self.image=self.image1
-	def update(self,bells):
+		if self.direction.length() >1:
+			self.direction.normalize_ip()
 		
+		if pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_SPACE]:
+			self.shoot = True
+			self.is_shooting()             
+		else:
+			self.shoot = False
+
+		if event.type == pygame.KEYUP:
+			if pygame.mouse.get_pressed() == (1, 0, 0):
+				self.shoot = False
+	def is_shooting(self):
+		if self.shoot_cooldown == 0 and self.shoot:
+	def update(self,bells):
+		if self.shoot_cooldown > 0: # Just shot a bullet
+			self.shoot_cooldown -= 1
+		if self.shoot:
+			self.is_shooting()
+
 		
 		self.input()
 		
@@ -66,6 +86,33 @@ class Player(pygame.sprite.Sprite):
 				bells[x].kill()
 				bells[x].collisionrect = (0, 0, 0, 0)
 
+class Bullet(pygame.sprite.Sprite): 
+    def __init__(self, x, y, angle): 
+        super().__init__()
+        self.image = pygame.image.load("Weapons/Bullet.png")
+        self.image = pygame.transform.rotozoom(self.image, 0, 0.5)
+        #self.image.set_colorkey((0,0,0))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.x = x
+        self.y = y
+        self.speed = 50
+        self.angle = angle
+        self.vel_direction = pygame.math.Vector2()
+        self.bullet_lifetime = 750
+        self.spawn_time = pygame.time.get_ticks()
+		
+    def bullet_movement(self): 
+        self.rect.center +=self.vel_direction*self.speed
+
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
+
+        if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime: 
+            self.kill()
+	def update(self):
+        self.bullet_movement()
+        self.bullet_collisions()
 
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
