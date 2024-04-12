@@ -1,24 +1,30 @@
 import pygame
 from random import *
 pygame.init()
-class Bell(pygame.sprite.Sprite):
-	def __init__(self,pos,group):
+class Enemy(pygame.sprite.Sprite):
+	def __init(self, pos, group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Enemies/Sax.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Sax.png').convert_alpha(), True, False)
+		self.pos = pos
+		
+class Bell(pygame.sprite.Sprite):
+	def __init__(self, pos, group):
+		super().__init__(group)
+		self.image1 = pygame.image.load('Enemies/DevlinDeving.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/DevlinDeving.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
 		self.collisionrect.width -= 60
 		self.collisionrect.height -= 60
 		self.collisionrect.move_ip(30,30)
+	
 
-		
+
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Players/Trent.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Players/Trent.png').convert_alpha(), True, False)
+		self.image1 = pygame.image.load('Player/DevlinDeving.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Player.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
