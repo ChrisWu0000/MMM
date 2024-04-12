@@ -10,21 +10,18 @@ class Bell(pygame.sprite.Sprite):
 		self.collisionrect.width -= 60
 		self.collisionrect.height -= 60
 		self.collisionrect.move_ip(30,30)
-		self.speed = 3
-	def update(self,player):
-		
-		bell_vector = pygame.Vector2(bells[x].rect.center)
-		player_vector = pygame.Vector2(player.rect.center)
-		towards = (player_vector - bell_vector).normalize() * self.speed
-		self.rect.x += self.direction.x * self.speed
-		self.rect.y += self.direction.y * self.speed
-		for x in range(len(bells)):
-			self.rect.y -= self.direction.y * self.speed
-			if self.rect.colliderect(bells[x].collisionrect):
-				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2)-30)
-			self.rect.y += self.direction.y * self.speed
-			if self.rect.colliderect(bells[x].collisionrect):
-				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2)-30)
+		self.speed = 1
+		self.vector = pygame.Vector2(self.rect.center)
+	def update(self,bells,player):
+
+		self.vector = pygame.Vector2(self.rect.center)
+		if 0 != pygame.Vector2.length(player.vector - self.vector):
+			movement = (player.vector - self.vector).normalize() * self.speed
+			self.rect.center = self.rect.center + movement
+			self.collisionrect.topleft = self.rect.topleft
+			self.collisionrect.move_ip(30,30)
+			if player.rect.colliderect(self.collisionrect):
+				player.rect.center += movement
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
@@ -34,7 +31,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
-
+		self.vector = pygame.Vector2(self.rect.center)
 	def input(self):
 		keys = pygame.key.get_pressed()
 		if keys[pygame.K_UP] == keys[pygame.K_DOWN]:
@@ -52,12 +49,11 @@ class Player(pygame.sprite.Sprite):
 		elif keys[pygame.K_LEFT]:
 			self.direction.x = -1
 			self.image=pygame.transform.flip(self.image, True, False)
-	def update(self,bells):
-		
-		
+	def update(self,bells,player):
 		self.input()
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
+		self.vector = pygame.Vector2(self.rect.center)
 		for x in range(len(bells)):
 			self.rect.y -= self.direction.y * self.speed
 			if self.rect.colliderect(bells[x].collisionrect):
@@ -128,7 +124,7 @@ clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player = Player((640,360),camera_group)
 bells = []
-for i in range(50):
+for i in range(5):
 	random_x = randint(camera_group.bg_rect.x,camera_group.background_image.get_size()[0])
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1])
 	extra=Bell((random_x,random_y),camera_group)
