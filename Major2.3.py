@@ -1,10 +1,124 @@
 import pygame
 from random import *
+from math import *
 pygame.init()
-class Enemy(pygame.sprite.Sprite):
-	def __init(self, pos, *group):
-		super().__init__(*group)
-		self.pos = pos
+"""class Enemy(pygame.sprite.Sprite): 
+	def __init__(self, name, position):
+		super().__init__(enemy_group, all_sprites_group)
+		self.alive = True
+		self.position = pygame.math.Vector2(position) 
+		self.direction_index = random.randint(0, 3)
+		self.steps = random.randint(3, 6) * TILESIZE
+		self.name = name
+
+		enemy_info = monster_data[self.name]
+		self.health = enemy_info["health"]
+		self.roaming_speed = enemy_info["roaming_speed"]
+		self.hunting_speed = random.choice(enemy_info["hunting_speed"])
+		self.image_scale = enemy_info["image_scale"]
+		self.image = enemy_info["image"].convert_alpha()
+		self.image = pygame.transform.rotozoom(self.image, 0, self.image_scale)
+		self.animation_speed = enemy_info["animation_speed"]
+		self.roam_animation_speed = enemy_info["roam_animation_speed"]
+		self.death_animation_speed = enemy_info["death_animation_speed"]
+		self.notice_radius = enemy_info["notice_radius"]
+		self.attack_damage = enemy_info["attack_damage"]
+		self.import_graphics(name)
+
+		self.current_index = 0
+
+		self.image.set_colorkey((0,0,0))
+		#self.base_zombie_image = self.image
+		
+		self.rect = self.image.get_rect()
+		self.rect.center = position
+		
+		self.hitbox_rect = enemy_info["hitbox_rect"]
+		self.base_zombie_rect = self.hitbox_rect.copy()
+		self.base_zombie_rect.center = self.rect.center
+			 
+		self.velocity = pygame.math.Vector2()
+		self.direction = pygame.math.Vector2()
+		self.direction_list = [(1,1), (1,-1), (-1,1), (-1,-1)] # [(-1, 0), (1, 0), (0, -1), (0, 1), (1,1), (1,-1), (-1,1), (-1,-1)]
+
+		self.collide = False
+
+		self.coin_dropped = False
+
+	def check_alive(self): # checks if enemy dies
+		if self.health <= 0:
+			self.alive = False
+		
+						
+	def check_collision(self, direction, move_state):
+		for sprite in obstacles_group:
+			if sprite.rect.colliderect(self.base_zombie_rect):
+				self.collide = True
+				if direction == "horizontal":
+					if self.velocity.x > 0:
+						self.base_zombie_rect.right = sprite.rect.left
+					if self.velocity.x < 0:
+						self.base_zombie_rect.left = sprite.rect.right 
+				if direction == "vertical":
+					if self.velocity.y < 0:
+						self.base_zombie_rect.top = sprite.rect.bottom
+					if self.velocity.y > 0:
+						self.base_zombie_rect.bottom = sprite.rect.top
+				if move_state == "roam":
+					self.get_new_direction_and_distance()
+
+	def hunt_player(self):  
+		if self.velocity.x > 0:
+			self.current_movement_sprite = 0
+		else:
+			self.current_movement_sprite = 1
+		
+		player_vector = pygame.math.Vector2(player.base_player_rect.center)
+		enemy_vector = pygame.math.Vector2(self.base_zombie_rect.center)
+		distance = self.get_vector_distance(player_vector, enemy_vector)
+
+		if distance > 0:
+			self.direction = (player_vector - enemy_vector).normalize()
+		else:
+			self.direction = pygame.math.Vector2()
+
+		self.velocity = self.direction * self.hunting_speed
+		self.position += self.velocity
+
+		self.base_zombie_rect.centerx = self.position.x
+		self.check_collision("horizontal", "hunt")
+
+		self.base_zombie_rect.centery = self.position.y
+		self.check_collision("vertical", "hunt")
+
+		self.rect.center = self.base_zombie_rect.center
+
+		self.position = (self.base_zombie_rect.centerx, self.base_zombie_rect.centery)
+
+	
+	def check_player_collision(self):          
+		if pygame.Rect.colliderect(self.base_zombie_rect, player.base_player_rect): # player and enemy collides
+			self.kill()
+			player.get_damage(self.attack_damage)
+			# scream_sound.play()
+
+	def update(self):
+	
+		if self.alive:
+			self.check_alive()
+			if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), 
+										pygame.math.Vector2(self.base_zombie_rect.center)) < 100:
+				self.check_player_collision()
+				
+			if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), 
+										pygame.math.Vector2(self.base_zombie_rect.center)) < self.notice_radius:    # nightborne 400, necromancer 500
+				self.hunt_player()
+				self.current_index = self.animate(self.current_index, self.animation_speed, self.animations["hunt"], "hunt")
+			else:
+				self.roam()
+				if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), pygame.math.Vector2(self.base_zombie_rect.center)) < 700:    
+					self.current_index = self.animate(self.current_index, self.roam_animation_speed, self.animations["roam"], "idle")
+"""
 		
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
@@ -29,8 +143,20 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
+		self.shoot = False
 		self.shoot_cooldown = 0
-
+	def check_collision(self):
+		for x in enemy_group.sprites():
+			self.rect.y -= self.direction.y * self.speed
+			if self.rect.colliderect(x.collisionrect):
+				self.rect.centerx = x.rect.centerx - self.direction.x * (x.rect.centerx - (x.rect.x - 1 - self.rect.width/2)-30)
+				#x.kill()
+				#x.collisionrect = (0, 0, 0, 0)
+			self.rect.y += self.direction.y * self.speed
+			if self.rect.colliderect(x.collisionrect):
+				self.rect.centery = x.rect.centery - self.direction.y * (x.rect.centery - (x.rect.y - 1 - self.rect.height/2)-30)
+				#x.kill()
+				#x.collisionrect = (0, 0, 0, 0)
 	def input(self):
 		keys = pygame.key.get_pressed()
 
@@ -51,7 +177,7 @@ class Player(pygame.sprite.Sprite):
 		if self.direction.length() >1:
 			self.direction.normalize_ip()
 		
-		if pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_SPACE]:
+		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = True
 			self.is_shooting()             
 		else:
@@ -61,8 +187,17 @@ class Player(pygame.sprite.Sprite):
 			if pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = False
 	def is_shooting(self):
+		self.mouse_coords = pygame.mouse.get_pos() 
+		self.x_change_mouse_player = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.angle = atan2(self.y_change_mouse_player, self.x_change_mouse_player)
 		if self.shoot_cooldown == 0 and self.shoot:
-	def update(self,bells):
+			self.shoot_cooldown = 30
+			spawn_bullet_pos = self.rect.center
+			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
+			bullet_group.add(self.bullet)
+			camera_group.add(self.bullet)
+	def update(self):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot:
@@ -70,50 +205,45 @@ class Player(pygame.sprite.Sprite):
 
 		
 		self.input()
-		
+		self.check_collision()
 		
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
-		for x in range(len(bells)):
-			self.rect.y -= self.direction.y * self.speed
-			if self.rect.colliderect(bells[x].collisionrect):
-				self.rect.centerx = bells[x].rect.centerx - self.direction.x * (bells[x].rect.centerx - (bells[x].rect.x - 1 - self.rect.width/2)-30)
-				bells[x].kill()
-				bells[x].collisionrect = (0, 0, 0, 0)
-			self.rect.y += self.direction.y * self.speed
-			if self.rect.colliderect(bells[x].collisionrect):
-				self.rect.centery = bells[x].rect.centery - self.direction.y * (bells[x].rect.centery - (bells[x].rect.y - 1 - self.rect.height/2)-30)
-				bells[x].kill()
-				bells[x].collisionrect = (0, 0, 0, 0)
 
 class Bullet(pygame.sprite.Sprite): 
-    def __init__(self, x, y, angle): 
-        super().__init__()
-        self.image = pygame.image.load("Weapons/Bullet.png")
-        self.image = pygame.transform.rotozoom(self.image, 0, 0.5)
-        #self.image.set_colorkey((0,0,0))
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
-        self.x = x
-        self.y = y
-        self.speed = 50
-        self.angle = angle
-        self.vel_direction = pygame.math.Vector2()
-        self.bullet_lifetime = 750
-        self.spawn_time = pygame.time.get_ticks()
-		
-    def bullet_movement(self): 
-        self.rect.center +=self.vel_direction*self.speed
-
-        self.rect.x = int(self.x)
-        self.rect.y = int(self.y)
-
-        if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime: 
-            self.kill()
+	def __init__(self, x, y, angle): 
+		super().__init__()
+		self.image = pygame.image.load("Weapons/Bullet.png")
+		self.image = pygame.transform.rotozoom(self.image, 0, 5)
+		#self.image.set_colorkey((0,0,0))
+		self.rect = self.image.get_rect()
+		self.rect.center = (x, y)
+		self.x = x
+		self.y = y
+		self.speed = 10
+		self.angle = angle
+		self.velx = cos(self.angle)*self.speed
+		self.vely = sin(self.angle)*self.speed
+		self.bullet_lifetime = 750
+		self.spawn_time = pygame.time.get_ticks()
+ 
+	def check_collision(self):
+		for x in enemy_group.sprites():
+			if self.rect.colliderect(x.collisionrect):
+				x.kill()
+				x.collisionrect = (0, 0, 0, 0)
+			if self.rect.colliderect(x.collisionrect):
+				x.kill()
+				x.collisionrect = (0, 0, 0, 0)    
 	def update(self):
-        self.bullet_movement()
-        self.bullet_collisions()
-
+		self.rect.x +=self.velx
+		self.rect.y +=self.vely
+		self.rect.x = int(self.rect.x)
+		self.rect.y = int(self.rect.y)
+		self.check_collision()
+		if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime: 
+			self.kill()
+		
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
 		super().__init__()
@@ -173,13 +303,18 @@ class CameraGroup(pygame.sprite.Group):
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
+enemy_group = pygame.sprite.Group()
+bullet_group = pygame.sprite.Group()
+
 player = Player((640,360),camera_group)
 bells = []
 for i in range(50):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	extra=Bell((random_x,random_y),camera_group)
+	extra=Bell((random_x,random_y),enemy_group)
 	bells.append(extra)
+for i in bells:
+	camera_group.add(i)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
@@ -195,7 +330,7 @@ while meep:
 
 
 	#screen.fill('#6b6b6b')
-	camera_group.update(bells)
+	camera_group.update()
 	camera_group.custom_draw(player)
  
 
