@@ -146,17 +146,20 @@ class Player(pygame.sprite.Sprite):
 		self.shoot = False
 		self.shoot_cooldown = 0
 	def check_collision(self):
-		for x in enemy_group.sprites():
-			self.rect.y -= self.direction.y * self.speed
-			if self.rect.colliderect(x.collisionrect):
-				self.rect.centerx = x.rect.centerx - self.direction.x * (x.rect.centerx - (x.rect.x - 1 - self.rect.width/2)-30)
+		for enemy in enemy_group.sprites():
+			x_direction = self.direction.x
+			y_direction = self.direction.y
+			self.rect.y -= y_direction * self.speed
+			if self.rect.colliderect(enemy.collisionrect):
+				self.rect.centerx = enemy.rect.centerx - x_direction * (enemy.rect.centerx - (enemy.rect.x - 1 - self.rect.width/2)-30)
 				#x.kill()
 				#x.collisionrect = (0, 0, 0, 0)
-			self.rect.y += self.direction.y * self.speed
-			if self.rect.colliderect(x.collisionrect):
-				self.rect.centery = x.rect.centery - self.direction.y * (x.rect.centery - (x.rect.y - 1 - self.rect.height/2)-30)
+			self.rect.y += y_direction * self.speed
+			if self.rect.colliderect(enemy.collisionrect):
+				self.rect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
 				#x.kill()
 				#x.collisionrect = (0, 0, 0, 0)
+	
 	def input(self):
 		keys = pygame.key.get_pressed()
 
