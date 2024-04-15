@@ -131,7 +131,18 @@ class Bell(pygame.sprite.Sprite):
 		self.collisionrect.width -= 60
 		self.collisionrect.height -= 60
 		self.collisionrect.move_ip(30,30)
-	
+		self.speed = 1
+		self.vector = pygame.Vector2(self.rect.center)
+	def update(self,bells,player):
+
+		self.vector = pygame.Vector2(self.rect.center)
+		if 0 != pygame.Vector2.length(player.vector - self.vector):
+			movement = (player.vector - self.vector).normalize() * self.speed
+			self.rect.center = self.rect.center + movement
+			self.collisionrect.topleft = self.rect.topleft
+			self.collisionrect.move_ip(30,30)
+			if player.rect.colliderect(self.collisionrect):
+				player.rect.center += movement
 
 
 class Player(pygame.sprite.Sprite):
@@ -145,7 +156,8 @@ class Player(pygame.sprite.Sprite):
 		self.speed = 5
 		self.shoot = False
 		self.shoot_cooldown = 0
-	def check_collision(self):
+		self.vector = pygame.Vector2(self.rect.center)
+	def check_collision(self,bells):
 		for enemy in enemy_group.sprites():
 			x_direction = self.direction.x
 			y_direction = self.direction.y
@@ -198,7 +210,7 @@ class Player(pygame.sprite.Sprite):
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
 			bullet_group.add(self.bullet)
 			camera_group.add(self.bullet)
-	def update(self):
+	def update(self,bells,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot:
@@ -208,9 +220,9 @@ class Player(pygame.sprite.Sprite):
 		self.input()
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
-		self.check_collision()
-		
-		
+		self.vector = pygame.Vector2(self.rect.center)
+		self.check_collision(bells)
+
 
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle): 
@@ -234,8 +246,10 @@ class Bullet(pygame.sprite.Sprite):
 			if self.rect.colliderect(x.collisionrect):
 				x.kill()
 				x.collisionrect = (0, 0, 0, 0)
-				self.kill()  
-	def update(self):
+			if self.rect.colliderect(x.collisionrect):
+				x.kill()
+				x.collisionrect = (0, 0, 0, 0)    
+	def update(self,bells,player):
 		self.rect.x +=self.velx
 		self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
@@ -319,27 +333,19 @@ for i in range(50):
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
-playertick = pygame.USEREVENT + 2
-pygame.time.set_timer(playertick,1000)
-playeridleframe=0
-playermoveframe=0
 while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
 			print(camera_group.bg_rect.height,player.rect.y)
-		#if event.type == playertick:
-			#playeranimate(player,playeridleframe,playermoveframe)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 
-
 	#screen.fill('#6b6b6b')
-	camera_group.update()
+	camera_group.update(bells,player)
 	camera_group.custom_draw(player)
  
-
 	pygame.display.update()
 	clock.tick(120)
