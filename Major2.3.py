@@ -121,8 +121,8 @@ pygame.init()
 """
 		
 class Bell(pygame.sprite.Sprite):
-	def __init__(self, pos, group):
-		super().__init__(group)
+	def __init__(self, pos):
+		super().__init__()
 		self.image1 = pygame.image.load('Enemies/Bell2.png').convert_alpha()
 		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell2.png').convert_alpha(), True, False)
 		self.image = self.image1
@@ -311,10 +311,11 @@ bells = []
 for i in range(50):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	extra=Bell((random_x,random_y),enemy_group)
+	extra=Bell((random_x,random_y))
 	bells.append(extra)
-for i in bells:
-	camera_group.add(i)
+	camera_group.add(extra)
+	enemy_group.add(extra)
+	
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
