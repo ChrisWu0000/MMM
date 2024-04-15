@@ -34,7 +34,7 @@ def playeranimate(player,playeridleframe,playermoveframe):
 class Bell(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/Sax.png').convert_alpha()
+		self.image = pygame.image.load('Enemies/Sam.png').convert_alpha()
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
 		self.collisionrect.width -= 60
