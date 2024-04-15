@@ -123,8 +123,8 @@ pygame.init()
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Enemies/Bell.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell.png').convert_alpha(), True, False)
+		self.image1 = pygame.image.load('Enemies/Bell2.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell2.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
@@ -328,8 +328,8 @@ while meep:
 			meep = False
 		if event.type == sparetimer1:
 			print(camera_group.bg_rect.height,player.rect.y)
-		if event.type == playertick:
-			playeranimate(player,playeridleframe,playermoveframe)
+		#if event.type == playertick:
+			#playeranimate(player,playeridleframe,playermoveframe)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
