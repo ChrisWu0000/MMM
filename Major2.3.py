@@ -1,6 +1,36 @@
 import pygame
 from random import *
 pygame.init()
+def playeranimate(player,playeridleframe,playermoveframe):
+	if(player.direction.x!=0 or player.direction.y!=0): #Moving
+		playeridleframe=0
+		if(playermoveframe%4==0):
+			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
+		elif(playermoveframe%4==1):
+			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
+		elif(playermoveframe%4==2):
+			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
+		elif(playermoveframe%4==3):
+			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
+		playeridleframe+=1
+
+	if(player.direction.x==0 and player.direction.y==0): #Idle
+		playermoveframe=0
+		if(playeridleframe>=4):
+			playeridleframe=0
+		elif(playeridleframe==0):
+			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
+		elif(playeridleframe==1):
+			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
+		elif(playeridleframe==2):
+			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
+		elif(playeridleframe==3):
+			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
+		playeridleframe+=1
+
+
+
+
 class Bell(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
@@ -13,6 +43,7 @@ class Bell(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
+		self.currentsprite = pygame.image.load('Player/Trent.png')
 		self.image = pygame.image.load('Player/Trent.png').convert_alpha()
 		self.flip = False
 		self.rect = self.image.get_rect(center = pos)
@@ -122,12 +153,18 @@ for i in range(50):
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
+playertick = pygame.USEREVENT + 2
+pygame.time.set_timer(playertick,1000)
+playeridleframe=0
+playermoveframe=0
 while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
 			print(camera_group.bg_rect.height,player.rect.y)
+		if event.type == playertick:
+			playeranimate(player,playeridleframe,playermoveframe)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
