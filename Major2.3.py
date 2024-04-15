@@ -2,40 +2,130 @@ import pygame
 from random import *
 from math import *
 pygame.init()
-def playeranimate(player,playeridleframe,playermoveframe):
-	if(player.direction.x!=0 or player.direction.y!=0): #Moving
-		playeridleframe=0
-		if(playermoveframe%4==0):
-			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
-		elif(playermoveframe%4==1):
-			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
-		elif(playermoveframe%4==2):
-			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
-		elif(playermoveframe%4==3):
-			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
-		playeridleframe+=1
+"""class Enemy(pygame.sprite.Sprite): 
+	def __init__(self, name, position):
+		super().__init__(enemy_group, all_sprites_group)
+		self.alive = True
+		self.position = pygame.math.Vector2(position) 
+		self.direction_index = random.randint(0, 3)
+		self.steps = random.randint(3, 6) * TILESIZE
+		self.name = name
 
-	if(player.direction.x==0 and player.direction.y==0): #Idle
-		playermoveframe=0
-		if(playeridleframe>=4):
-			playeridleframe=0
-		elif(playeridleframe==0):
-			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
-		elif(playeridleframe==1):
-			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
-		elif(playeridleframe==2):
-			player.currentsprite = pygame.image.load('Player/Trent.png')#.convert_alpha()
-		elif(playeridleframe==3):
-			player.currentsprite = pygame.image.load('Enemies/Bell.png')#.convert_alpha()
-		playeridleframe+=1
+		enemy_info = monster_data[self.name]
+		self.health = enemy_info["health"]
+		self.roaming_speed = enemy_info["roaming_speed"]
+		self.hunting_speed = random.choice(enemy_info["hunting_speed"])
+		self.image_scale = enemy_info["image_scale"]
+		self.image = enemy_info["image"].convert_alpha()
+		self.image = pygame.transform.rotozoom(self.image, 0, self.image_scale)
+		self.animation_speed = enemy_info["animation_speed"]
+		self.roam_animation_speed = enemy_info["roam_animation_speed"]
+		self.death_animation_speed = enemy_info["death_animation_speed"]
+		self.notice_radius = enemy_info["notice_radius"]
+		self.attack_damage = enemy_info["attack_damage"]
+		self.import_graphics(name)
 
+		self.current_index = 0
 
+		self.image.set_colorkey((0,0,0))
+		#self.base_zombie_image = self.image
+		
+		self.rect = self.image.get_rect()
+		self.rect.center = position
+		
+		self.hitbox_rect = enemy_info["hitbox_rect"]
+		self.base_zombie_rect = self.hitbox_rect.copy()
+		self.base_zombie_rect.center = self.rect.center
+			 
+		self.velocity = pygame.math.Vector2()
+		self.direction = pygame.math.Vector2()
+		self.direction_list = [(1,1), (1,-1), (-1,1), (-1,-1)] # [(-1, 0), (1, 0), (0, -1), (0, 1), (1,1), (1,-1), (-1,1), (-1,-1)]
 
+		self.collide = False
 
+		self.coin_dropped = False
+
+	def check_alive(self): # checks if enemy dies
+		if self.health <= 0:
+			self.alive = False
+		
+						
+	def check_collision(self, direction, move_state):
+		for sprite in obstacles_group:
+			if sprite.rect.colliderect(self.base_zombie_rect):
+				self.collide = True
+				if direction == "horizontal":
+					if self.velocity.x > 0:
+						self.base_zombie_rect.right = sprite.rect.left
+					if self.velocity.x < 0:
+						self.base_zombie_rect.left = sprite.rect.right 
+				if direction == "vertical":
+					if self.velocity.y < 0:
+						self.base_zombie_rect.top = sprite.rect.bottom
+					if self.velocity.y > 0:
+						self.base_zombie_rect.bottom = sprite.rect.top
+				if move_state == "roam":
+					self.get_new_direction_and_distance()
+
+	def hunt_player(self):  
+		if self.velocity.x > 0:
+			self.current_movement_sprite = 0
+		else:
+			self.current_movement_sprite = 1
+		
+		player_vector = pygame.math.Vector2(player.base_player_rect.center)
+		enemy_vector = pygame.math.Vector2(self.base_zombie_rect.center)
+		distance = self.get_vector_distance(player_vector, enemy_vector)
+
+		if distance > 0:
+			self.direction = (player_vector - enemy_vector).normalize()
+		else:
+			self.direction = pygame.math.Vector2()
+
+		self.velocity = self.direction * self.hunting_speed
+		self.position += self.velocity
+
+		self.base_zombie_rect.centerx = self.position.x
+		self.check_collision("horizontal", "hunt")
+
+		self.base_zombie_rect.centery = self.position.y
+		self.check_collision("vertical", "hunt")
+
+		self.rect.center = self.base_zombie_rect.center
+
+		self.position = (self.base_zombie_rect.centerx, self.base_zombie_rect.centery)
+
+	
+	def check_player_collision(self):          
+		if pygame.Rect.colliderect(self.base_zombie_rect, player.base_player_rect): # player and enemy collides
+			self.kill()
+			player.get_damage(self.attack_damage)
+			# scream_sound.play()
+
+	def update(self):
+	
+		if self.alive:
+			self.check_alive()
+			if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), 
+										pygame.math.Vector2(self.base_zombie_rect.center)) < 100:
+				self.check_player_collision()
+				
+			if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), 
+										pygame.math.Vector2(self.base_zombie_rect.center)) < self.notice_radius:    # nightborne 400, necromancer 500
+				self.hunt_player()
+				self.current_index = self.animate(self.current_index, self.animation_speed, self.animations["hunt"], "hunt")
+			else:
+				self.roam()
+				if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), pygame.math.Vector2(self.base_zombie_rect.center)) < 700:    
+					self.current_index = self.animate(self.current_index, self.roam_animation_speed, self.animations["roam"], "idle")
+"""
+		
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image = pygame.image.load('Enemies/Sam.png').convert_alpha()
+		self.image1 = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell.png').convert_alpha(), True, False)
+		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
 		self.collisionrect.width -= 60
@@ -58,9 +148,9 @@ class Bell(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos,group):
 		super().__init__(group)
-		self.currentsprite = pygame.image.load('Player/Trent.png')
-		self.image = pygame.image.load('Player/Trent.png').convert_alpha()
-		self.flip = False
+		self.image1 = pygame.image.load('Player/Trent.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Player/Trent.png').convert_alpha(), True, False)
+		self.image = self.image1
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
@@ -242,18 +332,12 @@ for i in bells:
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
-playertick = pygame.USEREVENT + 2
-pygame.time.set_timer(playertick,1000)
-playeridleframe=0
-playermoveframe=0
 while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
 			print(camera_group.bg_rect.height,player.rect.y)
-		if event.type == playertick:
-			playeranimate(player,playeridleframe,playermoveframe)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
