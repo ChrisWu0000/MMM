@@ -123,8 +123,8 @@ pygame.init()
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Enemies/Sax.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Sax.png').convert_alpha(), True, False)
+		self.image1 = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
@@ -177,8 +177,6 @@ class Player(pygame.sprite.Sprite):
 		elif keys[pygame.K_a]:
 			self.direction.x = -1
 			self.image=self.image1
-		if self.direction.length() >1:
-			self.direction.normalize_ip()
 		
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = True
@@ -208,10 +206,11 @@ class Player(pygame.sprite.Sprite):
 
 		
 		self.input()
-		self.check_collision()
-		
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
+		self.check_collision()
+		
+		
 
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle): 
