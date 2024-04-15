@@ -234,9 +234,7 @@ class Bullet(pygame.sprite.Sprite):
 			if self.rect.colliderect(x.collisionrect):
 				x.kill()
 				x.collisionrect = (0, 0, 0, 0)
-			if self.rect.colliderect(x.collisionrect):
-				x.kill()
-				x.collisionrect = (0, 0, 0, 0)    
+				self.kill()  
 	def update(self):
 		self.rect.x +=self.velx
 		self.rect.y +=self.vely
@@ -254,7 +252,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.surface_rect = self.surface.get_rect(midtop = (self.half_w,0))
-		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
+		self.background_image = pygame.image.load("Rooms/Level1.png").convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
 		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
 		l = self.camera_borders['left']
