@@ -131,13 +131,27 @@ class Bell(pygame.sprite.Sprite):
 		self.collisionrect.width -= 60
 		self.collisionrect.height -= 60
 		self.collisionrect.move_ip(30,30)
+		self.direction = pygame.math.Vector2()
 		self.speed = 1
 		self.vector = pygame.Vector2(self.rect.center)
-	def update(self,bells,player):
-
+	def check_collision(self,player_group):
+			for enemy in enemy_group.sprites():
+				x_direction = self.direction.x
+				y_direction = self.direction.y
+				self.rect.y -= y_direction * self.speed
+				if self.collisionrect.colliderect(enemy.rect):
+					self.collisionrect.centerx = enemy.rect.centerx - x_direction * (enemy.rect.centerx - (enemy.rect.x - 1 - self.rect.width/2)-30)
+					#x.kill()
+					#x.collisionrect = (0, 0, 0, 0)
+				self.collisionrect.y += y_direction * self.speed
+				if self.collisionrect.colliderect(enemy.rect):
+					self.collisionrect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
+	def update(self,enemy_group,player):
+		self.check_collision(player_group)
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
-			movement = (player.vector - self.vector).normalize() * self.speed
+			self.direction = (player.vector - self.vector).normalize()
+			movement = self.direction * self.speed
 			self.rect.center = self.rect.center + movement
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
@@ -157,7 +171,7 @@ class Player(pygame.sprite.Sprite):
 		self.shoot = False
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
-	def check_collision(self,bells):
+	def check_collision(self,enemy_group):
 		for enemy in enemy_group.sprites():
 			x_direction = self.direction.x
 			y_direction = self.direction.y
@@ -208,9 +222,9 @@ class Player(pygame.sprite.Sprite):
 			self.shoot_cooldown = 30
 			spawn_bullet_pos = self.rect.center
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
-			bullet_group.add(self.bullet)
+			weapon_group.add(self.bullet)
 			camera_group.add(self.bullet)
-	def update(self,bells,player):
+	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot:
@@ -221,7 +235,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
 		self.vector = pygame.Vector2(self.rect.center)
-		self.check_collision(bells)
+		self.check_collision(enemy_group)
 
 
 class Bullet(pygame.sprite.Sprite): 
@@ -244,12 +258,11 @@ class Bullet(pygame.sprite.Sprite):
 	def check_collision(self):
 		for x in enemy_group.sprites():
 			if self.rect.colliderect(x.collisionrect):
+				self.kill() 
 				x.kill()
 				x.collisionrect = (0, 0, 0, 0)
-			if self.rect.colliderect(x.collisionrect):
-				x.kill()
-				x.collisionrect = (0, 0, 0, 0)    
-	def update(self,bells,player):
+				 
+	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
 		self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
@@ -317,9 +330,10 @@ class CameraGroup(pygame.sprite.Group):
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
+player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-bullet_group = pygame.sprite.Group()
-
+weapon_group = pygame.sprite.Group()
+collision_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
 bells = []
 for i in range(50):
@@ -329,6 +343,7 @@ for i in range(50):
 	bells.append(extra)
 	camera_group.add(extra)
 	enemy_group.add(extra)
+	collision_group.add(extra)
 	
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
@@ -344,7 +359,7 @@ while meep:
 				meep = False
 
 	#screen.fill('#6b6b6b')
-	camera_group.update(bells,player)
+	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
  
 	pygame.display.update()
