@@ -318,12 +318,18 @@ for i in bells:
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
+playertick = pygame.USEREVENT + 2
+pygame.time.set_timer(playertick,1000)
+playeridleframe=0
+playermoveframe=0
 while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
 			print(camera_group.bg_rect.height,player.rect.y)
+		if event.type == playertick:
+			playeranimate(player,playeridleframe,playermoveframe)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
