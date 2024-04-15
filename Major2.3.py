@@ -123,8 +123,8 @@ pygame.init()
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos, group):
 		super().__init__(group)
-		self.image1 = pygame.image.load('Enemies/Bell.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell.png').convert_alpha(), True, False)
+		self.image1 = pygame.image.load('Enemies/Bell2.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell2.png').convert_alpha(), True, False)
 		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
@@ -132,17 +132,35 @@ class Bell(pygame.sprite.Sprite):
 		self.collisionrect.height -= 60
 		self.collisionrect.move_ip(30,30)
 		self.speed = 1
+		self.direction = pygame.math.Vector2()
 		self.vector = pygame.Vector2(self.rect.center)
 	def update(self,bells,player):
 
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
-			movement = (player.vector - self.vector).normalize() * self.speed
-			self.rect.center = self.rect.center + movement
+			self.direction = round((player.vector - self.vector).normalize())
+			self.rect.center = self.rect.center + self.direction * self.speed
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
 			if player.rect.colliderect(self.collisionrect):
-				player.rect.center += movement
+				player.rect.center += self.direction * self.speed
+				#player.push_collision(self,bells)
+		x_direction = self.direction.x
+		y_direction = self.direction.y
+		self.rect.y -= y_direction * self.speed
+		self.collisionrect.topleft = self.rect.topleft
+		self.collisionrect.move_ip(30,30)
+		if self.collisionrect.colliderect(player.rect):
+			self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2))
+			self.collisionrect.topleft = self.rect.topleft
+			self.collisionrect.move_ip(30,30)
+		self.rect.y += y_direction * self.speed
+		self.collisionrect.topleft = self.rect.topleft
+		self.collisionrect.move_ip(30,30)
+		if self.collisionrect.colliderect(player.rect):
+			self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2))
+			self.collisionrect.topleft = self.rect.topleft
+			self.collisionrect.move_ip(30,30)
 
 
 class Player(pygame.sprite.Sprite):
@@ -164,13 +182,18 @@ class Player(pygame.sprite.Sprite):
 			self.rect.y -= y_direction * self.speed
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.centerx = enemy.rect.centerx - x_direction * (enemy.rect.centerx - (enemy.rect.x - 1 - self.rect.width/2)-30)
-				#x.kill()
-				#x.collisionrect = (0, 0, 0, 0)
 			self.rect.y += y_direction * self.speed
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
-				#x.kill()
-				#x.collisionrect = (0, 0, 0, 0)
+	def push_collision(self,bell,bells):
+		x_direction = bell.direction.x
+		y_direction = bell.direction.y
+		bell.rect.y -= y_direction * bell.speed
+		if self.rect.colliderect(bell.collisionrect):
+			self.rect.centerx = bell.rect.centerx - x_direction * (bell.rect.centerx - (bell.rect.x - 1 - self.rect.width/2)-30)
+		bell.rect.y += y_direction * bell.speed
+		if self.rect.colliderect(bell.collisionrect):
+			self.rect.centery = bell.rect.centery - y_direction * (bell.rect.centery - (bell.rect.y - 1 - self.rect.height/2)-30)
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -266,7 +289,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.surface_rect = self.surface.get_rect(midtop = (self.half_w,0))
-		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
+		self.background_image = pygame.image.load("Rooms/Level1.png").convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
 		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
 		l = self.camera_borders['left']
@@ -343,6 +366,7 @@ while meep:
 				meep = False
 
 	#screen.fill('#6b6b6b')
+
 	camera_group.update(bells,player)
 	camera_group.custom_draw(player)
  
