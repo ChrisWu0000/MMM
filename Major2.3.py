@@ -2,27 +2,18 @@ import pygame
 from random import *
 from math import *
 pygame.init()
-"""class Enemy(pygame.sprite.Sprite): 
+class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
-		super().__init__(enemy_group, all_sprites_group)
 		self.alive = True
 		self.position = pygame.math.Vector2(position) 
-		self.direction_index = random.randint(0, 3)
-		self.steps = random.randint(3, 6) * TILESIZE
 		self.name = name
 
 		enemy_info = monster_data[self.name]
 		self.health = enemy_info["health"]
-		self.roaming_speed = enemy_info["roaming_speed"]
-		self.hunting_speed = random.choice(enemy_info["hunting_speed"])
+		self.speed = enemy_info["speed"]
 		self.image_scale = enemy_info["image_scale"]
 		self.image = enemy_info["image"].convert_alpha()
 		self.image = pygame.transform.rotozoom(self.image, 0, self.image_scale)
-		self.animation_speed = enemy_info["animation_speed"]
-		self.roam_animation_speed = enemy_info["roam_animation_speed"]
-		self.death_animation_speed = enemy_info["death_animation_speed"]
-		self.notice_radius = enemy_info["notice_radius"]
-		self.attack_damage = enemy_info["attack_damage"]
 		self.import_graphics(name)
 
 		self.current_index = 0
@@ -64,8 +55,6 @@ pygame.init()
 						self.base_zombie_rect.top = sprite.rect.bottom
 					if self.velocity.y > 0:
 						self.base_zombie_rect.bottom = sprite.rect.top
-				if move_state == "roam":
-					self.get_new_direction_and_distance()
 
 	def hunt_player(self):  
 		if self.velocity.x > 0:
@@ -118,7 +107,6 @@ pygame.init()
 				self.roam()
 				if self.get_vector_distance(pygame.math.Vector2(player.base_player_rect.center), pygame.math.Vector2(self.base_zombie_rect.center)) < 700:    
 					self.current_index = self.animate(self.current_index, self.roam_animation_speed, self.animations["roam"], "idle")
-"""
 		
 class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos):
