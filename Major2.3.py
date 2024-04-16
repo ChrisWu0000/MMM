@@ -144,23 +144,22 @@ class Bell(pygame.sprite.Sprite):
 			self.collisionrect.move_ip(30,30)
 			if player.rect.colliderect(self.collisionrect):
 				player.rect.center += self.direction * self.speed
-				#player.push_collision(self,bells)
+				
 		x_direction = self.direction.x
 		y_direction = self.direction.y
 		self.rect.y -= y_direction * self.speed
 		self.collisionrect.topleft = self.rect.topleft
 		self.collisionrect.move_ip(30,30)
 		if self.collisionrect.colliderect(player.rect):
-			self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2))
-			self.collisionrect.topleft = self.rect.topleft
-			self.collisionrect.move_ip(30,30)
+			self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2)+60)
 		self.rect.y += y_direction * self.speed
 		self.collisionrect.topleft = self.rect.topleft
 		self.collisionrect.move_ip(30,30)
 		if self.collisionrect.colliderect(player.rect):
-			self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2))
+			self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2)+60)
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
+		
 
 
 class Player(pygame.sprite.Sprite):
@@ -185,15 +184,7 @@ class Player(pygame.sprite.Sprite):
 			self.rect.y += y_direction * self.speed
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
-	def push_collision(self,bell,bells):
-		x_direction = bell.direction.x
-		y_direction = bell.direction.y
-		bell.rect.y -= y_direction * bell.speed
-		if self.rect.colliderect(bell.collisionrect):
-			self.rect.centerx = bell.rect.centerx - x_direction * (bell.rect.centerx - (bell.rect.x - 1 - self.rect.width/2)-30)
-		bell.rect.y += y_direction * bell.speed
-		if self.rect.colliderect(bell.collisionrect):
-			self.rect.centery = bell.rect.centery - y_direction * (bell.rect.centery - (bell.rect.y - 1 - self.rect.height/2)-30)
+
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -244,7 +235,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
 		self.vector = pygame.Vector2(self.rect.center)
-		self.check_collision(bells)
+		#self.check_collision(bells)
 
 
 class Bullet(pygame.sprite.Sprite): 
@@ -289,7 +280,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.surface_rect = self.surface.get_rect(midtop = (self.half_w,0))
-		self.background_image = pygame.image.load("Rooms/Level1.png").convert_alpha()
+		self.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
 		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
 		l = self.camera_borders['left']
@@ -360,7 +351,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(camera_group.bg_rect.height,player.rect.y)
+			print("e")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
