@@ -128,6 +128,7 @@ class Bell(pygame.sprite.Sprite):
 		self.image = self.image1
 		self.rect = self.image.get_rect(midtop = pos)
 		self.collisionrect = self.image.get_rect(midtop = pos)
+		self.hp = 15
 		self.collisionrect.width -= 60
 		self.collisionrect.height -= 60
 		self.collisionrect.move_ip(30,30)
@@ -135,7 +136,7 @@ class Bell(pygame.sprite.Sprite):
 		self.speed = 1
 		self.vector = pygame.Vector2(self.rect.center)
 	def check_collision(self,player_group):
-			for enemy in enemy_group.sprites():
+			for enemy in player_group.sprites():
 				x_direction = self.direction.x
 				y_direction = self.direction.y
 				self.rect.y -= y_direction * self.speed
@@ -224,6 +225,7 @@ class Player(pygame.sprite.Sprite):
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
 			weapon_group.add(self.bullet)
 			camera_group.add(self.bullet)
+			all_sprite_group.add(self.bullet)
 	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
@@ -250,6 +252,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.y = y
 		self.speed = 10
 		self.angle = angle
+		self.damage = 5
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
 		self.bullet_lifetime = 750
@@ -258,9 +261,11 @@ class Bullet(pygame.sprite.Sprite):
 	def check_collision(self):
 		for x in enemy_group.sprites():
 			if self.rect.colliderect(x.collisionrect):
-				self.kill() 
-				x.kill()
-				x.collisionrect = (0, 0, 0, 0)
+				self.kill()
+				x.hp -=self.damage 
+				if x.hp <=0:
+					x.kill()
+					x.collisionrect = (0, 0, 0, 0)
 				 
 	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
@@ -334,6 +339,7 @@ player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
+all_sprite_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
 bells = []
 for i in range(50):
@@ -344,6 +350,7 @@ for i in range(50):
 	camera_group.add(extra)
 	enemy_group.add(extra)
 	collision_group.add(extra)
+	all_sprite_group.add(extra)
 	
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
