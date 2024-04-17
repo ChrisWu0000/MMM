@@ -27,7 +27,10 @@ class Enemy(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		
-		self.collisionrect = enemy_info["collisionrect"]
+		self.collisionrect = self.rect
+		self.collisionrect.width = int(0.8*self.collisionrect.width)
+		self.collisionrect.height = int(0.8*self.collisionrect.height)
+		self.collisionrect.midbottom = self.rect.midbottom
 
 	def check_alive(self): # checks if enemy dies
 		if self.hp <= 0:
@@ -53,7 +56,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.collisionrect.topleft = self.rect.topleft
 					self.collisionrect.move_ip(30,30)
 
-	def hunt_player(self):  
+	def hunt_player(self, player):  
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
 			self.direction = round((player.vector - self.vector).normalize())
@@ -62,17 +65,16 @@ class Enemy(pygame.sprite.Sprite):
 			if self.direction.x <0:
 				self.image = self.image_default
 			self.rect.center = self.rect.center + self.direction * self.speed
-			self.collisionrect.topleft = self.rect.topleft
-			self.collisionrect.move_ip(30,30)
+			self.collisionrect.midbottom = self.rect.midbottom
 			if player.rect.colliderect(self.collisionrect):
-				player.rect.center += self.direction * self.speed
+				player.rect.center -= player.direction * player.speed
 				
 		
 
 	def update(self,enemy_group,player):
 		self.check_collision(player_group)
 		self.check_alive()
-		self.hunt_player()
+		self.hunt_player(player)
 
 
 		
