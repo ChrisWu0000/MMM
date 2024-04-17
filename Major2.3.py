@@ -98,6 +98,14 @@ class Player(pygame.sprite.Sprite):
 		self.iframes = 1000 #iframes are measured in miliseconds
 	def check_collision(self,enemy_group):
 		for enemy in enemy_group.sprites():
+			x_direction = self.direction.x
+			y_direction = self.direction.y
+			self.rect.y -= y_direction * self.speed
+			if self.rect.colliderect(enemy.collisionrect):
+				self.rect.centerx = enemy.rect.centerx - x_direction * (enemy.rect.centerx - (enemy.rect.x - 1 - self.rect.width/2)-30)
+			self.rect.y += y_direction * self.speed
+			if self.rect.colliderect(enemy.collisionrect):
+				self.rect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
 			if pygame.time.get_ticks()-self.lastcollision >=self.iframes:
 				self.hp -= enemy.damage
 				self.hp = max(0, self.hp)
