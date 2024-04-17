@@ -76,7 +76,45 @@ class Enemy(pygame.sprite.Sprite):
 
 
 		
-	
+class Bell(pygame.sprite.Sprite):
+	def __init__(self, pos, group):
+		super().__init__(group)
+		self.image1 = pygame.image.load('Enemies/Bell.png').convert_alpha()
+		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell.png').convert_alpha(), True, False)
+		self.image = self.image1
+		self.rect = self.image.get_rect(midtop = pos)
+		self.collisionrect = self.image.get_rect(midtop = pos)
+		self.collisionrect.width -= 60
+		self.collisionrect.height -= 60
+		self.collisionrect.move_ip(30,30)
+		self.speed = 1
+		self.direction = pygame.math.Vector2()
+		self.vector = pygame.Vector2(self.rect.center)
+	def update(self,bells,player):
+
+		self.vector = pygame.Vector2(self.rect.center)
+		if 0 != pygame.Vector2.length(player.vector - self.vector):
+			self.direction = round((player.vector - self.vector).normalize())
+			self.rect.center = self.rect.center + self.direction * self.speed
+			self.collisionrect.topleft = self.rect.topleft
+			self.collisionrect.move_ip(30,30)
+			if player.rect.colliderect(self.collisionrect):
+				player.rect.center += self.direction * self.speed
+				
+		x_direction = self.direction.x
+		y_direction = self.direction.y
+		self.rect.y -= y_direction * self.speed
+		self.collisionrect.topleft = self.rect.topleft
+		self.collisionrect.move_ip(30,30)
+		if self.collisionrect.colliderect(player.rect):
+			self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2)+60)
+		self.rect.y += y_direction * self.speed
+		self.collisionrect.topleft = self.rect.topleft
+		self.collisionrect.move_ip(30,30)
+		if self.collisionrect.colliderect(player.rect):
+			self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2)+60)
+			self.collisionrect.topleft = self.rect.topleft
+			self.collisionrect.move_ip(30,30)
 		
 """class Bell(pygame.sprite.Sprite):
 	def __init__(self, pos):
