@@ -355,6 +355,10 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
+			if event.key == pygame.K_9:
+				camera_group.remove(enemy_group)
+				bells.clear()
+				
 
 	#screen.fill('#6b6b6b')
 
