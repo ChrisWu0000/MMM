@@ -195,7 +195,7 @@ class Bullet(pygame.sprite.Sprite):
 		for x in enemy_group.sprites():
 			if self.rect.colliderect(x.collisionrect):
 				self.kill()
-				x.hp -=self.damage 
+				x.hp -= self.damage
 				x.check_alive()
 				 
 	def update(self,enemy_group,player):
