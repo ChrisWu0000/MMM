@@ -15,7 +15,6 @@ class Enemy(pygame.sprite.Sprite):
 		self.speed = enemy_info["speed"]
 		self.image_scale = enemy_info["image_scale"]
 		self.image = enemy_info["image"].convert_alpha()
-		self.image = pygame.transform.rotozoom(self.image, 0, self.image_scale)
 		#self.import_graphics(name)
 
 		self.current_index = 0
@@ -34,50 +33,41 @@ class Enemy(pygame.sprite.Sprite):
 		
 						
 	def check_collision(self,player_group):
-			for enemy in player_group.sprites():
+			for player in player_group.sprites():
 				x_direction = self.direction.x
 				y_direction = self.direction.y
 				self.rect.y -= y_direction * self.speed
-				if self.collisionrect.colliderect(enemy.rect):
-					self.collisionrect.centerx = enemy.rect.centerx - x_direction * (enemy.rect.centerx - (enemy.rect.x - 1 - self.rect.width/2)-30)
-					#x.kill()
-					#x.collisionrect = (0, 0, 0, 0)
-				self.collisionrect.y += y_direction * self.speed
-				if self.collisionrect.colliderect(enemy.rect):
-					self.collisionrect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
+				self.collisionrect.topleft = self.rect.topleft
+				self.collisionrect.move_ip(30,30)
+				if self.collisionrect.colliderect(player.rect):
+					self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2)+60)
+				self.rect.y += y_direction * self.speed
+				self.collisionrect.topleft = self.rect.topleft
+				self.collisionrect.move_ip(30,30)
+				if self.collisionrect.colliderect(player.rect):
+					self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2)+60)
+					self.collisionrect.topleft = self.rect.topleft
+					self.collisionrect.move_ip(30,30)
 
 	def hunt_player(self):  
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
-			self.direction = (player.vector - self.vector).normalize()
-			movement = self.direction * self.speed
-			self.rect.center = self.rect.center + movement
+			self.direction = round((player.vector - self.vector).normalize())
+			self.rect.center = self.rect.center + self.direction * self.speed
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
 			if player.rect.colliderect(self.collisionrect):
 				player.rect.center += self.direction * self.speed
 				
-		x_direction = self.direction.x
-		y_direction = self.direction.y
-		self.rect.y -= y_direction * self.speed
-		self.collisionrect.topleft = self.rect.topleft
-		self.collisionrect.move_ip(30,30)
-		if self.collisionrect.colliderect(player.rect):
-			self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2)+60)
-		self.rect.y += y_direction * self.speed
-		self.collisionrect.topleft = self.rect.topleft
-		self.collisionrect.move_ip(30,30)
-		if self.collisionrect.colliderect(player.rect):
-			self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2)+60)
-			self.collisionrect.topleft = self.rect.topleft
-			self.collisionrect.move_ip(30,30)
 		
 
 	def update(self,enemy_group,player):
 		self.check_collision(player_group)
 		self.check_alive()
 		self.hunt_player()
-	
+
+
+		
 	
 		
 """class Bell(pygame.sprite.Sprite):
