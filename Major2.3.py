@@ -17,6 +17,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.image_default = enemy_info["image"].convert_alpha()
 		self.image_flipped = pygame.transform.flip(enemy_info["image"].convert_alpha(), True, False)
 		self.image = self.image_default
+		self.damage = enemy_info["damage"]
 		#self.import_graphics(name)
 
 		self.current_index = 0
@@ -28,7 +29,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.rect.center = position
 		
 		self.collisionrect = self.rect
-		self.collisionrect.width = int(0.6*self.collisionrect.width)
+		self.collisionrect.width = int(0.8*self.collisionrect.width)
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
@@ -79,23 +80,6 @@ class Enemy(pygame.sprite.Sprite):
 
 		
 	
-		
-"""class Bell(pygame.sprite.Sprite):
-	def __init__(self, pos):
-		super().__init__()
-		self.image1 = pygame.image.load('Enemies/Bell2.png').convert_alpha()
-		self.image2 = pygame.transform.flip(pygame.image.load('Enemies/Bell2.png').convert_alpha(), True, False)
-		self.image = self.image1
-		self.rect = self.image.get_rect(midtop = pos)
-		self.collisionrect = self.image.get_rect(midtop = pos)
-		self.hp = 15
-		self.collisionrect.width -= 60
-		self.collisionrect.height -= 60
-		self.collisionrect.move_ip(30,30)
-		self.direction = pygame.math.Vector2()
-		self.speed = 1"""
-		
-	
 
 
 class Player(pygame.sprite.Sprite):
@@ -107,20 +91,18 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
+		self.hp = 100
 		self.shoot = False
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
+		self.lastcollision = pygame.time.get_ticks()
+		self.iframes = 100
 	def check_collision(self,enemy_group):
 		for enemy in enemy_group.sprites():
-			x_direction = self.direction.x
-			y_direction = self.direction.y
-			self.rect.y -= y_direction * self.speed
-			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.centerx = enemy.rect.centerx - x_direction * (enemy.rect.centerx - (enemy.rect.x - 1 - self.rect.width/2)-30)
-			self.rect.y += y_direction * self.speed
-			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.centery = enemy.rect.centery - y_direction * (enemy.rect.centery - (enemy.rect.y - 1 - self.rect.height/2)-30)
-
+			if pygame.time.get_ticks()-self.lastcollision >=self.iframes:
+				self.hp -= enemy.damage
+				self.lastcollision = pygame.time.get_ticks()
+				print(self.hp)
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -161,13 +143,18 @@ class Player(pygame.sprite.Sprite):
 			weapon_group.add(self.bullet)
 			camera_group.add(self.bullet)
 			all_sprite_group.add(self.bullet)
+	def check_alive(self): # checks if self is alive
+		if self.hp <= 0:
+			self.alive = False
+		if self.alive == False:
+			self.kill()
 	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot:
 			self.is_shooting()
-
-		
+	
+		self.check_alive()
 		self.input()
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
