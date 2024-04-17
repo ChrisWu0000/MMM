@@ -263,16 +263,21 @@ weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
-bells = []
-for i in range(50):
+for i in range(5):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	extra=Enemy("bell", (random_x,random_y))
-	bells.append(extra)
-	camera_group.add(extra)
-	enemy_group.add(extra)
-	collision_group.add(extra)
-	all_sprite_group.add(extra)
+	bell=Enemy("bell", (random_x,random_y))
+
+	camera_group.add(bell)
+	enemy_group.add(bell)
+	collision_group.add(bell)
+	all_sprite_group.add(bell)
+	sax=Enemy("sax", (random_x,random_y))
+
+	camera_group.add(sax)
+	enemy_group.add(sax)
+	collision_group.add(sax)
+	all_sprite_group.add(sax)
 	
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
