@@ -28,7 +28,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.rect.center = position
 		
 		self.collisionrect = self.rect
-		self.collisionrect.width = int(0.8*self.collisionrect.width)
+		self.collisionrect.width = int(0.6*self.collisionrect.width)
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
