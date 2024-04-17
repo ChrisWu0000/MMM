@@ -6,7 +6,6 @@ pygame.init()
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
-		self.alive = True
 		self.position = pygame.math.Vector2(position) 
 		self.name = name
 
@@ -35,9 +34,8 @@ class Enemy(pygame.sprite.Sprite):
 
 	def check_alive(self): # checks if enemy dies
 		if self.hp <= 0:
-			self.alive = False
-		if self.alive == False:
 			self.kill()
+			
 		
 						
 	def check_collision(self,player_group):
@@ -94,13 +92,15 @@ class Player(pygame.sprite.Sprite):
 		self.hp = 100
 		self.shoot = False
 		self.shoot_cooldown = 0
+		self.alive = True
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
-		self.iframes = 100
+		self.iframes = 1000 #iframes are measured in miliseconds
 	def check_collision(self,enemy_group):
 		for enemy in enemy_group.sprites():
 			if pygame.time.get_ticks()-self.lastcollision >=self.iframes:
 				self.hp -= enemy.damage
+				self.hp = max(0, self.hp)
 				self.lastcollision = pygame.time.get_ticks()
 				print(self.hp)
 	
@@ -132,6 +132,7 @@ class Player(pygame.sprite.Sprite):
 			if pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = False
 	def is_shooting(self):
+		global meep
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.x_change_mouse_player = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
@@ -148,6 +149,7 @@ class Player(pygame.sprite.Sprite):
 			self.alive = False
 		if self.alive == False:
 			self.kill()
+			meep = False
 	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
