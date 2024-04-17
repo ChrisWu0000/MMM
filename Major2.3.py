@@ -14,12 +14,14 @@ class Enemy(pygame.sprite.Sprite):
 		self.hp = enemy_info["health"]
 		self.speed = enemy_info["speed"]
 		self.image_scale = enemy_info["image_scale"]
-		self.image = enemy_info["image"].convert_alpha()
+		self.image_default = enemy_info["image"].convert_alpha()
+		self.image_flipped = pygame.transform.flip(enemy_info["image"].convert_alpha(), True, False)
+		self.image = self.image_default
 		#self.import_graphics(name)
 
 		self.current_index = 0
 
-		self.image.set_colorkey((0,0,0))
+		#self.image.set_colorkey((0,0,0))
 		#self.base_zombie_image = self.image
 		
 		self.rect = self.image.get_rect()
@@ -30,6 +32,8 @@ class Enemy(pygame.sprite.Sprite):
 	def check_alive(self): # checks if enemy dies
 		if self.hp <= 0:
 			self.alive = False
+		if self.alive == False:
+			self.kill()
 		
 						
 	def check_collision(self,player_group):
@@ -53,6 +57,10 @@ class Enemy(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
 			self.direction = round((player.vector - self.vector).normalize())
+			if self.direction.x > 0:
+				self.image = self.image_flipped
+			if self.direction.x <0:
+				self.image = self.image_default
 			self.rect.center = self.rect.center + self.direction * self.speed
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
@@ -188,9 +196,7 @@ class Bullet(pygame.sprite.Sprite):
 			if self.rect.colliderect(x.collisionrect):
 				self.kill()
 				x.hp -=self.damage 
-				if x.hp <=0:
-					x.kill()
-					x.collisionrect = (0, 0, 0, 0)
+				x.check_alive()
 				 
 	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
