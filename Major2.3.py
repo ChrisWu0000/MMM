@@ -251,7 +251,7 @@ bells = []
 for i in range(50):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	extra=Enemy("bell", (random_x,random_y))
+	extra=Enemy("sax", (random_x,random_y))
 	bells.append(extra)
 	camera_group.add(extra)
 	enemy_group.add(extra)
