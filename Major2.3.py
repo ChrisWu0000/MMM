@@ -17,6 +17,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.image_default = enemy_info["image"].convert_alpha()
 		self.image_flipped = pygame.transform.flip(enemy_info["image"].convert_alpha(), True, False)
 		self.image = self.image_default
+		self.damage = enemy_info["attack_damage"]
 		#self.import_graphics(name)
 
 		self.current_index = 0
@@ -89,9 +90,13 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
+		self.hp = 1000000
 		self.shoot = False
 		self.shoot_cooldown = 0
+		self.alive = True
 		self.vector = pygame.Vector2(self.rect.center)
+		self.lastcollision = pygame.time.get_ticks()
+		self.iframes = 1000 #iframes are measured in miliseconds
 	def check_collision(self,enemy_group):
 		print("hi")
 
@@ -117,9 +122,7 @@ class Player(pygame.sprite.Sprite):
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = True
 			self.is_shooting()             
-		else:
-			self.shoot = False
-
+		
 		if event.type == pygame.KEYUP:
 			if pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = False
@@ -129,19 +132,24 @@ class Player(pygame.sprite.Sprite):
 		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.y_change_mouse_player, self.x_change_mouse_player)
 		if self.shoot_cooldown == 0 and self.shoot:
-			self.shoot_cooldown = 30
+			self.shoot_cooldown = 10
 			spawn_bullet_pos = self.rect.center
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
 			weapon_group.add(self.bullet)
 			camera_group.add(self.bullet)
 			all_sprite_group.add(self.bullet)
+	def check_alive(self): # checks if self is alive
+		if self.hp <= 0:
+			self.alive = False
+		if self.alive == False:
+			self.kill()
 	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot:
 			self.is_shooting()
 
-		
+		self.check_alive()
 		self.input()
 		self.rect.x += self.direction.x * self.speed
 		self.rect.y += self.direction.y * self.speed
