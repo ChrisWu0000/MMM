@@ -13,7 +13,7 @@ class Enemy(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.hp = enemy_info["health"]
 		self.speed = enemy_info["speed"]
-		self.image_scale = enemy_info["image_scale"]
+		self.push_power = enemy_info["push_power"]
 		self.image_default = enemy_info["image"].convert_alpha()
 		self.image_flipped = pygame.transform.flip(enemy_info["image"].convert_alpha(), True, False)
 		self.image = self.image_default
@@ -64,7 +64,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
 			if player.rect.colliderect(self.collisionrect):
-				player.rect.center += self.direction * self.speed
+				player.rect.center += self.direction * (self.push_power)
 				
 		
 
@@ -247,17 +247,22 @@ weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
-bells = []
-for i in range(50):
+for i in range(1):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("sax", (random_x,random_y))
-	bells.append(extra)
 	camera_group.add(extra)
 	enemy_group.add(extra)
 	collision_group.add(extra)
 	all_sprite_group.add(extra)
-	
+for i in range(1):
+	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+	extra=Enemy("bell", (random_x,random_y))
+	camera_group.add(extra)
+	enemy_group.add(extra)
+	collision_group.add(extra)
+	all_sprite_group.add(extra)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
