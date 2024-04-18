@@ -135,7 +135,7 @@ class Player(pygame.sprite.Sprite):
 		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.y_change_mouse_player, self.x_change_mouse_player)
 		if self.shoot_cooldown == 0 and self.shoot:
-			self.shoot_cooldown = 30
+			self.shoot_cooldown = 1
 			spawn_bullet_pos = self.rect.center
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
 			weapon_group.add(self.bullet)
