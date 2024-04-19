@@ -40,23 +40,12 @@ class Enemy(pygame.sprite.Sprite):
 		
 						
 	def check_collision(self,player):
-		
-		x_direction = self.direction.x
-		y_direction = self.direction.y
-		self.rect.y -= y_direction * self.speed
-		self.collisionrect.topleft = self.rect.topleft
-		self.collisionrect.move_ip(30,30)
-		if self.collisionrect.colliderect(player.rect):
-			self.rect.centerx = player.rect.centerx - x_direction * (player.rect.centerx - (player.rect.x - 1 - self.rect.width/2)+60)
-		self.rect.y += y_direction * self.speed
-		self.collisionrect.topleft = self.rect.topleft
-		self.collisionrect.move_ip(30,30)
-		if self.collisionrect.colliderect(player.rect):
-			self.rect.centery = player.rect.centery - y_direction * (player.rect.centery - (player.rect.y - 1 - self.rect.height/2)+60)
-			self.collisionrect.topleft = self.rect.topleft
-			self.collisionrect.move_ip(30,30)
+		self.rect.center = self.rect.center + self.direction * self.speed
+		while self.rect.colliderect(player.rect):
+				self.rect.center = self.rect.center - self.direction * self.speed
+				self.speed -= 0.1
 
-	"""def hunt_player(self,player):  
+	def hunt_player(self,player):  
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
 			self.direction = round((player.vector - self.vector).normalize())
@@ -66,15 +55,14 @@ class Enemy(pygame.sprite.Sprite):
 				self.image = self.image_default
 			self.rect.center = self.rect.center + self.direction * self.speed
 			self.collisionrect.midbottom = self.rect.midbottom
-			if player.rect.colliderect(self.collisionrect):
-				player.rect.center += self.direction * (self.push_power)"""
 				
 		
 
 	def update(self,enemy_group,player):
-		#self.hunt_player(player)
+		self.hunt_player(player)
 		self.check_collision(player)
 		self.check_alive()
+		self.speed = monster_data[self.name]["speed"]
 
 
 
@@ -97,7 +85,13 @@ class Player(pygame.sprite.Sprite):
 		self.lastcollision = pygame.time.get_ticks()
 		self.iframes = 1000 #iframes are measured in miliseconds
 	def check_collision(self,enemy_group):
-		print("hi")
+		self.rect.x += self.direction.x * self.speed
+		self.rect.y += self.direction.y * self.speed	
+		for enemy in enemy_group:
+			while self.rect.colliderect(enemy.rect):
+				self.rect.x -= self.direction.x * self.speed
+				self.rect.y -= self.direction.y * self.speed
+				self.speed -= 0.1
 
 	
 	def input(self):
@@ -152,9 +146,9 @@ class Player(pygame.sprite.Sprite):
 			self.is_shooting()
 		self.check_alive()
 		self.input()
-		self.rect.x += self.direction.x * self.speed
-		self.rect.y += self.direction.y * self.speed
+		self.check_collision(enemy_group)
 		self.vector = pygame.Vector2(self.rect.center)
+		self.speed = 5
 
 
 class Bullet(pygame.sprite.Sprite): 
