@@ -17,6 +17,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.image_flipped = pygame.transform.flip(enemy_info["image"].convert_alpha(), True, False)
 		self.image = self.image_default
 		self.damage = enemy_info["attack_damage"]
+		self.mass = enemy_info["mass"]
 		#self.import_graphics(name)
 
 		self.current_index = 0
@@ -39,6 +40,7 @@ class Enemy(pygame.sprite.Sprite):
 		
 						
 	def check_collision(self,player):
+		
 		x_direction = self.direction.x
 		y_direction = self.direction.y
 		self.rect.y -= y_direction * self.speed
@@ -54,7 +56,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.collisionrect.topleft = self.rect.topleft
 			self.collisionrect.move_ip(30,30)
 
-	def hunt_player(self,player):  
+	"""def hunt_player(self,player):  
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
 			self.direction = round((player.vector - self.vector).normalize())
@@ -65,25 +67,21 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.center = self.rect.center + self.direction * self.speed
 			self.collisionrect.midbottom = self.rect.midbottom
 			if player.rect.colliderect(self.collisionrect):
-				player.rect.center += self.direction * (self.push_power)
+				player.rect.center += self.direction * (self.push_power)"""
 				
 		
 
 	def update(self,enemy_group,player):
-		self.hunt_player(player)
+		#self.hunt_player(player)
 		self.check_collision(player)
 		self.check_alive()
 
 
-		
-
-		
-	
 
 
 class Player(pygame.sprite.Sprite):
-	def __init__(self,pos,group):
-		super().__init__(group)
+	def __init__(self,pos):
+		super().__init__()
 		self.image1 = pygame.image.load('Player/Trent.png').convert_alpha()
 		self.image2 = pygame.transform.flip(pygame.image.load('Player/Trent.png').convert_alpha(), True, False)
 		self.image = self.image1
@@ -91,6 +89,7 @@ class Player(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
 		self.hp = 1000000
+		self.mass = 10
 		self.shoot = False
 		self.shoot_cooldown = 0
 		self.alive = True
@@ -255,8 +254,14 @@ player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
 weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
+physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
-player = Player((640,360),camera_group)
+player = Player((640,360))
+collision_group.add(player)
+player_group.add(player)
+physics_group.add(player)
+camera_group.add(player)
+all_sprite_group.add(player)
 for i in range(10):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
@@ -265,7 +270,7 @@ for i in range(10):
 	enemy_group.add(extra)
 	collision_group.add(extra)
 	all_sprite_group.add(extra)
-for i in range(1):
+for i in range(10):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("bell", (random_x,random_y))
