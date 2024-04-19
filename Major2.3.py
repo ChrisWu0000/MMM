@@ -41,9 +41,10 @@ class Enemy(pygame.sprite.Sprite):
 						
 	def check_collision(self,player):
 		self.rect.center = self.rect.center + self.direction * self.speed
-		while self.rect.colliderect(player.rect):
+		if self.rect.colliderect(player.rect):
 				self.rect.center = self.rect.center - self.direction * self.speed
 				self.speed -= 0.1
+				self.check_collision(player)
 
 	def hunt_player(self,player):  
 		self.vector = pygame.Vector2(self.rect.center)
@@ -86,12 +87,17 @@ class Player(pygame.sprite.Sprite):
 		self.iframes = 1000 #iframes are measured in miliseconds
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
-		self.rect.y += self.direction.y * self.speed	
 		for enemy in enemy_group:
-			while self.rect.colliderect(enemy.rect):
+			if self.rect.colliderect(enemy.rect):
 				self.rect.x -= self.direction.x * self.speed
+				self.speed -= 0.1
+				#self.check_collision(enemy_group)
+		self.rect.y += self.direction.y * self.speed
+		for enemy in enemy_group:
+			if self.rect.colliderect(enemy.rect):
 				self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
+				#self.check_collision(enemy_group)
 
 	
 	def input(self):
