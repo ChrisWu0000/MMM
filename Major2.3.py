@@ -40,27 +40,25 @@ class Enemy(pygame.sprite.Sprite):
 		
 						
 	def check_collision(self,player):
-		self.rect.center = self.rect.center + self.direction * self.speed
-		if self.rect.colliderect(player.rect):
-				self.rect.center = self.rect.center - self.direction * self.speed
-				self.speed -= 0.1
-				self.check_collision(player)
-
-	def hunt_player(self,player):  
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
 			self.direction = round((player.vector - self.vector).normalize())
 			if self.direction.x > 0:
 				self.image = self.image_flipped
 			if self.direction.x <0:
-				self.image = self.image_default
-			self.rect.center = self.rect.center + self.direction * self.speed
-			self.collisionrect.midbottom = self.rect.midbottom
+				self.image = self.image_default	
+		self.rect.x = self.rect.x + self.direction.x * self.speed
+		self.rect.y = self.rect.y + self.direction.y * self.speed
+		if self.rect.colliderect(player.rect):
+				self.rect.x = self.rect.x - self.direction.x * self.speed
+				self.rect.y = self.rect.y - self.direction.y * self.speed
+				self.speed -= 0.1
+				self.check_collision(player)
+		self.collisionrect.center = self.rect.center
 				
 		
 
 	def update(self,enemy_group,player):
-		self.hunt_player(player)
 		self.check_collision(player)
 		self.check_alive()
 		self.speed = monster_data[self.name]["speed"]
