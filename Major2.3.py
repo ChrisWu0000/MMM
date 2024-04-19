@@ -12,11 +12,11 @@ class Enemy(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.hp = enemy_info["health"]
 		self.speed = enemy_info["speed"]
-		self.image_scale = enemy_info["image_scale"]
+		self.push_power = enemy_info["push_power"]
 		self.image_default = enemy_info["image"].convert_alpha()
 		self.image_flipped = pygame.transform.flip(enemy_info["image"].convert_alpha(), True, False)
 		self.image = self.image_default
-		self.damage = enemy_info["damage"]
+		self.damage = enemy_info["attack_damage"]
 		#self.import_graphics(name)
 
 		self.current_index = 0
@@ -65,7 +65,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.center = self.rect.center + self.direction * self.speed
 			self.collisionrect.midbottom = self.rect.midbottom
 			if player.rect.colliderect(self.collisionrect):
-				player.rect.center -= player.direction * player.speed
+				player.rect.center += self.direction * (self.push_power)
 				
 		
 
@@ -90,7 +90,7 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
 		self.speed = 5
-		self.hp = 100
+		self.hp = 1000000
 		self.shoot = False
 		self.shoot_cooldown = 0
 		self.alive = True
@@ -122,9 +122,7 @@ class Player(pygame.sprite.Sprite):
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = True
 			self.is_shooting()             
-		else:
-			self.shoot = False
-
+		
 		if event.type == pygame.KEYUP:
 			if pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = False
@@ -135,7 +133,7 @@ class Player(pygame.sprite.Sprite):
 		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.y_change_mouse_player, self.x_change_mouse_player)
 		if self.shoot_cooldown == 0 and self.shoot:
-			self.shoot_cooldown = 1
+			self.shoot_cooldown = 10
 			spawn_bullet_pos = self.rect.center
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
 			weapon_group.add(self.bullet)
@@ -146,13 +144,11 @@ class Player(pygame.sprite.Sprite):
 			self.alive = False
 		if self.alive == False:
 			self.kill()
-			meep = False
 	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot:
 			self.is_shooting()
-	
 		self.check_alive()
 		self.input()
 		self.rect.x += self.direction.x * self.speed
@@ -259,22 +255,22 @@ weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
-for i in range(5):
+for i in range(1):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	bell=Enemy("bell", (random_x,random_y))
-
-	camera_group.add(bell)
-	enemy_group.add(bell)
-	collision_group.add(bell)
-	all_sprite_group.add(bell)
-	sax=Enemy("sax", (random_x,random_y))
-
-	camera_group.add(sax)
-	enemy_group.add(sax)
-	collision_group.add(sax)
-	all_sprite_group.add(sax)
-	
+	extra=Enemy("sax", (random_x,random_y))
+	camera_group.add(extra)
+	enemy_group.add(extra)
+	collision_group.add(extra)
+	all_sprite_group.add(extra)
+for i in range(1):
+	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+	extra=Enemy("bell", (random_x,random_y))
+	camera_group.add(extra)
+	enemy_group.add(extra)
+	collision_group.add(extra)
+	all_sprite_group.add(extra)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
