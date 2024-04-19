@@ -120,19 +120,16 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.image1
 		
 		if pygame.mouse.get_pressed() == (1, 0, 0):
-			self.shoot = True
 			self.is_shooting()             
 		
-		if event.type == pygame.KEYUP:
-			if pygame.mouse.get_pressed() == (1, 0, 0):
-				self.shoot = False
 	def is_shooting(self):
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.x_change_mouse_player = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.y_change_mouse_player, self.x_change_mouse_player)
-		if self.shoot_cooldown == 0 and self.shoot:
-			self.shoot_cooldown = 10
+		if self.shoot_cooldown == 0:
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,100,loops=1)
 			spawn_bullet_pos = self.rect.center
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
 			weapon_group.add(self.bullet)
@@ -144,10 +141,6 @@ class Player(pygame.sprite.Sprite):
 		if self.alive == False:
 			self.kill()
 	def update(self,enemy_group,player):
-		if self.shoot_cooldown > 0: # Just shot a bullet
-			self.shoot_cooldown -= 1
-		if self.shoot:
-			self.is_shooting()
 
 		self.check_alive()
 		self.input()
@@ -274,12 +267,15 @@ for i in range(1):
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
+shoot_cooldown = pygame.USEREVENT + 2
 while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
 			print("e")
+		if event.type == shoot_cooldown:
+			player.shoot_cooldown = 0
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
