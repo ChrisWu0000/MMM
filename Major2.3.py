@@ -18,7 +18,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.image = self.image_default
 		self.damage = enemy_info["attack_damage"]
 		self.mass = enemy_info["mass"]
-
+		self.collision_check = False
 		self.current_index = 0
 
 		
@@ -32,19 +32,22 @@ class Enemy(pygame.sprite.Sprite):
 
 	def check_alive(self): # checks if enemy dies
 		if self.hp <= 0:
-			self.kill()
-			
-		
+			self.kill()		
 						
-	def check_collision(self,player):
+	def check_collision(self,player): #Chris version of collision
 		self.rect.x = self.rect.x + self.direction.x * self.speed
 		self.rect.y = self.rect.y + self.direction.y * self.speed
 		if self.rect.colliderect(player.rect):
 				self.rect.x = self.rect.x - self.direction.x * self.speed
 				self.rect.y = self.rect.y - self.direction.y * self.speed
 				self.speed -= 0.1
+				self.collision_check = True
 				self.check_collision(player)
+		if self.collision_check == True and pygame.time.get_ticks()-player.lastcollision >= player.iframes:
+			player.hp -= self.damage
+			player.lastcollision = pygame.time.get_ticks()
 		self.collisionrect.center = self.rect.center
+		self.collision_check = False
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
@@ -61,9 +64,6 @@ class Enemy(pygame.sprite.Sprite):
 		self.check_alive()
 		self.speed = monster_data[self.name]["speed"]
 
-
-
-
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos):
 		super().__init__()
@@ -72,8 +72,10 @@ class Player(pygame.sprite.Sprite):
 		self.image = self.image1
 		self.rect = self.image.get_rect(center = pos)
 		self.direction = pygame.math.Vector2()
+		self.lastx = 0
+		self.lasty = 0
 		self.speed = 5
-		self.hp = 1000000
+		self.hp = 100
 		self.mass = 10
 		self.shoot = 0
 		self.shoot_cooldown = 0
@@ -112,6 +114,9 @@ class Player(pygame.sprite.Sprite):
 		elif keys[pygame.K_a]:
 			self.direction.x = -1
 			self.image=self.image1
+		if self.direction.x !=0 or self.direction.y !=0:
+			self.lastx = self.direction.x
+			self.lasty = self.direction.y
 		
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
@@ -124,11 +129,11 @@ class Player(pygame.sprite.Sprite):
 		
 	def is_shooting(self):
 		self.mouse_coords = pygame.mouse.get_pos() 
-		self.x_change_mouse_player = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
-		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
-		self.angle = atan2(self.y_change_mouse_player, self.x_change_mouse_player)
+		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 1
+			self.shoot_cooldown = 30
 			pygame.time.set_timer(shoot_cooldown,100,loops=1)
 			spawn_bullet_pos = self.rect.center
 			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
@@ -136,8 +141,7 @@ class Player(pygame.sprite.Sprite):
 			camera_group.add(self.bullet)
 			all_sprite_group.add(self.bullet)
 	def space_shooting(self):
-		global meep
-		self.angle = atan2(self.direction.y, self.direction.x)
+		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
 			self.shoot_cooldown = 30
 			pygame.time.set_timer(shoot_cooldown,100,loops=1)
@@ -150,18 +154,17 @@ class Player(pygame.sprite.Sprite):
 		if self.hp <= 0:
 			self.kill()
 	def update(self,enemy_group,player):
+		self.check_alive()
+		self.input()
+		self.check_collision(enemy_group)
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
 			self.space_shooting()
-		self.check_alive()
-		self.input()
-		self.check_collision(enemy_group)
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 5
-
 
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle): 
@@ -172,7 +175,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
-		self.speed = 20
+		self.speed = 10
 		self.angle = angle
 		self.damage = 5
 		self.velx = cos(self.angle)*self.speed
@@ -264,7 +267,7 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-for i in range(10):
+for i in range(10): #Spawns enemies
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("sax", (random_x,random_y))
@@ -272,7 +275,6 @@ for i in range(10):
 	enemy_group.add(extra)
 	collision_group.add(extra)
 	all_sprite_group.add(extra)
-for i in range(10):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("bell", (random_x,random_y))
@@ -285,6 +287,10 @@ sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
 shoot_cooldown = pygame.USEREVENT + 2
 while meep:
+	if player_group.has(player) == False: #If player dies, game ends
+			meep = False
+	if len(enemy_group) == 0: #No enemies left, game ends
+		meep = False
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
