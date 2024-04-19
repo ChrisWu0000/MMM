@@ -161,7 +161,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.y = y
 		self.speed = 10
 		self.angle = angle
-		self.damage = 5
+		self.damage = 15
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
 		self.bullet_lifetime = 750
@@ -170,10 +170,9 @@ class Bullet(pygame.sprite.Sprite):
 	def check_collision(self):
 		for x in enemy_group.sprites():
 			if self.rect.colliderect(x.collisionrect):
-				self.kill()
 				x.hp -= self.damage
 				x.check_alive()
-				 
+				self.kill() 
 	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
 		self.rect.y +=self.vely
@@ -248,7 +247,7 @@ weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
-for i in range(1):
+for i in range(0):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("sax", (random_x,random_y))
@@ -256,7 +255,7 @@ for i in range(1):
 	enemy_group.add(extra)
 	collision_group.add(extra)
 	all_sprite_group.add(extra)
-for i in range(1):
+for i in range(2):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("bell", (random_x,random_y))
