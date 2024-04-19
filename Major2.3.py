@@ -78,7 +78,7 @@ class Player(pygame.sprite.Sprite):
 		self.speed = 5
 		self.hp = 1000000
 		self.mass = 10
-		self.shoot = False
+		self.shoot = 0
 		self.shoot_cooldown = 0
 		self.alive = True
 		self.vector = pygame.Vector2(self.rect.center)
@@ -118,8 +118,11 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.image1
 		
 		if pygame.mouse.get_pressed() == (1, 0, 0):
-			self.shoot = True
-			self.is_shooting()
+			self.shoot = 1
+			#self.is_shooting()
+		elif keys[pygame.K_SPACE]:
+			self.shoot = 2
+			#self.space_shooting()
 		else:
 			self.shoot=False             
 		
@@ -137,6 +140,17 @@ class Player(pygame.sprite.Sprite):
 			weapon_group.add(self.bullet)
 			camera_group.add(self.bullet)
 			all_sprite_group.add(self.bullet)
+	def space_shooting(self):
+		global meep
+		self.angle = atan2(self.direction.y, self.direction.x)
+		if self.shoot_cooldown == 0:
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,100,loops=1)
+			spawn_bullet_pos = self.rect.center
+			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
+			weapon_group.add(self.bullet)
+			camera_group.add(self.bullet)
+			all_sprite_group.add(self.bullet)
 	def check_alive(self): # checks if self is alive
 		if self.hp <= 0:
 			self.alive = False
@@ -145,8 +159,10 @@ class Player(pygame.sprite.Sprite):
 	def update(self,enemy_group,player):
 		if self.shoot_cooldown > 0: # Just shot a bullet
 			self.shoot_cooldown -= 1
-		if self.shoot:
+		if self.shoot == 1:
 			self.is_shooting()
+		elif self.shoot == 2:
+			self.space_shooting()
 		self.check_alive()
 		self.input()
 		self.check_collision(enemy_group)
@@ -164,7 +180,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
-		self.speed = 10
+		self.speed = 20
 		self.angle = angle
 		self.damage = 5
 		self.velx = cos(self.angle)*self.speed
@@ -294,7 +310,7 @@ while meep:
 				
 				
 
-	#screen.fill('#6b6b6b')
+	screen.fill('#6b6b6b')
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
  
