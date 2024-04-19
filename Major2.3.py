@@ -18,12 +18,9 @@ class Enemy(pygame.sprite.Sprite):
 		self.image = self.image_default
 		self.damage = enemy_info["attack_damage"]
 		self.mass = enemy_info["mass"]
-		#self.import_graphics(name)
 
 		self.current_index = 0
 
-		#self.image.set_colorkey((0,0,0))
-		#self.base_zombie_image = self.image
 		
 		self.rect = self.image.get_rect()
 		self.rect.center = position
@@ -80,7 +77,6 @@ class Player(pygame.sprite.Sprite):
 		self.mass = 10
 		self.shoot = False
 		self.shoot_cooldown = 0
-		self.alive = True
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
 		self.iframes = 1000 #iframes are measured in miliseconds
@@ -118,13 +114,9 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.image1
 		
 		if pygame.mouse.get_pressed() == (1, 0, 0):
-			self.shoot = True
-			self.is_shooting()
-		else:
-			self.shoot=False             
+			self.is_shooting()           
 		
 	def is_shooting(self):
-		global meep
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.x_change_mouse_player = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.y_change_mouse_player = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
@@ -139,14 +131,8 @@ class Player(pygame.sprite.Sprite):
 			all_sprite_group.add(self.bullet)
 	def check_alive(self): # checks if self is alive
 		if self.hp <= 0:
-			self.alive = False
-		if self.alive == False:
 			self.kill()
 	def update(self,enemy_group,player):
-		if self.shoot_cooldown > 0: # Just shot a bullet
-			self.shoot_cooldown -= 1
-		if self.shoot:
-			self.is_shooting()
 		self.check_alive()
 		self.input()
 		self.check_collision(enemy_group)
@@ -159,7 +145,6 @@ class Bullet(pygame.sprite.Sprite):
 		super().__init__()
 		self.image = pygame.image.load("Weapons/Bullet.png")
 		self.image = pygame.transform.rotozoom(self.image, 0, 5)
-		#self.image.set_colorkey((0,0,0))
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
 		self.x = x
@@ -240,8 +225,6 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
-		#pygame.draw.rect(self.surface, "red", self.surface_rect, 10)
-		#pygame.draw.rect(self.surface, "red", self.bg_rect, 5)
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
@@ -289,12 +272,8 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
-			if event.key == pygame.K_9:
-				camera_group.remove(enemy_group)
 				
 				
-
-	#screen.fill('#6b6b6b')
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
  
