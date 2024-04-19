@@ -121,7 +121,9 @@ class Player(pygame.sprite.Sprite):
 		
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = True
-			self.is_shooting()             
+			self.is_shooting()
+		else:
+			self.shoot=False             
 		
 		if event.type == pygame.KEYUP:
 			if pygame.mouse.get_pressed() == (1, 0, 0):
@@ -255,7 +257,7 @@ weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 player = Player((640,360),camera_group)
-for i in range(1):
+for i in range(10):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("sax", (random_x,random_y))
