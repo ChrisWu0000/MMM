@@ -35,6 +35,10 @@ class Enemy(pygame.sprite.Sprite):
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
+		self.speed_buildupy=0
+		self.speed_buildupx=0
+		self.frogx =0
+		self.frogy =0
 
 		self.i=0
 		self.k = 0.2 # 4/self.k = #ticks for animation to loop
@@ -109,15 +113,22 @@ class Enemy(pygame.sprite.Sprite):
 				self.collision_check = False	
 
 	def check_collision(self,player): #Chris version of collision
-		self.rect.x = self.rect.x + self.direction.x * self.speed
-		self.rect.y = self.rect.y + self.direction.y * self.speed
+		self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
+		self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
+		self.frogx = int(self.speed_buildupx)
+		self.speed_buildupx = float(self.speed_buildupx)-int(self.speed_buildupx)
+		self.frogy = int(self.speed_buildupy)
+		self.speed_buildupy =  float(self.speed_buildupy)-int(self.speed_buildupy)
+		self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
+		self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
 		if self.rect.colliderect(player.rect):
-				self.rect.x = self.rect.x - self.direction.x * self.speed
-				self.rect.y = self.rect.y - self.direction.y * self.speed
+				self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
+				self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
 				self.speed -= 0.1
 				self.collision_check = True
 				self.check_collision(player)
-		
+
+
 		if self.collision_check == True and pygame.time.get_ticks()-player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
 			player.lastcollision = pygame.time.get_ticks()
@@ -158,7 +169,7 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = 0
 		self.lasty = 0
 		self.speed = 5
-		self.hp = 100
+		self.hp = 10000
 		self.mass = 10
 		self.shoot = 0
 		self.shoot_cooldown = 0
@@ -351,10 +362,18 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-for i in range(30):
+for i in range(25):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("bell", (random_x,random_y))
+	camera_group.add(extra)
+	enemy_group.add(extra)
+	collision_group.add(extra)
+	all_sprite_group.add(extra)
+for i in range(25): #Spawns enemies
+	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+	extra=Enemy("sax", (random_x,random_y))
 	camera_group.add(extra)
 	enemy_group.add(extra)
 	collision_group.add(extra)
@@ -373,7 +392,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(player.rect.center)
+			print(int(7.5))
 		if event.type == shoot_cooldown:
 			player.shoot_cooldown = 0
 		#if event.type == next_level:
@@ -391,7 +410,7 @@ while meep:
 				h = camera_group.surface.get_size()[1]  - (camera_group.camera_borders['top'] + camera_group.camera_borders['bottom'])
 				camera_group.camera_rect = pygame.Rect(l,t,w,h)
 				player.rect.center = (630, 2790)
-				for i in range(30): #Spawns enemies
+				for i in range(5): #Spawns enemies
 					random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 					random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 					extra=Enemy("sax", (random_x,random_y))
