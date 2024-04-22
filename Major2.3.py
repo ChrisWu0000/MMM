@@ -26,7 +26,6 @@ class Enemy(pygame.sprite.Sprite):
 		self.isdead = False
 		self.isattacking = False
 		self.current_index = 0
-
 		
 		self.rect = self.image.get_rect()
 		self.rect.center = position
@@ -267,7 +266,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.y = y
 		self.speed = 10
 		self.angle = angle
-		self.damage = 5
+		self.damage = 50
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
 		self.bullet_lifetime = 750
@@ -359,14 +358,7 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-for i in range(1): #Spawns enemies
-	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	extra=Enemy("sax", (random_x,random_y))
-	camera_group.add(extra)
-	enemy_group.add(extra)
-	collision_group.add(extra)
-	all_sprite_group.add(extra)
+for i in range(30):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("bell", (random_x,random_y))
@@ -378,6 +370,7 @@ meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
 shoot_cooldown = pygame.USEREVENT + 2
+#next_level = pygame.USEREVENT + 3
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -387,13 +380,32 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print("e")
+			print(player.rect.center)
 		if event.type == shoot_cooldown:
 			player.shoot_cooldown = 0
+		#if event.type == next_level:
+			#print("yay")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
-				
+			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
+				camera_group.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
+				camera_group.bg_rect = camera_group.background_image.get_rect(midtop = (camera_group.half_w,0))
+				camera_group.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
+				l = camera_group.camera_borders['left']
+				t = camera_group.camera_borders['top']
+				w = camera_group.surface.get_size()[0]  - (camera_group.camera_borders['left'] + camera_group.camera_borders['right'])
+				h = camera_group.surface.get_size()[1]  - (camera_group.camera_borders['top'] + camera_group.camera_borders['bottom'])
+				camera_group.camera_rect = pygame.Rect(l,t,w,h)
+				player.rect.center = (630, 2790)
+				for i in range(30): #Spawns enemies
+					random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+					random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+					extra=Enemy("sax", (random_x,random_y))
+					camera_group.add(extra)
+					enemy_group.add(extra)
+					collision_group.add(extra)
+					all_sprite_group.add(extra)
 				
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
