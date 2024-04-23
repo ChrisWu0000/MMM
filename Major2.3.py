@@ -114,6 +114,7 @@ class Enemy(pygame.sprite.Sprite):
 				self.collision_check = False	
 
 	def check_collision(self,player): #Chris version of collision
+		if self.hp >0:
 		self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
 		self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
 		self.frogx = int(self.speed_buildupx)
