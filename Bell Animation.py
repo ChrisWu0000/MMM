@@ -11,7 +11,7 @@ BG = (50, 50, 50)
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Spritesheets')
 
-sprite_sheet_image = pygame.image.load('Enemies/Bell Sprite Sheet 3.png').convert_alpha()
+sprite_sheet_image = pygame.image.load('Enemies/Bell Sprite Sheet.png').convert_alpha()
 sprite_sheet = Spritesheet.SpriteSheet(sprite_sheet_image)
 
 i=0
