@@ -51,12 +51,13 @@ while run:
     #screen.fill(BG)
     screen.blit(pygame.image.load("Rooms/Level1.png").convert_alpha(), (0, 0))
     screen.blit(walking[floor(i)], (80,80))
-    screen.blit(attacking[floor(i)], (160,80))
-    screen.blit(damage[floor(i)], (240,80))
-    screen.blit(death[floor(i)], (320,80))
-    i+=.1
-    if(i>=4):
-        i=0
+   # screen.blit(attacking[floor(i)], (160,80))
+    #screen.blit(damage[floor(i)], (240,80))
+   # screen.blit(death[floor(i)], (320,80))
+    #screen.blit(sprite_sheet_image, (0,0))
+    #i+=.1
+    #if(i>=4):
+        #i=0
 
 	#event handler
     for event in pygame.event.get():

@@ -127,8 +127,8 @@ class Enemy(pygame.sprite.Sprite):
 		
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
-		if 0 != pygame.Vector2.length(player.vector - self.vector) and "self.collision_check == False":
-			self.direction = round((player.vector - self.vector).normalize())
+		if 0 != pygame.Vector2.length(player.vector - self.vector):
+			self.direction = (player.vector - self.vector).normalize()
 			if self.direction.x > 0 and self.hp >=0:
 				self.flipped = True
 				self.image = self.flippedwalking[floor(self.i)]
@@ -397,7 +397,7 @@ while meep:
 				w = camera_group.surface.get_size()[0]  - (camera_group.camera_borders['left'] + camera_group.camera_borders['right'])
 				h = camera_group.surface.get_size()[1]  - (camera_group.camera_borders['top'] + camera_group.camera_borders['bottom'])
 				camera_group.camera_rect = pygame.Rect(l,t,w,h)
-				player.rect.center = (630, 2790)
+				player.rect.center = (camera_group.bg_rect[2]/2, camera_group.bg_rect[3])
 				for i in range(30): #Spawns enemies
 					random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 					random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
