@@ -267,7 +267,6 @@ class Prop(pygame.sprite.Sprite):
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
-		#self.collisionrect = pygame.Rect(self.position.x, self.position.y, self.prop["width"], self.prop["height"])
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle): 
 		super().__init__()
@@ -372,7 +371,9 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-def new_level_enemies(num):
+def new_level(num):
+	camera_group.empty()
+	camera_group.add(player)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
 	camera_group.bg_rect = camera_group.background_image.get_rect(midtop = (camera_group.half_w,0))
@@ -381,7 +382,7 @@ def new_level_enemies(num):
 	l = camera_group.camera_borders['left']
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
-	player.rect.center = (camera_group.bg_rect[2]/2, camera_group.bg_rect[3])
+	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	for i in range(level_data[num]["num_bell"]):
 		random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 		random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
@@ -402,7 +403,7 @@ def new_level_enemies(num):
 		pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
-new_level_enemies(1)
+new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
@@ -426,7 +427,7 @@ while meep:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				new_level_enemies(2)
+				new_level(2)
 			
 				
 	camera_group.update(enemy_group,player)
