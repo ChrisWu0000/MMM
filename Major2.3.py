@@ -2,6 +2,7 @@ import pygame
 from random import *
 from math import *
 from monster_data import *
+from level_data import *
 from math import floor
 import Spritesheet
 pygame.init()
@@ -297,7 +298,8 @@ class CameraGroup(pygame.sprite.Group):
 		self.half_w = self.surface.get_size()[0] // 2
 		self.half_h = self.surface.get_size()[1] // 2
 		self.surface_rect = self.surface.get_rect(midtop = (self.half_w,0))
-		self.background_image = pygame.image.load("Rooms/Level1.png").convert_alpha()
+		self.level = level_data[1]
+		self.background_image = self.level["room"].convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
 		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
 		l = self.camera_borders['left']
@@ -358,10 +360,18 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-for i in range(30):
+for i in range(camera_group.level["num_bell"]):
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 	extra=Enemy("bell", (random_x,random_y))
+	camera_group.add(extra)
+	enemy_group.add(extra)
+	collision_group.add(extra)
+	all_sprite_group.add(extra)
+for i in range(camera_group.level["num_sax"]):
+	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+	extra=Enemy("sax", (random_x,random_y))
 	camera_group.add(extra)
 	enemy_group.add(extra)
 	collision_group.add(extra)
@@ -389,7 +399,8 @@ while meep:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				camera_group.background_image = pygame.image.load("Rooms/BossRoom.png").convert_alpha()
+				camera_group.level = level_data[2]
+				camera_group.background_image = camera_group.level["room"].convert_alpha()
 				camera_group.bg_rect = camera_group.background_image.get_rect(midtop = (camera_group.half_w,0))
 				camera_group.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
 				l = camera_group.camera_borders['left']
@@ -398,7 +409,15 @@ while meep:
 				h = camera_group.surface.get_size()[1]  - (camera_group.camera_borders['top'] + camera_group.camera_borders['bottom'])
 				camera_group.camera_rect = pygame.Rect(l,t,w,h)
 				player.rect.center = (camera_group.bg_rect[2]/2, camera_group.bg_rect[3])
-				for i in range(30): #Spawns enemies
+				for i in range(camera_group.level["num_bell"]): #Spawns enemies
+					random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+					random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+					extra=Enemy("bell", (random_x,random_y))
+					camera_group.add(extra)
+					enemy_group.add(extra)
+					collision_group.add(extra)
+					all_sprite_group.add(extra)
+				for i in range(camera_group.level["num_sax"]): #Spawns enemies
 					random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 					random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
 					extra=Enemy("sax", (random_x,random_y))
@@ -406,6 +425,7 @@ while meep:
 					enemy_group.add(extra)
 					collision_group.add(extra)
 					all_sprite_group.add(extra)
+			
 				
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
