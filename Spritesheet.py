@@ -6,6 +6,8 @@ class SpriteSheet():
 
 	def get_image(self, frame, width, height):
 		image = pygame.Surface((width, height)).convert_alpha()
-		image.blit(self.sheet, (0, 0), ((frame * width), 0, width, height))
-
+		image.fill((0,0,1))
+		image.blit(self.sheet, (0, 0), ((frame * width),0, width, height))
+		
+		image.set_colorkey((0,0,1))
 		return image
