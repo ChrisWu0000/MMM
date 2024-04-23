@@ -115,20 +115,20 @@ class Enemy(pygame.sprite.Sprite):
 
 	def check_collision(self,player): #Chris version of collision
 		if self.hp >0:
-		self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
-		self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
-		self.frogx = int(self.speed_buildupx)
-		self.speed_buildupx = float(self.speed_buildupx)-int(self.speed_buildupx)
-		self.frogy = int(self.speed_buildupy)
-		self.speed_buildupy =  float(self.speed_buildupy)-int(self.speed_buildupy)
-		self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
-		self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
-		if self.rect.colliderect(player.rect):
-				self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
-				self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
-				self.speed -= 0.1
-				self.collision_check = True
-				self.check_collision(player)
+			self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
+			self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
+			self.frogx = int(self.speed_buildupx)
+			self.speed_buildupx = float(self.speed_buildupx)-int(self.speed_buildupx)
+			self.frogy = int(self.speed_buildupy)
+			self.speed_buildupy =  float(self.speed_buildupy)-int(self.speed_buildupy)
+			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
+			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
+			if self.rect.colliderect(player.rect):
+					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
+					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
+					self.speed -= 0.1
+					self.collision_check = True
+					self.check_collision(player)
 
 
 		if self.collision_check == True and pygame.time.get_ticks()-player.lastcollision >= player.iframes and self.i >=4-self.k:
