@@ -175,28 +175,28 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = 0
 		self.lasty = 0
 		self.speed = 5
-		self.hp = 10000
+		self.hp = 50
 		self.mass = 10
 		self.shoot = 0
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
-		self.iframes = 1000 #iframes are measured in miliseconds
-		self.weapon = weapon_data["basic"]
+		self.iframes = 500 #iframes are measured in miliseconds
+		self.weapon = weapon_data["Basic"]
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in enemy_group:
 			if self.rect.colliderect(enemy.rect):
 				self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
-				#enemy.collision_check = True
+				enemy.collision_check = True
 				#self.check_collision(enemy_group)
 		self.rect.y += self.direction.y * self.speed
 		for enemy in enemy_group:
 			if self.rect.colliderect(enemy.rect):
 				self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
-				#enemy.collision_check = True
+				enemy.collision_check = True
 				#self.check_collision(enemy_group)
 
 	
@@ -221,17 +221,17 @@ class Player(pygame.sprite.Sprite):
 			self.lastx = self.direction.x
 			self.lasty = self.direction.y
 		if keys[pygame.K_1]:
-			self.weapon = weapon_data["basic"]
+			self.weapon = weapon_data["Basic"]
 		elif keys[pygame.K_2]:
-			self.weapon = weapon_data["shotgun"]
+			self.weapon = weapon_data["Shotgun"]
 		elif keys[pygame.K_3]:
-			self.weapon = weapon_data["basic"]
+			self.weapon = weapon_data["Minigun"]
 		elif keys[pygame.K_4]:
-			self.weapon = weapon_data["basic"]
+			self.weapon = weapon_data["Lag_Maker"]
 		elif keys[pygame.K_5]:
-			self.weapon = weapon_data["basic"]
+			self.weapon = weapon_data["Basic"]
 		elif keys[pygame.K_6]:
-			self.weapon = weapon_data["basic"]
+			self.weapon = weapon_data["Basic"]
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
 			#self.is_shooting()
@@ -404,7 +404,7 @@ for i in range(camera_group.level["num_sax"]):
 	all_sprite_group.add(extra)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,1000)
+pygame.time.set_timer(sparetimer1,1000)
 shoot_cooldown = pygame.USEREVENT + 2
 #next_level = pygame.USEREVENT + 3
 while meep:
@@ -416,7 +416,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(int(7.5))
+			print(player.hp)
 		if event.type == shoot_cooldown:
 			player.shoot_cooldown = 0
 		#if event.type == next_level:
