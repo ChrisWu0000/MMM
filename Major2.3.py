@@ -246,25 +246,25 @@ class Player(pygame.sprite.Sprite):
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
-		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
+		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
 			self.shoot_cooldown = 1
 			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def space_shooting(self):
 		projectiles = self.weapon["projectiles"]
-		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
+		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
 			self.shoot_cooldown = 1
 			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
