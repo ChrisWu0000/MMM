@@ -181,6 +181,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
 		self.iframes = 1000 #iframes are measured in miliseconds
+		self.weapon_type = 0
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in enemy_group:
@@ -218,7 +219,18 @@ class Player(pygame.sprite.Sprite):
 		if self.direction.x !=0 or self.direction.y !=0:
 			self.lastx = self.direction.x
 			self.lasty = self.direction.y
-		
+		if keys[pygame.K_1]:
+			self.weapon_type = 1
+		elif keys[pygame.K_2]:
+			self.weapon_type = 2
+		elif keys[pygame.K_3]:
+			self.weapon_type = 3
+		elif keys[pygame.K_4]:
+			self.weapon_type = 4
+		elif keys[pygame.K_5]:
+			self.weapon_type = 5
+		elif keys[pygame.K_6]:
+			self.weapon_type = 6
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
 			#self.is_shooting()
