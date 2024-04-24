@@ -39,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 
 
 		self.i=0
-		self.k = 0.1 # 4/self.k = #ticks for animation to loop
+		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
 		self.flippedwalking=[]
 		for x in range(4):
@@ -166,7 +166,9 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = 0
 		self.lasty = 0
 		self.speed = 5
+		self.maxhp = 100
 		self.hp = 100
+		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
 		self.shoot_cooldown = 0
@@ -218,8 +220,7 @@ class Player(pygame.sprite.Sprite):
 			self.shoot = 2
 			#self.space_shooting()
 		else:
-			self.shoot=False             
-		
+			self.shoot=False             		
 	def is_shooting(self):
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
@@ -260,6 +261,9 @@ class Player(pygame.sprite.Sprite):
 			self.space_shooting()
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 5
+		pygame.draw.rect(camera_group.surface, "red", (player.rect.x, player.rect.y+20, 150, 20))
+		pygame.draw.rect(camera_group.surface, "green", (player.rect.x, player.rect.y+20, 150*self.ratio, 20))
+
 class Prop(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -273,7 +277,7 @@ class Bullet(pygame.sprite.Sprite):
 	def __init__(self, x, y, angle): 
 		super().__init__()
 		self.image = pygame.image.load("Weapons/Bullet.png")
-		self.image = pygame.transform.rotozoom(self.image, 0, 5)
+		self.image = pygame.transform.rotozoom(self.image, 0, 4)
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
 		self.x = x
@@ -313,7 +317,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.surface_rect = self.surface.get_rect(midtop = (self.half_w,0))
 		self.level = level_data[1]
 		self.background_image = self.level["room"].convert_alpha()
-		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
+		self.bg_rect = self.background_image.get_rect(topleft = (0,0))
 		self.camera_borders = {'left': 300, 'right': 300, 'top': 200, 'bottom': 200}
 		l = self.camera_borders['left']
 		t = self.camera_borders['top']
@@ -350,8 +354,8 @@ class CameraGroup(pygame.sprite.Group):
 				
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
-	def custom_draw(self, player):
-		self.center_target_camera(player)
+	def custom_draw(self, player_group):
+		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
@@ -401,7 +405,7 @@ def new_level(num):
 		enemy_group.add(extra)
 		collision_group.add(extra)
 		all_sprite_group.add(extra)
-	for i in range(level_data[num]["num_pillar"]):
+	for i in range(-1, level_data[num]["num_pillar"]-1):
 		pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
