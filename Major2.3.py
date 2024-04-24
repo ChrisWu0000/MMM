@@ -234,15 +234,17 @@ class Player(pygame.sprite.Sprite):
 			camera_group.add(self.bullet)
 			all_sprite_group.add(self.bullet)
 	def space_shooting(self):
-		self.angle = atan2(self.lasty, self.lastx)
+		projectiles = 10
+		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 30
-			pygame.time.set_timer(shoot_cooldown,100,loops=1)
+			self.shoot_cooldown = 50*projectiles
+			pygame.time.set_timer(shoot_cooldown,500,loops=1)
 			spawn_bullet_pos = self.rect.center
-			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
-			weapon_group.add(self.bullet)
-			camera_group.add(self.bullet)
-			all_sprite_group.add(self.bullet)
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x)
+				weapon_group.add(self.bullet)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
 	def check_alive(self): # checks if self is alive
 		if self.hp <= 0:
 			self.kill()
@@ -312,7 +314,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.level = level_data[1]
 		self.background_image = self.level["room"].convert_alpha()
 		self.bg_rect = self.background_image.get_rect(midtop = (self.half_w,0))
-		self.camera_borders = {'left': 200, 'right': 200, 'top': 100, 'bottom': 100}
+		self.camera_borders = {'left': 300, 'right': 300, 'top': 200, 'bottom': 200}
 		l = self.camera_borders['left']
 		t = self.camera_borders['top']
 		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
