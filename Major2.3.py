@@ -3,6 +3,7 @@ from random import *
 from math import *
 from monster_data import *
 from level_data import *
+from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
@@ -181,7 +182,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
 		self.iframes = 1000 #iframes are measured in miliseconds
-		self.weapon_type = 0
+		self.weapon = weapon_data["basic"]
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in enemy_group:
@@ -220,17 +221,17 @@ class Player(pygame.sprite.Sprite):
 			self.lastx = self.direction.x
 			self.lasty = self.direction.y
 		if keys[pygame.K_1]:
-			self.weapon_type = 1
+			self.weapon = weapon_data["basic"]
 		elif keys[pygame.K_2]:
-			self.weapon_type = 2
+			self.weapon = weapon_data["shotgun"]
 		elif keys[pygame.K_3]:
-			self.weapon_type = 3
+			self.weapon = weapon_data["basic"]
 		elif keys[pygame.K_4]:
-			self.weapon_type = 4
+			self.weapon = weapon_data["basic"]
 		elif keys[pygame.K_5]:
-			self.weapon_type = 5
+			self.weapon = weapon_data["basic"]
 		elif keys[pygame.K_6]:
-			self.weapon_type = 6
+			self.weapon = weapon_data["basic"]
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
 			#self.is_shooting()
@@ -241,29 +242,29 @@ class Player(pygame.sprite.Sprite):
 			self.shoot=False             
 		
 	def is_shooting(self):
-		projectiles = 1
+		projectiles = self.weapon["projectiles"]
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 100
-			pygame.time.set_timer(shoot_cooldown,100,loops=1)
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def space_shooting(self):
-		projectiles = 10
+		projectiles = self.weapon["projectiles"]
 		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 500
-			pygame.time.set_timer(shoot_cooldown,500,loops=1)
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
@@ -274,8 +275,6 @@ class Player(pygame.sprite.Sprite):
 		self.check_alive()
 		self.input()
 		self.check_collision(enemy_group)
-		if self.shoot_cooldown > 0: # Just shot a bullet
-			self.shoot_cooldown -= 1
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
@@ -284,7 +283,7 @@ class Player(pygame.sprite.Sprite):
 		self.speed = 5
 
 class Bullet(pygame.sprite.Sprite): 
-	def __init__(self, x, y, angle): 
+	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
 		self.image = pygame.image.load("Weapons/Bullet.png")
 		self.image = pygame.transform.rotozoom(self.image, 0, 5)
@@ -292,12 +291,12 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
-		self.speed = 10
+		self.speed = weapon["speed"]
 		self.angle = angle
-		self.damage = 50
+		self.damage = weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
-		self.bullet_lifetime = 750
+		self.bullet_lifetime = weapon["duration"]
 		self.spawn_time = pygame.time.get_ticks()
  
 	def check_collision(self):
