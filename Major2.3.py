@@ -244,8 +244,6 @@ class Player(pygame.sprite.Sprite):
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
-				#enemy.collision_check = True
-				#self.check_collision(enemy_group)
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
