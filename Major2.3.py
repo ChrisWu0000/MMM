@@ -1,3 +1,4 @@
+from typing import Any
 import pygame
 from random import *
 from math import *
@@ -167,7 +168,7 @@ class Player(pygame.sprite.Sprite):
 		self.lasty = 0
 		self.speed = 5
 		self.maxhp = 100
-		self.hp = 100
+		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
@@ -190,7 +191,17 @@ class Player(pygame.sprite.Sprite):
 				self.speed -= 0.1
 				#enemy.collision_check = True
 				#self.check_collision(enemy_group)
-
+	"""def draw_health_bar(self, surf, pos, size, borderC, backC, healthC, progress):
+		pygame.draw.rect(surf, backC, (*pos, *size))
+		pygame.draw.rect(surf, borderC, (*pos, *size), 1)
+		innerPos  = (pos[0]+1, pos[1]+1)
+		innerSize = ((size[0]-2) * progress, size[1]-2)
+		rect = (round(innerPos[0]), round(innerPos[1]), round(innerSize[0]), round(innerSize[1]))
+		pygame.draw.rect(surf, healthC, rect)
+	def draw_health(self, surf):
+		health_rect = pygame.Rect(0, 0, self.image.get_width(), 70)
+		health_rect.midbottom = self.rect.centerx, self.rect.top
+		self.draw_health_bar(surf, health_rect.topleft, health_rect.size,(0, 0, 0), (255, 0, 0), (0, 255, 0), self.hp/self.maxhp)"""   
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -261,8 +272,20 @@ class Player(pygame.sprite.Sprite):
 			self.space_shooting()
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 5
-		pygame.draw.rect(camera_group.surface, "red", (player.rect.x, player.rect.y+20, 150, 20))
-		pygame.draw.rect(camera_group.surface, "green", (player.rect.x, player.rect.y+20, 150*self.ratio, 20))
+		self.ratio = self.hp/self.maxhp
+class Hp_Bar(pygame.sprite.Sprite):
+	def __init__(self, player):
+		super().__init__()
+		self.player = player
+		self.rect1 = pygame.Rect(self.player.rect.x, self.player.rect.y-20, 50, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x, self.player.rect.y-20, 50*self.player.ratio, 10)
+		self.rect = pygame.Rect.union(self.rect2, self.rect1)
+	def update(self, enemy_group, player):
+		self.rect1.topleft = (self.player.rect.left+5, self.player.rect.top - 20)-camera_group.offset
+		self.rect2 = pygame.Rect(self.player.rect.x, self.player.rect.y+20, 50*self.player.ratio, 10)
+		self.rect2.topleft = self.rect1.topleft
+		#self.rect2.width = 150 * self.player.ratio
+		self.rect = self.rect1.union(self.rect2)
 
 class Prop(pygame.sprite.Sprite):
 	def __init__(self, name, position):
@@ -361,6 +384,9 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
+		hp.update(enemy_group, player)
+		pygame.draw.rect(self.surface, "red", hp.rect1)
+		pygame.draw.rect(self.surface, "green", hp.rect2)
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
@@ -372,6 +398,9 @@ collision_group = pygame.sprite.Group()
 physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 player = Player((640,360))
+hp = Hp_Bar(player)
+player_group.add(hp)
+camera_group.add(hp)
 #collision_group.add(player)
 player_group.add(player)
 physics_group.add(player)
