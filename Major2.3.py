@@ -434,7 +434,7 @@ def new_level(num):
 		enemy_group.add(extra)
 		collision_group.add(extra)
 		all_sprite_group.add(extra)
-	for i in range(-1, level_data[num]["num_pillar"]-1):
+	for i in range(level_data[num]["num_pillar"]):
 		pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
