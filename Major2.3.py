@@ -191,17 +191,6 @@ class Player(pygame.sprite.Sprite):
 				self.speed -= 0.1
 				#enemy.collision_check = True
 				#self.check_collision(enemy_group)
-	"""def draw_health_bar(self, surf, pos, size, borderC, backC, healthC, progress):
-		pygame.draw.rect(surf, backC, (*pos, *size))
-		pygame.draw.rect(surf, borderC, (*pos, *size), 1)
-		innerPos  = (pos[0]+1, pos[1]+1)
-		innerSize = ((size[0]-2) * progress, size[1]-2)
-		rect = (round(innerPos[0]), round(innerPos[1]), round(innerSize[0]), round(innerSize[1]))
-		pygame.draw.rect(surf, healthC, rect)
-	def draw_health(self, surf):
-		health_rect = pygame.Rect(0, 0, self.image.get_width(), 70)
-		health_rect.midbottom = self.rect.centerx, self.rect.top
-		self.draw_health_bar(surf, health_rect.topleft, health_rect.size,(0, 0, 0), (255, 0, 0), (0, 255, 0), self.hp/self.maxhp)"""   
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -260,6 +249,7 @@ class Player(pygame.sprite.Sprite):
 	def check_alive(self): # checks if self is alive
 		if self.hp <= 0:
 			self.kill()
+			hp.kill()
 	def update(self,enemy_group,player):
 		self.check_alive()
 		self.input()
