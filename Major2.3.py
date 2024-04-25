@@ -20,7 +20,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.hp = enemy_info["health"]
 		self.speed = enemy_info["speed"]
 		self.push_power = enemy_info["push_power"]
-		self.currentimage = self.sprite_sheet.get_image(0, 80, 80)
+		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
 		self.image = self.currentimage
 		self.damage = enemy_info["attack_damage"]
 		self.mass = enemy_info["mass"]
@@ -138,7 +138,7 @@ class Enemy(pygame.sprite.Sprite):
 			player.hp -= self.damage
 			player.lastcollision = pygame.time.get_ticks()
 
-		self.collisionrect.center = self.rect.center
+		self.collisionrect.midbottom = self.rect.midbottom
 		
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
@@ -539,7 +539,7 @@ def new_level(num):
 		all_sprite_group.add(extra)
 	for i in range(level_data[num]["num_sax"]):
 		random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-		random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+		random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1])
 		extra=Enemy("sax", (random_x,random_y))
 		camera_group.add(extra)
 		enemy_group.add(extra)
