@@ -325,10 +325,10 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
 			self.image=self.flippedattacking[2] #floor(self.i)
-		self.angle = atan2(self.lasty, self.lastx)
+		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 30
-			pygame.time.set_timer(shoot_cooldown,100,loops=1)
+			self.shoot_cooldown = 30*projectiles
+			pygame.time.set_timer(shoot_cooldown,30*projectiles,loops=1)
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
