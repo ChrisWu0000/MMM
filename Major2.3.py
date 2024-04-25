@@ -5,6 +5,7 @@ from math import *
 from monster_data import *
 from level_data import *
 from prop_data import *
+from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
@@ -38,6 +39,10 @@ class Enemy(pygame.sprite.Sprite):
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
+		self.speed_buildupy=0
+		self.speed_buildupx=0
+		self.frogx =0
+		self.frogy =0
 
 		self.i=0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
@@ -113,15 +118,22 @@ class Enemy(pygame.sprite.Sprite):
 
 	def check_collision(self,player): #Chris version of collision
 		if self.hp >0:
-			self.rect.x = self.rect.x + self.direction.x * self.speed
-			self.rect.y = self.rect.y + self.direction.y * self.speed
+			self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
+			self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
+			self.frogx = int(self.speed_buildupx)
+			self.speed_buildupx = float(self.speed_buildupx)-int(self.speed_buildupx)
+			self.frogy = int(self.speed_buildupy)
+			self.speed_buildupy =  float(self.speed_buildupy)-int(self.speed_buildupy)
+			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
+			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
 			if self.rect.colliderect(player.rect):
-					self.rect.x = self.rect.x - self.direction.x * self.speed
-					self.rect.y = self.rect.y - self.direction.y * self.speed
+					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
+					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
 					self.speed -= 0.1
 					self.collision_check = True
 					self.check_collision(player)
-		
+
+
 		if self.collision_check == True and pygame.time.get_ticks()-player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
 			player.lastcollision = pygame.time.get_ticks()
@@ -237,13 +249,15 @@ class Player(pygame.sprite.Sprite):
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
-				#enemy.collision_check = True
+				enemy.collision_check = True
 				#self.check_collision(enemy_group)
 		self.rect.y += self.direction.y * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
+				enemy.collision_check = True
+				#self.check_collision(enemy_group)
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -282,7 +296,18 @@ class Player(pygame.sprite.Sprite):
 		if self.direction.x !=0 or self.direction.y !=0:
 			self.lastx = self.direction.x
 			self.lasty = self.direction.y
-		
+		if keys[pygame.K_1]:
+			self.weapon = weapon_data["Basic"]
+		elif keys[pygame.K_2]:
+			self.weapon = weapon_data["Shotgun"]
+		elif keys[pygame.K_3]:
+			self.weapon = weapon_data["Minigun"]
+		elif keys[pygame.K_4]:
+			self.weapon = weapon_data["Lag_Maker"]
+		elif keys[pygame.K_5]:
+			self.weapon = weapon_data["Basic"]
+		elif keys[pygame.K_6]:
+			self.weapon = weapon_data["Basic"]
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
 			#self.is_shooting()
@@ -318,6 +343,11 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 
 	def space_shooting(self):
+		projectiles = self.weapon["projectiles"]
+		self.angle = atan2(self.lasty, self.lastx)
+		if self.shoot_cooldown == 0:
+			self.shoot_cooldown = 1
+			
 		projectiles = 10
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
@@ -326,7 +356,7 @@ class Player(pygame.sprite.Sprite):
 		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
 		if self.shoot_cooldown == 0:
 			self.shoot_cooldown = 30*projectiles
-			pygame.time.set_timer(shoot_cooldown,30*projectiles,loops=1)
+			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
@@ -334,9 +364,15 @@ class Player(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x)
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
+			spawn_bullet_pos = self.rect.center
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
+		
 	def check_alive(self): # checks if self is alive
 		if self.hp <= 0:
 			self.kill()
@@ -345,8 +381,6 @@ class Player(pygame.sprite.Sprite):
 		self.check_alive()
 		self.input()
 		self.check_collision(enemy_group)
-		if self.shoot_cooldown > 0: # Just shot a bullet
-			self.shoot_cooldown -= 1
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
@@ -381,7 +415,7 @@ class Prop(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 class Bullet(pygame.sprite.Sprite): 
-	def __init__(self, x, y, angle): 
+	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
 		self.image = pygame.image.load("Weapons/Bullet.png")
 		self.image = pygame.transform.rotozoom(self.image, 0, 4)
@@ -389,12 +423,12 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
-		self.speed = 10
+		self.speed = weapon["speed"]
 		self.angle = angle
-		self.damage = 50
+		self.damage = weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
-		self.bullet_lifetime = 750
+		self.bullet_lifetime = weapon["duration"]
 		self.spawn_time = pygame.time.get_ticks()
  
 	def check_collision(self):
@@ -525,7 +559,7 @@ def new_level(num):
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,1000)
+pygame.time.set_timer(sparetimer1,1000)
 shoot_cooldown = pygame.USEREVENT + 2
 #next_level = pygame.USEREVENT + 3
 while meep:
@@ -537,7 +571,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(player.rect.center)
+			print(player.hp)
 		if event.type == shoot_cooldown:
 			player.shoot_cooldown = 0
 		#if event.type == next_level:
