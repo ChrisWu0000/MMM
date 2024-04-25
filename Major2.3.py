@@ -20,7 +20,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.hp = enemy_info["health"]
 		self.speed = enemy_info["speed"]
 		self.push_power = enemy_info["push_power"]
-		self.currentimage = self.sprite_sheet.get_image(0, 80, 80)
+		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
 		self.image = self.currentimage
 		self.damage = enemy_info["attack_damage"]
 		self.mass = enemy_info["mass"]
@@ -33,12 +33,10 @@ class Enemy(pygame.sprite.Sprite):
 		
 		self.rect = self.image.get_rect()
 		self.rect.center = position
-		
-		self.collisionrect = self.rect
-		self.collisionrect.width = int(0.8*self.collisionrect.width)
-		self.collisionrect.height = int(0.8*self.collisionrect.height)
+		self.collisionrect = pygame.Rect(self.rect)
+		self.collisionrect.width = int(0.5*self.collisionrect.width)
+		self.collisionrect.height = int(0.7*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
-
 		self.speed_buildupy=0
 		self.speed_buildupx=0
 		self.frogx =0
@@ -126,9 +124,11 @@ class Enemy(pygame.sprite.Sprite):
 			self.speed_buildupy =  float(self.speed_buildupy)-int(self.speed_buildupy)
 			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
 			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
-			if self.rect.colliderect(player.rect):
+			self.collisionrect.midbottom = self.rect.midbottom
+			if self.collisionrect.colliderect(player.rect):
 					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
 					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
+					self.collisionrect.midbottom = self.rect.midbottom
 					self.speed -= 0.1
 					self.collision_check = True
 					self.check_collision(player)
@@ -138,7 +138,6 @@ class Enemy(pygame.sprite.Sprite):
 			player.hp -= self.damage
 			player.lastcollision = pygame.time.get_ticks()
 
-		self.collisionrect.center = self.rect.center
 		
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
@@ -351,7 +350,7 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
 			self.image=self.flippedattacking[2] #floor(self.i)
-		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
+		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
 			self.shoot_cooldown = 1
 			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
