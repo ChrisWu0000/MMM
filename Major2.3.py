@@ -388,12 +388,12 @@ class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
-		self.rect1 = pygame.Rect(self.player.rect.x, self.player.rect.y-20, 50, 10)
-		self.rect2 = pygame.Rect(self.player.rect.x, self.player.rect.y-20, 50*self.player.ratio, 10)
+		self.rect1 = pygame.Rect(self.player.rect.x+5, self.player.rect.y-20, 50, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+5, self.player.rect.y-20, 50*self.player.ratio, 10)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
-		self.rect1.topleft = (self.player.rect.left+5, self.player.rect.top - 20)-camera_group.offset
-		self.rect2 = pygame.Rect(self.player.rect.x, self.player.rect.y+20, 50*self.player.ratio, 10)
+		self.rect1.topleft = (self.player.rect.x+5, self.player.rect.top - 20)-camera_group.offset
+		self.rect2 = pygame.Rect(self.player.rect.x+5, self.player.rect.y+20, 50*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
 		#self.rect2.width = 150 * self.player.ratio
 		self.rect = self.rect1.union(self.rect2)
