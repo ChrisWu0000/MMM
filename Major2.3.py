@@ -187,7 +187,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
 		self.iframes = 1000 #iframes are measured in miliseconds
-		
+		self.weapon = weapon_data["Basic"]
 		self.i=0
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
@@ -317,6 +317,7 @@ class Player(pygame.sprite.Sprite):
 		else:
 			self.shoot=False             		
 	def is_shooting(self):
+		projectiles = self.weapon["projectiles"]
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -326,17 +327,18 @@ class Player(pygame.sprite.Sprite):
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 30
-			pygame.time.set_timer(shoot_cooldown,100,loops=1)
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
-			self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
-			weapon_group.add(self.bullet)
-			camera_group.add(self.bullet)
-			all_sprite_group.add(self.bullet)
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
+				weapon_group.add(self.bullet)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
@@ -345,27 +347,18 @@ class Player(pygame.sprite.Sprite):
 	def space_shooting(self):
 		projectiles = self.weapon["projectiles"]
 		self.angle = atan2(self.lasty, self.lastx)
-		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 1
-			
-		projectiles = 10
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
 			self.image=self.flippedattacking[2] #floor(self.i)
 		self.angle = atan2(self.lasty, self.lastx)-0.1*(projectiles-1)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 30*projectiles
+			self.shoot_cooldown = 1
 			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
 				self.image=self.attacking[floor(self.i)]
-			spawn_bullet_pos = self.rect.center
-			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + 0.2*x)
-			self.shoot_cooldown = 1
-			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
@@ -559,7 +552,7 @@ def new_level(num):
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1,1000)
+#pygame.time.set_timer(sparetimer1,1000)
 shoot_cooldown = pygame.USEREVENT + 2
 #next_level = pygame.USEREVENT + 3
 while meep:
@@ -580,8 +573,7 @@ while meep:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				new_level(2)
-			
+				new_level(2)			
 				
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
