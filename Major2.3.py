@@ -230,7 +230,7 @@ class Player(pygame.sprite.Sprite):
 #			else:
 #				self.image = self.flippeddeath[floor(self.i)]
 #			if self.i >= 4-self.k:
-#				self.kill()
+# 				self.kill()
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
