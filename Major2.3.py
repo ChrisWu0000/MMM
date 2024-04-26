@@ -135,6 +135,18 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
 			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
 			self.collisionrect.midbottom = self.rect.midbottom
+			for enemy in enemy_group:
+				if dist(self.collisionrect.center, enemy.collisionrect.center)<10 and enemy != self:
+					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx+(10-20*random())
+					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy+(10-20*random())
+					self.collisionrect.midbottom = self.rect.midbottom
+					self.speed -= 0.1
+					self.check_collision(player)
+				if self.rect.bottom == enemy.rect.bottom and self.rect.bottom < player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
+					self.rect.y -=0.01
+				elif self.rect.bottom == enemy.rect.bottom and self.rect.bottom > player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
+					self.rect.y +=0.01
+
 			if self.collisionrect.colliderect(player.rect):
 					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
 					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
@@ -399,12 +411,12 @@ class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
-		self.rect1 = pygame.Rect(self.player.rect.x+5, self.player.rect.y-20, 50, 10)
-		self.rect2 = pygame.Rect(self.player.rect.x+5, self.player.rect.y-20, 50*self.player.ratio, 10)
+		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.y-20, 50, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y-20, 50*self.player.ratio, 10)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
-		self.rect1.topleft = (self.player.rect.x+5, self.player.rect.top - 20)-camera_group.offset
-		self.rect2 = pygame.Rect(self.player.rect.x+5, self.player.rect.y+20, 50*self.player.ratio, 10)
+		self.rect1.topleft = (self.player.rect.x+20, self.player.rect.top - 20)-camera_group.offset
+		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, 50*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
 		#self.rect2.width = 150 * self.player.ratio
 		self.rect = self.rect1.union(self.rect2)
@@ -543,6 +555,9 @@ def new_level(num):
 	for i in range(level_data[num]["num_bell"]):
 		random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 		random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+		if dist(player.rect.center, (random_x, random_y)) < 500:
+			random_x = (camera_group.background_image.get_size()[0]-100)/2
+			random_y = (camera_group.background_image.get_size()[1]-100)/2
 		extra=Enemy("bell", (random_x,random_y))
 		camera_group.add(extra)
 		enemy_group.add(extra)
@@ -551,6 +566,9 @@ def new_level(num):
 	for i in range(level_data[num]["num_sax"]):
 		random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 		random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+		if dist(player.rect.center, (random_x, random_y)) < 500:
+			random_x = (camera_group.background_image.get_size()[0]-100)/2
+			random_y = (camera_group.background_image.get_size()[1]-100)/2
 		extra=Enemy("sax", (random_x,random_y))
 		camera_group.add(extra)
 		enemy_group.add(extra)
