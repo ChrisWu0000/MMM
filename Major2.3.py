@@ -30,6 +30,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.isdead = False
 		self.isattacking = False
 		self.current_index = 0
+		self.shoot_cooldown = 0
 		
 		self.rect = self.image.get_rect()
 		self.rect.center = position
@@ -98,22 +99,69 @@ class Enemy(pygame.sprite.Sprite):
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 	def attack(self): #checks if enemy should attack
-		if self.collision_check == True and self.isattacking == False:
-			self.i = 0
-			self.isattacking = True
-			if self.flipped == False:
-				self.image = self.attacking[floor(self.i)]
-			else:
-				self.image = self.flippedattacking[floor(self.i)]
-		if self.isattacking == True:
-			if self.flipped == False:
-				self.image = self.attacking[floor(self.i)]
-			else:
-				self.image = self.flippedattacking[floor(self.i)]
-		if self.i >=4-self.k and self.isattacking == True:
-				self.isattacking = False
-				self.collision_check = False	
+		if self.name=="bell":
+			if self.collision_check == True and self.isattacking == False:
+				self.i = 0
+				self.isattacking = True
+				if self.flipped == False:
+					self.image = self.attacking[floor(self.i)]
+				else:
+					self.image = self.flippedattacking[floor(self.i)]
+			if self.isattacking == True:
+				if self.flipped == False:
+					self.image = self.attacking[floor(self.i)]
+				else:
+					self.image = self.flippedattacking[floor(self.i)]
+			if self.i >=4-self.k and self.isattacking == True:
+					self.isattacking = False
+					self.collision_check = False
 
+		elif self.name=="sax":
+			if self.shoot_cooldown == 0 and self.isattacking == False:
+				self.i = 0
+				self.aim = self.direction
+				self.isattacking = True
+				if self.flipped == False:
+					self.image = self.attacking[floor(self.i)]
+				else:
+					self.image = self.flippedattacking[floor(self.i)]
+			if self.isattacking == True:
+				if self.flipped == False:
+					self.image = self.attacking[floor(self.i)]
+				else:
+					self.image = self.flippedattacking[floor(self.i)]
+			if self.i >=4-self.k and self.isattacking == True:
+					self.isattacking = False
+					self.shoot()
+					self.shoot_cooldown = 1
+	def shoot(self):
+		print(self.aim)
+		projectiles = self.weapon["projectiles"]
+		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
+			self.image=self.attacking[2] #floor(self.i)
+		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
+			self.image=self.flippedattacking[2] #floor(self.i)
+		self.mouse_coords = pygame.mouse.get_pos() 
+		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.angle = atan2(self.lasty, self.lastx)
+		if self.shoot_cooldown == 0:
+			self.shoot_cooldown = 1
+			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
+			if(self.lastx==1):
+				self.image=self.flippedattacking[floor(self.i)]
+			elif(self.lastx==-1):
+				self.image=self.attacking[floor(self.i)]
+			spawn_bullet_pos = self.rect.center
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
+				weapon_group.add(self.bullet)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
+			if(self.lastx==1):
+				self.image=self.flippedattacking[floor(self.i)]
+			elif(self.lastx==-1):
+				self.image=self.attacking[floor(self.i)]
 	def check_collision(self,player): #Chris version of collision
 		if self.hp >0:
 			self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
@@ -177,7 +225,7 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = 1.0
 		self.lasty = 0
 		self.speed = 5
-		self.maxhp = 100
+		self.maxhp = 500
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
@@ -185,7 +233,7 @@ class Player(pygame.sprite.Sprite):
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = pygame.time.get_ticks()
-		self.iframes = 1000 #iframes are measured in miliseconds
+		self.iframes = 200 #iframes are measured in miliseconds
 		self.weapon = weapon_data["Basic"]
 		self.i=0
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
