@@ -145,7 +145,10 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
-			self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)		
+			self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
+			#for x in enemy_group:
+				#if self.rect.y == x.rect.y and self !=x:
+					#self.rect.y += 0.01		
 
 
 
@@ -267,6 +270,10 @@ class Player(pygame.sprite.Sprite):
 				self.speed -= 0.1
 				enemy.collision_check = True
 				#self.check_collision(enemy_group)
+		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
+		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
+		self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
+		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)	
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
