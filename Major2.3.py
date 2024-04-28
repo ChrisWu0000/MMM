@@ -413,11 +413,13 @@ class Hp_Bar(pygame.sprite.Sprite):
 		self.player = player
 		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.y-20, 50, 10)
 		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y-20, 50*self.player.ratio, 10)
+		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.y-22, 54, 14)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
 		self.rect1.topleft = (self.player.rect.x+20, self.player.rect.top - 20)-camera_group.offset
 		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, 50*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
+		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.y-22)-camera_group.offset
 		#self.rect2.width = 150 * self.player.ratio
 		self.rect = self.rect1.union(self.rect2)
 
@@ -519,8 +521,10 @@ class CameraGroup(pygame.sprite.Group):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 		hp.update(enemy_group, player)
-		pygame.draw.rect(self.surface, "red", hp.rect1)
-		pygame.draw.rect(self.surface, "green", hp.rect2)
+		if player.hp > 0:
+			pygame.draw.rect(self.surface, "black", hp.rect3)
+			pygame.draw.rect(self.surface, "red", hp.rect1)
+			pygame.draw.rect(self.surface, "green", hp.rect2)
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
@@ -574,10 +578,10 @@ def new_level(num):
 		enemy_group.add(extra)
 		collision_group.add(extra)
 		all_sprite_group.add(extra)
-	for i in range(level_data[num]["num_pillar"]):
-		pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
-		camera_group.add(pillar)
-		#collision_group.add(pillar)
+	for h in range(level_data[num]["num_pillar_y"]):
+		for i in range(level_data[num]["num_pillar_x"]):
+			pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
+			camera_group.add(pillar)
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
