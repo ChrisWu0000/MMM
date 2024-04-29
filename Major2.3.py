@@ -100,7 +100,7 @@ class Enemy(pygame.sprite.Sprite):
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
-		if self.name=="bell":
+		if self.weapon["ranged"]==False:
 			if self.collision_check == True and self.isattacking == False:
 				self.i = 0
 				self.isattacking = True
@@ -117,7 +117,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.isattacking = False
 					self.collision_check = False
 
-		elif self.name=="sax":
+		elif self.weapon["ranged"]==True:
 			if self.shoot_cooldown == 0 and self.isattacking == False:
 				self.i = 0
 				self.isattacking = True
@@ -140,7 +140,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = self.weapon["cooldown"]
+			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,50)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
@@ -168,9 +168,9 @@ class Enemy(pygame.sprite.Sprite):
 					self.check_collision(player)
 
 
-		if self.collision_check == True and pygame.time.get_ticks()-player.lastcollision >= player.iframes and self.i >=4-self.k:
+		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
-			player.lastcollision = pygame.time.get_ticks()
+			player.lastcollision = 0
 
 		
 	def update_direction(self):
@@ -192,6 +192,8 @@ class Enemy(pygame.sprite.Sprite):
 		self.attack(player)
 		self.check_alive()
 		self.i+=self.k
+		if player.lastcollision < player.iframes:
+			player.lastcollision +=1
 		if self.shoot_cooldown >0:
 			self.shoot_cooldown -= 1
 		if(self.i>=4):
@@ -220,7 +222,7 @@ class Player(pygame.sprite.Sprite):
 		self.shoot = 0
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
-		self.lastcollision = pygame.time.get_ticks()
+		self.lastcollision = 200
 		self.iframes = 200 #iframes are measured in miliseconds
 		self.weapon = weapon_data["Basic"]
 		self.i=0
@@ -254,30 +256,31 @@ class Player(pygame.sprite.Sprite):
 			self.i+=1
 		self.i=0
 
-#		self.death=[]
-#		self.flippeddeath=[]
-#		for x in range(4):
-#			self.death.append (self.sprite_sheet.get_image(self.i, 80, 80).convert_alpha())
-#			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 80, 80).convert_alpha(), True, False))
-#			self.i+=1
-#		self.i = 0
-#	def check_alive(self): # checks if player dies
-#		if self.hp <=0  and self.isdead == False:
-#			self.i = 0
-#			self.isdead = True
-#			if self.flipped == False:
-#				self.image = self.death[floor(self.i)]
-#			else:
-#				self.image = self.flippeddeath[floor(self.i)]
-#			enemy_group.remove(self)
-#			collision_group.remove(self)
-#		if self.hp <=0  and self.isdead == True:
-#			if self.flipped == False:
-#				self.image = self.death[floor(self.i)]
-#			else:
-#				self.image = self.flippeddeath[floor(self.i)]
-#			if self.i >= 4-self.k:
-# 				self.kill()
+		"""#		self.death=[]
+		#		self.flippeddeath=[]
+		#		for x in range(4):
+		#			self.death.append (self.sprite_sheet.get_image(self.i, 80, 80).convert_alpha())
+		#			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 80, 80).convert_alpha(), True, False))
+		#			self.i+=1
+		#		self.i = 0
+		#	def check_alive(self): # checks if player dies
+		#		if self.hp <=0  and self.isdead == False:
+		#			self.i = 0
+		#			self.isdead = True
+		#			if self.flipped == False:
+		#				self.image = self.death[floor(self.i)]
+		#			else:
+		#				self.image = self.flippeddeath[floor(self.i)]
+		#			enemy_group.remove(self)
+		#			collision_group.remove(self)
+		#		if self.hp <=0  and self.isdead == True:
+		#			if self.flipped == False:
+		#				self.image = self.death[floor(self.i)]
+		#			else:
+		#				self.image = self.flippeddeath[floor(self.i)]
+		#			if self.i >= 4-self.k:
+		# 				self.kill()"""
+
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
@@ -362,8 +365,7 @@ class Player(pygame.sprite.Sprite):
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 1
-			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
+			self.shoot_cooldown = self.weapon["cooldown"]
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
@@ -388,8 +390,7 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.flippedattacking[2] #floor(self.i)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = 1
-			pygame.time.set_timer(shoot_cooldown,self.weapon["cooldown"],loops=1)
+			self.shoot_cooldown = self.weapon["cooldown"]
 			if(self.lastx==1):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
@@ -409,6 +410,8 @@ class Player(pygame.sprite.Sprite):
 		self.check_alive()
 		self.input()
 		self.check_collision(enemy_group)
+		if self.shoot_cooldown > 0:
+			self.shoot_cooldown -= 1
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
@@ -447,7 +450,7 @@ class Bullet(pygame.sprite.Sprite):
 		super().__init__()
 		self.weapon = weapon
 		self.image = pygame.image.load(self.weapon["sprite"])
-		self.image = pygame.transform.rotozoom(self.image, 0, 1)
+		self.image = pygame.transform.rotozoom(self.image, 0, self.weapon["scaling"])
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
 		self.x = x
@@ -458,10 +461,10 @@ class Bullet(pygame.sprite.Sprite):
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
 		self.bullet_lifetime = self.weapon["duration"]
-		self.spawn_time = pygame.time.get_ticks()
+		self.spawn_time = 0
  
 	def check_collision(self,player):
-		if self.weapon["cooldown"] == 150:
+		if self.weapon["ranged"] == True:
 			if self.rect.colliderect(player.rect):
 					player.hp -= self.damage
 					self.kill() 
@@ -479,8 +482,10 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
 		self.check_collision(player)
-		if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime: 
+		if self.spawn_time > self.bullet_lifetime:
 			self.kill()
+		else:
+			self.spawn_time +=1
 		
 class CameraGroup(pygame.sprite.Group):
 	def __init__(self):
@@ -593,9 +598,7 @@ def new_level(num):
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,1000)
-shoot_cooldown = pygame.USEREVENT + 2
-#next_level = pygame.USEREVENT + 3
+#pygame.time.set_timer(sparetimer1,150)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -605,11 +608,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(player.hp)
-		if event.type == shoot_cooldown:
-			player.shoot_cooldown = 0
-		#if event.type == next_level:
-			#print("yay")
+			print("GERGEWGWGW")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
@@ -618,6 +617,5 @@ while meep:
 				
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
- 
 	pygame.display.update()
 	clock.tick(120)
