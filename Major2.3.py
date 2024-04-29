@@ -9,6 +9,11 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
+framenum = 0
+def get_frame():
+	global framenum
+	currentframe = framenum
+	return currentframe
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
@@ -164,9 +169,9 @@ class Enemy(pygame.sprite.Sprite):
 
 
 
-		if self.collision_check == True and pygame.time.get_ticks()-player.lastcollision >= player.iframes and self.i >=4-self.k:
+		if self.collision_check == True and get_frame()-player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
-			player.lastcollision = pygame.time.get_ticks()
+			player.lastcollision = get_frame()
 
 	
 		
@@ -205,7 +210,7 @@ class Player(pygame.sprite.Sprite):
 		self.shoot = 0
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
-		self.lastcollision = pygame.time.get_ticks()
+		self.lastcollision = get_frame()
 		self.iframes = 1000 #iframes are measured in miliseconds
 		self.weapon = weapon_data["Basic"]
 		self.collision_check = False #all of these are used to detect which animation to use
@@ -447,7 +452,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
 		self.bullet_lifetime = weapon["duration"]
-		self.spawn_time = pygame.time.get_ticks()
+		self.spawn_time = get_frame()
  
 	def check_collision(self):
 		for x in enemy_group.sprites():
@@ -463,7 +468,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
 		self.check_collision()
-		if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime: 
+		if get_frame() - self.spawn_time > self.bullet_lifetime: 
 			self.kill()
 		
 class CameraGroup(pygame.sprite.Group):
@@ -514,6 +519,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
+		global framenum
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -521,6 +527,7 @@ class CameraGroup(pygame.sprite.Group):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 		hp.update(enemy_group, player)
+		framenum +=1
 		if player.hp > 0:
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
@@ -578,12 +585,13 @@ def new_level(num):
 		enemy_group.add(extra)
 		collision_group.add(extra)
 		all_sprite_group.add(extra)
-	for h in range(level_data[num]["num_pillar_y"]):
-		for i in range(level_data[num]["num_pillar_x"]):
+	#for h in range(level_data[num]["num_pillar_y"]):
+	for i in range(level_data[num]["num_pillar_x"]):
 			pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 			camera_group.add(pillar)
 new_level(1)
 meep = True
+game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
 shoot_cooldown = pygame.USEREVENT + 2
@@ -605,11 +613,15 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
+			if event.key == pygame.K_p and game_pause == False:
+				game_pause = True
+			elif event.key == pygame.K_p and game_pause == True:
+				game_pause = False
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
 				new_level(2)			
-				
-	camera_group.update(enemy_group,player)
-	camera_group.custom_draw(player)
+	if game_pause == False:			
+		camera_group.update(enemy_group,player)
+		camera_group.custom_draw(player)
  
 	pygame.display.update()
 	clock.tick(120)
