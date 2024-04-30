@@ -628,7 +628,8 @@ class Item(pygame.sprite.Sprite):
 			player.gold -=self.item["cost"]
 		elif player.gold <self.item["cost"]:
 			print("fpx")
-moose = Item("Basic",(640,360))
+for x in range(4):
+	moose = Item("Basic",(640,360))
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
