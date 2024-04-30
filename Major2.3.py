@@ -544,7 +544,6 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
-
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
@@ -554,6 +553,7 @@ weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
+item_group = pygame.sprite.Group()
 player = Player((640,360))
 hp = Hp_Bar(player)
 player_group.add(hp)
@@ -563,6 +563,7 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
+item=[]
 def new_level(num):
 	camera_group.empty()
 	camera_group.add(player)
@@ -596,10 +597,20 @@ def new_level(num):
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
 gold = 500
+cost = 50
 def shop():
 	print("meep")
-	
-
+	for x in range(3):
+		camera_group.add(Prop("merch",(x*150+100,100)))
+		item_group.add(Prop("merch",(x*150+100,100)))
+def purchase():
+	for item in item_group:
+		if player.rect.colliderect(item):
+			if gold >= cost:
+				print("meep")
+				gold -=cost
+			elif gold <cost:
+				print("fpx")
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
@@ -617,6 +628,8 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
+			if event.key == pygame.K_p:
+				purchase()
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
 				new_level(2)			
 			elif event.key == pygame.K_9 and len(enemy_group)==0 and not (player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200):
