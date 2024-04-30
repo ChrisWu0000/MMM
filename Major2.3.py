@@ -93,7 +93,10 @@ class Enemy(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
-				self.kill()		
+				self.kill()
+				Item("Coin", self.rect.center)
+
+						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
 				if self.flipped == False:
@@ -428,7 +431,7 @@ class Hp_Bar(pygame.sprite.Sprite):
 		#self.rect2.width = 150 * self.player.ratio
 		self.rect = self.rect1.union(self.rect2)
 
-class Prop(pygame.sprite.Sprite):
+class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
 		self.position=pygame.math.Vector2(position)
@@ -437,6 +440,9 @@ class Prop(pygame.sprite.Sprite):
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
+		if self.prop["collectable"] == True:
+			if player.collisionrect.colliderect(self.rect):
+				self.kill()
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
@@ -535,7 +541,6 @@ class CameraGroup(pygame.sprite.Group):
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
 			pygame.draw.rect(self.surface, "green", hp.rect2)
-#class Shop()
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
@@ -590,7 +595,7 @@ def new_level(num):
 		all_sprite_group.add(extra)
 	#for h in range(level_data[num]["num_pillar_y"]):
 	for i in range(level_data[num]["num_pillar_x"]):
-			pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
+			pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 			camera_group.add(pillar)
 new_level(1)
 meep = True
