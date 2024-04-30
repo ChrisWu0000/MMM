@@ -496,18 +496,21 @@ class CameraGroup(pygame.sprite.Group):
 			self.camera_rect.left = max(target.rect.left, self.bg_rect.x+self.camera_borders['left'])
 			if self.bg_rect.x > target.rect.left:
 				target.rect.left = self.camera_rect.left- self.camera_borders['left']
+		
 		if target.rect.right > self.camera_rect.right:
 			self.camera_rect.right = min(target.rect.right, self.bg_rect.right)
 			target.rect.right = self.camera_rect.right
 			self.camera_rect.right = min(target.rect.right, self.bg_rect.right-self.camera_borders['right'])
 			if self.bg_rect.right < target.rect.right:
 				target.rect.right = self.camera_rect.right + self.camera_borders['right']
+		
 		if target.rect.top < self.camera_rect.top:
 			self.camera_rect.top = max(target.rect.top, self.bg_rect.y)
 			target.rect.top = self.camera_rect.top
 			self.camera_rect.top = max(target.rect.top, self.bg_rect.y+self.camera_borders['top'])
 			if self.bg_rect.y > target.rect.top:
 				target.rect.top = self.camera_rect.top-self.camera_borders['top']
+		
 		if target.rect.bottom > self.camera_rect.bottom:
 			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom)
 			target.rect.bottom = self.camera_rect.bottom
@@ -532,7 +535,7 @@ class CameraGroup(pygame.sprite.Group):
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
 			pygame.draw.rect(self.surface, "green", hp.rect2)
-
+#class Shop()
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
