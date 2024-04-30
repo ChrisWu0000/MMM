@@ -229,6 +229,7 @@ class Player(pygame.sprite.Sprite):
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
 		self.flippedidle=[]
+		self.gold = 500
 		for x in range(4):
 			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha())
 			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha(), True, False))
@@ -563,7 +564,6 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-item=[]
 def new_level(num):
 	camera_group.empty()
 	camera_group.add(player)
@@ -596,21 +596,39 @@ def new_level(num):
 		pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
-gold = 500
-cost = 50
-def shop():
-	print("meep")
-	for x in range(3):
-		camera_group.add(Prop("merch",(x*150+100,100)))
-		item_group.add(Prop("merch",(x*150+100,100)))
-def purchase():
-	for item in item_group:
-		if player.rect.colliderect(item):
-			if gold >= cost:
-				print("meep")
-				gold -=cost
-			elif gold <cost:
-				print("fpx")
+
+
+def shop(num):
+	shopping = True
+	camera_group.add(item_group)
+	camera_group.empty()
+	camera_group.add(player)
+	camera_group.level = level_data[num]
+	camera_group.background_image = camera_group.level["room"].convert_alpha()
+	camera_group.bg_rect = camera_group.background_image.get_rect(midtop = (camera_group.half_w,0))
+	w = camera_group.surface.get_size()[0]  - (camera_group.camera_borders['left'] + camera_group.camera_borders['right'])
+	h = camera_group.surface.get_size()[1]  - (camera_group.camera_borders['top'] + camera_group.camera_borders['bottom'])
+	l = camera_group.camera_borders['left']
+	t = camera_group.camera_borders['top']
+	camera_group.camera_rect = pygame.Rect(l,t,w,h)
+	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
+	camera_group.add(item_group)
+class Item(pygame.sprite.Sprite):
+	def __init__(self, name, position):
+		super().__init__()
+		self.position=pygame.math.Vector2(position)
+		self.name = name
+		self.item = weapon_data[self.name]
+		self.image = self.item["image"].convert_alpha()
+		self.rect = self.image.get_rect()
+		self.rect.center = position
+		item_group.add(self)
+	def purchase(self,player):
+		if player.gold >= self.item["cost"]:
+			player.gold -=self.item["cost"]
+		elif player.gold <self.item["cost"]:
+			print("fpx")
+moose = Item("Basic",(640,360))
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
@@ -629,11 +647,13 @@ while meep:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_p:
-				purchase()
+				shop(3)
+			if event.key == pygame.K_e:
+				for item in item_group:
+					if player.rect.colliderect(item.rect):
+						item.purchase(player)
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
 				new_level(2)			
-			elif event.key == pygame.K_9 and len(enemy_group)==0 and not (player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200):
-				shop()
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
 	pygame.display.update()
