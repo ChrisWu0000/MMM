@@ -210,7 +210,7 @@ class Player(pygame.sprite.Sprite):
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
 		self.image = self.sprite_sheet.get_image(0, 88, 104).convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
-		self.collisionrect = self.rect
+		self.collisionrect = pygame.Rect(self.rect)
 		self.direction = pygame.math.Vector2()
 		self.lastx = 1.0
 		self.lasty = 0
@@ -595,6 +595,11 @@ def new_level(num):
 		pillar= Prop("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
+gold = 500
+def shop():
+	print("meep")
+	
+
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
@@ -614,7 +619,8 @@ while meep:
 				meep = False
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
 				new_level(2)			
-				
+			elif event.key == pygame.K_9 and len(enemy_group)==0 and not (player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200):
+				shop()
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
 	pygame.display.update()
