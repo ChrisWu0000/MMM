@@ -81,6 +81,7 @@ class Enemy(pygame.sprite.Sprite):
 		if self.hp <=0  and self.isdead == False:
 			self.i = 0
 			self.isdead = True
+			self.k =0.1
 			if self.flipped == False:
 				self.image = self.death[floor(self.i)]
 			else:
@@ -95,6 +96,7 @@ class Enemy(pygame.sprite.Sprite):
 			if self.i >= 4-self.k:
 				Item("Coin", self.rect.center)
 				self.kill()
+				self.k = 0.05
 				
 
 						
@@ -297,7 +299,8 @@ class Player(pygame.sprite.Sprite):
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 		self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
-		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)	
+		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
+		self.collisionrect.midbottom = self.rect.midbottom	
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
