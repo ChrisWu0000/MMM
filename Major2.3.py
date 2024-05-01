@@ -93,8 +93,9 @@ class Enemy(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
-				self.kill()
 				Item("Coin", self.rect.center)
+				self.kill()
+				
 
 						
 	def take_damage(self): #checks if enemy is hit
@@ -201,7 +202,10 @@ class Player(pygame.sprite.Sprite):
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
 		self.image = self.sprite_sheet.get_image(0, 88, 104).convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
-		self.collisionrect = self.rect
+		self.collisionrect = pygame.Rect(self.rect)
+		self.collisionrect.width = int(0.5*self.collisionrect.width)
+		self.collisionrect.height = int(0.7*self.collisionrect.height)
+		self.collisionrect.midbottom = self.rect.midbottom
 		self.direction = pygame.math.Vector2()
 		self.lastx = 1.0
 		self.lasty = 0
@@ -440,6 +444,8 @@ class Item(pygame.sprite.Sprite):
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
+		camera_group.add(self)
+	def update(self, enemy_group, player):
 		if self.prop["collectable"] == True:
 			if player.collisionrect.colliderect(self.rect):
 				self.kill()
