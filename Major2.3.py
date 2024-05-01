@@ -545,6 +545,23 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
+
+class Item(pygame.sprite.Sprite):
+	def __init__(self, name, position):
+		super().__init__()
+		self.position=pygame.math.Vector2(position)
+		self.name = name
+		self.item = weapon_data[self.name]
+		self.image = self.item["image"].convert_alpha()
+		self.rect = self.image.get_rect()
+		self.rect.center = position
+		item_group.add(self)
+	def purchase(self,player):
+		if player.gold >= self.item["cost"]:
+			player.gold -=self.item["cost"]
+			self.kill()
+		elif player.gold <self.item["cost"]:
+			print("Not enough gold")
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
@@ -564,6 +581,12 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
+
+for item in weapon_data:
+	if weapon_data[item]["availible"]==True:
+		item_group.add(Item(item,(640,300)))
+
+
 def new_level(num):
 	camera_group.empty()
 	camera_group.add(player)
@@ -597,10 +620,8 @@ def new_level(num):
 		camera_group.add(pillar)
 		#collision_group.add(pillar)
 
-
 def shop(num):
 	shopping = True
-	camera_group.add(item_group)
 	camera_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
@@ -613,23 +634,8 @@ def shop(num):
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	camera_group.add(item_group)
-class Item(pygame.sprite.Sprite):
-	def __init__(self, name, position):
-		super().__init__()
-		self.position=pygame.math.Vector2(position)
-		self.name = name
-		self.item = weapon_data[self.name]
-		self.image = self.item["image"].convert_alpha()
-		self.rect = self.image.get_rect()
-		self.rect.center = position
-		item_group.add(self)
-	def purchase(self,player):
-		if player.gold >= self.item["cost"]:
-			player.gold -=self.item["cost"]
-		elif player.gold <self.item["cost"]:
-			print("fpx")
-for x in range(4):
-	moose = Item("Basic",(640,360))
+
+
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
