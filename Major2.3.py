@@ -217,6 +217,7 @@ class Player(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
+		self.coin_amount = 0
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = get_frame()
@@ -450,7 +451,13 @@ class Item(pygame.sprite.Sprite):
 		camera_group.add(self)
 	def update(self, enemy_group, player):
 		if self.prop["collectable"] == True:
-			if player.collisionrect.colliderect(self.rect):
+			if dist(self.rect.center, player.rect.center)<100:
+				self.vector = pygame.Vector2(self.rect.center)
+				if 0 != pygame.Vector2.length(player.vector - self.vector):
+					self.direction = (player.vector - self.vector).normalize()
+					self.rect.center += self.direction *10	
+			if dist(self.rect.center, player.rect.center)<30:
+				player.coin_amount +=1	
 				self.kill()
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle,weapon): 
