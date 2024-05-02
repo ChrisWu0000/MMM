@@ -653,7 +653,7 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
-			if event.key == pygame.K_p:
+			if event.key == pygame.K_TAB:
 				shop(3)
 			if event.key == pygame.K_e:
 				for item in item_group:
