@@ -587,6 +587,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 5
 		self.ratio = self.hp/self.maxhp
+
 class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
@@ -610,6 +611,7 @@ class Prop(pygame.sprite.Sprite):
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
+
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
