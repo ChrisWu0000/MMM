@@ -101,7 +101,16 @@ class Enemy(pygame.sprite.Sprite):
 				self.kill()
 				self.k = 0.05
 				
-
+	def update_direction(self):
+			self.vector = pygame.Vector2(self.rect.center)
+			if 0 != pygame.Vector2.length(player.vector - self.vector):
+				self.direction = (player.vector - self.vector).normalize()
+				if self.direction.x > 0 and self.hp >=0:
+					self.flipped = True
+					self.image = self.flippedwalking[floor(self.i)]
+				if self.direction.x <0 and self.hp>=0:
+					self.flipped = False
+					self.image = self.walking[floor(self.i)]
 						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
@@ -207,7 +216,7 @@ class Enemy(pygame.sprite.Sprite):
 		
 
 	def update(self,enemy_group,player):
-		#self.update_direction()
+		self.update_direction()
 		self.check_collision(player)
 		self.take_damage()
 		self.attack(player)
@@ -702,11 +711,6 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	camera_group.add(item_group)
 
-
-	#for h in range(level_data[num]["num_pillar_y"]):
-	for i in range(level_data[num]["num_pillar_x"]):
-			pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
-			camera_group.add(pillar)
 new_level(1)
 meep = True
 game_pause = False
