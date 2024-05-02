@@ -101,7 +101,16 @@ class Enemy(pygame.sprite.Sprite):
 				self.kill()
 				self.k = 0.05
 				
-
+	def update_direction(self):
+			self.vector = pygame.Vector2(self.rect.center)
+			if 0 != pygame.Vector2.length(player.vector - self.vector):
+				self.direction = (player.vector - self.vector).normalize()
+				if self.direction.x > 0 and self.hp >=0:
+					self.flipped = True
+					self.image = self.flippedwalking[floor(self.i)]
+				if self.direction.x <0 and self.hp>=0:
+					self.flipped = False
+					self.image = self.walking[floor(self.i)]	
 						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
@@ -239,7 +248,7 @@ class Player(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2()
 		self.lastx = 1.0
 		self.lasty = 0
-		self.walklastx = 0
+		self.walklastx = 1.0
 		self.speed = 5
 		self.maxhp = 500
 		self.hp = self.maxhp
