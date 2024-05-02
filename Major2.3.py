@@ -209,6 +209,7 @@ class Enemy(pygame.sprite.Sprite):
 
 
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+			print(player.hp)
 			player.hp -= self.damage
 			player.lastcollision = 0
 
