@@ -713,9 +713,9 @@ def shop(num):
 
 
 	#for h in range(level_data[num]["num_pillar_y"]):
-	for i in range(level_data[num]["num_pillar_x"]):
-			pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
-			camera_group.add(pillar)
+	#for i in range(level_data[num]["num_pillar_x"]):
+			#pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
+			#camera_group.add(pillar)
 new_level(1)
 meep = True
 game_pause = False
