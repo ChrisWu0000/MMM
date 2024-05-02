@@ -239,6 +239,7 @@ class Player(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2()
 		self.lastx = 1.0
 		self.lasty = 0
+		self.walklastx = 0
 		self.speed = 5
 		self.maxhp = 500
 		self.hp = self.maxhp
@@ -362,19 +363,20 @@ class Player(pygame.sprite.Sprite):
 			self.direction.x = -1
 		else:
 			self.direction.x = 0
-		if self.direction.x !=0:
+		if self.direction.x !=0 or self.direction.y !=0:
+			self.lasty = self.direction.y
 			self.lastx = self.direction.x
 		
-		if self.direction.y !=0:
-			self.lasty = self.direction.y
-		if(self.lastx>0):
+		if self.direction.x !=0:
+			self.walklastx = self.direction.x
+		if(self.walklastx>0):
 			self.image=self.flippedwalking[floor(self.i)]
-		elif(self.lastx<0):
+		elif(self.walklastx<0):
 			self.image=self.walking[floor(self.i)]
 		if self.direction.y ==0 and self.direction.x == 0:
-			if(self.lastx>0):
+			if(self.walklastx>0):
 				self.image=self.flippedidle[floor(self.i)]
-			elif(self.lastx<0):
+			elif(self.walklastx<0):
 				self.image=self.idle[floor(self.i)]	
 
 		if keys[pygame.K_1]:
