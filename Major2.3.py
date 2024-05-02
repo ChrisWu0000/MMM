@@ -475,7 +475,22 @@ class Hp_Bar(pygame.sprite.Sprite):
 		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.y-22)-camera_group.offset
 		#self.rect2.width = 150 * self.player.ratio
 		self.rect = self.rect1.union(self.rect2)
-
+class Shop_Item(pygame.sprite.Sprite):
+	def __init__(self, name, position):
+		super().__init__()
+		self.position=pygame.math.Vector2(position)
+		self.name = name
+		self.item = weapon_data[self.name]
+		self.image = self.item["image"].convert_alpha()
+		self.rect = self.image.get_rect()
+		self.rect.center = position
+		item_group.add(self)
+	def purchase(self,player):
+		if player.gold >= self.item["cost"]:
+			player.gold -=self.item["cost"]
+			self.kill()
+		elif player.gold <self.item["cost"]:
+			print("Not enough gold")
 class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -496,6 +511,7 @@ class Item(pygame.sprite.Sprite):
 			if dist(self.rect.center, player.rect.center)<30:
 				player.coin_amount +=1	
 				self.kill()
+	
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
@@ -600,22 +616,6 @@ class CameraGroup(pygame.sprite.Group):
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
 
-class Item(pygame.sprite.Sprite):
-	def __init__(self, name, position):
-		super().__init__()
-		self.position=pygame.math.Vector2(position)
-		self.name = name
-		self.item = weapon_data[self.name]
-		self.image = self.item["image"].convert_alpha()
-		self.rect = self.image.get_rect()
-		self.rect.center = position
-		item_group.add(self)
-	def purchase(self,player):
-		if player.gold >= self.item["cost"]:
-			player.gold -=self.item["cost"]
-			self.kill()
-		elif player.gold <self.item["cost"]:
-			print("Not enough gold")
 		framenum +=1
 		if player.hp > 0:
 			pygame.draw.rect(self.surface, "black", hp.rect3)
@@ -643,7 +643,7 @@ all_sprite_group.add(player)
 
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Item(item,(640,300)))
+		item_group.add(Shop_Item(item,(640,300)))
 
 
 def new_level(num):
