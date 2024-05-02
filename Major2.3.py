@@ -306,7 +306,7 @@ class Player(pygame.sprite.Sprite):
 	def input(self):
 		keys = pygame.key.get_pressed()
 
-		if keys[pygame.K_w] == keys[pygame.K_s]:
+		if keys[pygame.K_w] and keys[pygame.K_s]:
 			self.direction.y = 0
 			if(self.lastx>0):
 				self.image=self.flippedidle[floor(self.i)]
@@ -314,18 +314,14 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.idle[floor(self.i)]
 		elif  keys[pygame.K_w]:
 			self.direction.y = -1
-			if(self.lastx>0):
-				self.image=self.flippedwalking[floor(self.i)]
-			elif(self.lastx<0):
-				self.image=self.walking[floor(self.i)]
+
 		elif keys[pygame.K_s]:
 			self.direction.y = 1
-			if(self.lastx>0):
-				self.image=self.flippedwalking[floor(self.i)]
-			elif(self.lastx<0):
-				self.image=self.walking[floor(self.i)]
+
+		else:
+			self.direction.y = 0
 	
-		if keys[pygame.K_d] == keys[pygame.K_a]:
+		if keys[pygame.K_d] and keys[pygame.K_a]:
 			self.direction.x = 0
 			if(self.lastx>0):
 				self.image=self.flippedidle[floor(self.i)]
@@ -333,13 +329,25 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.idle[floor(self.i)]
 		elif keys[pygame.K_d]:
 			self.direction.x = 1
-			self.image=self.flippedwalking[floor(self.i)]
 		elif keys[pygame.K_a]:
 			self.direction.x = -1
-			self.image=self.walking[floor(self.i)]
-		if self.direction.x !=0 or self.direction.y !=0:
+		else:
+			self.direction.x = 0
+		if self.direction.x !=0:
 			self.lastx = self.direction.x
+		
+		if self.direction.y !=0:
 			self.lasty = self.direction.y
+		if(self.lastx>0):
+			self.image=self.flippedwalking[floor(self.i)]
+		elif(self.lastx<0):
+			self.image=self.walking[floor(self.i)]
+		if self.direction.y ==0 and self.direction.x == 0:
+			if(self.lastx>0):
+				self.image=self.flippedidle[floor(self.i)]
+			elif(self.lastx<0):
+				self.image=self.idle[floor(self.i)]	
+
 		if keys[pygame.K_1]:
 			self.weapon = weapon_data["Basic"]
 		elif keys[pygame.K_2]:
