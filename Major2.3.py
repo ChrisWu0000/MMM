@@ -207,7 +207,7 @@ class Enemy(pygame.sprite.Sprite):
 		
 
 	def update(self,enemy_group,player):
-		self.update_direction()
+		#self.update_direction()
 		self.check_collision(player)
 		self.take_damage()
 		self.attack(player)
@@ -261,6 +261,7 @@ class Player(pygame.sprite.Sprite):
 		self.idle=[]
 		self.flippedidle=[]
 		self.gold = 500
+		self.walklastx = 0
 		for x in range(4):
 			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha())
 			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha(), True, False))
@@ -362,19 +363,20 @@ class Player(pygame.sprite.Sprite):
 			self.direction.x = -1
 		else:
 			self.direction.x = 0
-		if self.direction.x !=0:
+		if self.direction.x !=0 or self.direction.y !=0:
+			self.lasty = self.direction.y
 			self.lastx = self.direction.x
 		
-		if self.direction.y !=0:
-			self.lasty = self.direction.y
-		if(self.lastx>0):
+		if self.direction.x !=0:
+			self.walklastx = self.direction.x
+		if(self.walklastx>0):
 			self.image=self.flippedwalking[floor(self.i)]
-		elif(self.lastx<0):
+		elif(self.walklastx<0):
 			self.image=self.walking[floor(self.i)]
 		if self.direction.y ==0 and self.direction.x == 0:
-			if(self.lastx>0):
+			if(self.walklastx>0):
 				self.image=self.flippedidle[floor(self.i)]
-			elif(self.lastx<0):
+			elif(self.walklastx<0):
 				self.image=self.idle[floor(self.i)]	
 
 		if keys[pygame.K_1]:
