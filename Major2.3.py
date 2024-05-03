@@ -153,6 +153,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.image = self.flippedattacking[floor(self.i)]
 			if self.i >=4-self.k and self.isattacking == True:
 					self.isattacking = False
+					self.collision_check = False
 					self.aim = (player.rect.center)
 					self.shoot()
 	def shoot(self):
