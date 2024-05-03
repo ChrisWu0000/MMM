@@ -2,6 +2,8 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
+
+import pygame.freetype
 from monster_data import *
 from level_data import *
 from prop_data import *
@@ -9,6 +11,7 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
+my_font = pygame.font.SysFont('Times', 30)
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
@@ -33,7 +36,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		
+		self.coin_drop_chance = enemy_info["coin_drop_chance"]
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -92,7 +95,8 @@ class Enemy(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
-				Item("Coin", self.rect.center)
+				if random() <= self.coin_drop_chance:
+					Item("Coin", self.rect.center)
 				self.kill()
 				self.k = 0.05
 				
@@ -105,7 +109,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.image = self.flippedwalking[floor(self.i)]
 				if self.direction.x <0 and self.hp>=0:
 					self.flipped = False
-					self.image = self.walking[floor(self.i)]
+					self.image = self.walking[floor(self.i)]	
 						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
@@ -241,6 +245,7 @@ class Player(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2()
 		self.lastx = 1.0
 		self.lasty = 0
+		self.walklastx = 1.0
 		self.speed = 5
 		self.maxhp = 500
 		self.hp = self.maxhp
@@ -255,7 +260,7 @@ class Player(pygame.sprite.Sprite):
 		self.weapon = weapon_data["Basic"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
-		self.ishit = False
+		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
 		self.i=0
@@ -329,11 +334,18 @@ class Player(pygame.sprite.Sprite):
 				self.speed -= 0.1
 				enemy.collision_check = True
 				#self.check_collision(enemy_group)
+		if self.is_hit == True:
+			if self.flipped == False:
+					self.image = self.takedamage[floor(self.i)]
+			else:
+					self.image = self.flippedtakedamage[floor(self.i)]
+			if self.i >=4-self.k and self.is_hit == True:
+				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 		self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
 		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
-		self.collisionrect.midbottom = self.rect.midbottom	
+		self.collisionrect.midbottom = self.rect.midbottom
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -450,14 +462,14 @@ class Player(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def update(self,enemy_group,player):
 		self.input()
-		self.check_collision(enemy_group)
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
-		self.check_alive()
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
 			self.space_shooting()
+		self.check_collision(enemy_group)
+		self.check_alive()
 		self.i+=self.k
 		if(self.i>=4):
 			self.i=0
@@ -538,6 +550,7 @@ class Bullet(pygame.sprite.Sprite):
 		if self.weapon["ranged"] == True:
 			if self.rect.colliderect(player.rect):
 					player.hp -= self.damage
+					player.is_hit = True
 					self.kill() 
 		else:
 			for x in enemy_group.sprites():
@@ -609,6 +622,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
+		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -618,7 +632,8 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
-
+		screen.blit(prop_data["Coin"]["image"], (0,0))
+		screen.blit(self.text_surface, (30,0))
 		if player.hp > 0:
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
