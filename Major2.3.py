@@ -267,7 +267,6 @@ class Player(pygame.sprite.Sprite):
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
 		self.flippedidle=[]
-		self.gold = 500
 		self.walklastx = 0
 		for x in range(4):
 			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha())
@@ -502,11 +501,11 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.rect.center = position
 		item_group.add(self)
 	def purchase(self,player):
-		if player.gold >= self.item["cost"]:
-			player.gold -=self.item["cost"]
+		if player.coin_amount >= self.item["cost"]:
+			player.coin_amount -=self.item["cost"]
 			self.kill()
-		elif player.gold <self.item["cost"]:
-			print("Not enough gold")
+		elif player.coin_amount <self.item["cost"]:
+			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
