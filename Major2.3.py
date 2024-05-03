@@ -263,7 +263,7 @@ class Player(pygame.sprite.Sprite):
 		self.weapon = weapon_data["Basic"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
-		self.ishit = False
+		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
 		self.i=0
@@ -336,11 +336,18 @@ class Player(pygame.sprite.Sprite):
 				self.speed -= 0.1
 				enemy.collision_check = True
 				#self.check_collision(enemy_group)
+		if self.is_hit == True:
+			if self.flipped == False:
+					self.image = self.takedamage[floor(self.i)]
+			else:
+					self.image = self.flippedtakedamage[floor(self.i)]
+			if self.i >=4-self.k and self.is_hit == True:
+				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 		self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
 		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
-		self.collisionrect.midbottom = self.rect.midbottom	
+		self.collisionrect.midbottom = self.rect.midbottom
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -457,14 +464,14 @@ class Player(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def update(self,enemy_group,player):
 		self.input()
-		self.check_collision(enemy_group)
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
-		self.check_alive()
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
 			self.space_shooting()
+		self.check_collision(enemy_group)
+		self.check_alive()
 		self.i+=self.k
 		if(self.i>=4):
 			self.i=0
@@ -545,6 +552,7 @@ class Bullet(pygame.sprite.Sprite):
 		if self.weapon["ranged"] == True:
 			if self.rect.colliderect(player.rect):
 					player.hp -= self.damage
+					player.is_hit = True
 					self.kill() 
 		else:
 			for x in enemy_group.sprites():
