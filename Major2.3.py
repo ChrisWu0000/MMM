@@ -642,6 +642,7 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
+shopping = False
 werp=0
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
@@ -689,6 +690,8 @@ def new_level(num):
 		#collision_group.add(pillar)
 
 def shop(num):
+	global shopping
+	shopping =True
 	camera_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
@@ -706,7 +709,7 @@ new_level(1)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,1000)
+pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -716,13 +719,13 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(item_group.sprites()[0:3])
+			print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_TAB:
 				shop(3)
-			if event.key == pygame.K_e:
+			if event.key == pygame.K_e and shopping == True:
 				for item in item_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
