@@ -101,7 +101,16 @@ class Enemy(pygame.sprite.Sprite):
 				self.kill()
 				self.k = 0.05
 				
-
+	def update_direction(self):
+			self.vector = pygame.Vector2(self.rect.center)
+			if 0 != pygame.Vector2.length(player.vector - self.vector):
+				self.direction = (player.vector - self.vector).normalize()
+				if self.direction.x > 0 and self.hp >=0:
+					self.flipped = True
+					self.image = self.flippedwalking[floor(self.i)]
+				if self.direction.x <0 and self.hp>=0:
+					self.flipped = False
+					self.image = self.walking[floor(self.i)]
 						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
@@ -200,6 +209,7 @@ class Enemy(pygame.sprite.Sprite):
 
 
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+			print(player.hp)
 			player.hp -= self.damage
 			player.lastcollision = 0
 
@@ -261,6 +271,7 @@ class Player(pygame.sprite.Sprite):
 		self.idle=[]
 		self.flippedidle=[]
 		self.gold = 500
+		self.walklastx = 0
 		for x in range(4):
 			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha())
 			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha(), True, False))
@@ -362,19 +373,20 @@ class Player(pygame.sprite.Sprite):
 			self.direction.x = -1
 		else:
 			self.direction.x = 0
-		if self.direction.x !=0:
+		if self.direction.x !=0 or self.direction.y !=0:
+			self.lasty = self.direction.y
 			self.lastx = self.direction.x
 		
-		if self.direction.y !=0:
-			self.lasty = self.direction.y
-		if(self.lastx>0):
+		if self.direction.x !=0:
+			self.walklastx = self.direction.x
+		if(self.walklastx>0):
 			self.image=self.flippedwalking[floor(self.i)]
-		elif(self.lastx<0):
+		elif(self.walklastx<0):
 			self.image=self.walking[floor(self.i)]
 		if self.direction.y ==0 and self.direction.x == 0:
-			if(self.lastx>0):
+			if(self.walklastx>0):
 				self.image=self.flippedidle[floor(self.i)]
-			elif(self.lastx<0):
+			elif(self.walklastx<0):
 				self.image=self.idle[floor(self.i)]	
 
 		if keys[pygame.K_1]:
@@ -700,11 +712,6 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	camera_group.add(item_group)
 
-
-	#for h in range(level_data[num]["num_pillar_y"]):
-	for i in range(level_data[num]["num_pillar_x"]):
-			pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
-			camera_group.add(pillar)
 new_level(1)
 meep = True
 game_pause = False
