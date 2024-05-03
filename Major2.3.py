@@ -643,11 +643,9 @@ physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
-werp=0
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(640+100*werp,300)))
-		werp +=1
+		item_group.add(Shop_Item(item,(0,0)))
 
 
 def new_level(num):
@@ -703,7 +701,15 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	camera_group.add(item_group.sprites()[0:3])
+	if len(item_group)>0:
+		item_group.sprites()[0].rect.center = (80,815)
+	if len(item_group)>1:
+		item_group.sprites()[1].rect.center = (400,815)
+	if len(item_group)>2:
+		item_group.sprites()[2].rect.center = (750,815)
+	if len(item_group)>3:
+		item_group.sprites()[3].rect.center = (1090,815)
+	camera_group.add(item_group.sprites()[0:4])
 
 new_level(1)
 meep = True
