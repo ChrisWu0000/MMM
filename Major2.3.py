@@ -2,6 +2,8 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
+
+import pygame.freetype
 from monster_data import *
 from level_data import *
 from prop_data import *
@@ -10,6 +12,7 @@ from math import floor
 import Spritesheet
 pygame.init()
 framenum = 0
+my_font = pygame.font.SysFont('Times', 30)
 def get_frame():
 	global framenum
 	currentframe = framenum
@@ -38,7 +41,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		
+		self.coin_drop_chance = enemy_info["coin_drop_chance"]
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -97,7 +100,8 @@ class Enemy(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
-				Item("Coin", self.rect.center)
+				if random() <= self.coin_drop_chance:
+					Item("Coin", self.rect.center)
 				self.kill()
 				self.k = 0.05
 				
@@ -625,6 +629,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
 		global framenum
+		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -634,7 +639,8 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
-
+		screen.blit(prop_data["Coin"]["image"], (0,0))
+		screen.blit(self.text_surface, (30,0))
 		framenum +=1
 		if player.hp > 0:
 			pygame.draw.rect(self.surface, "black", hp.rect3)
