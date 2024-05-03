@@ -9,11 +9,6 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
-framenum = 0
-def get_frame():
-	global framenum
-	currentframe = framenum
-	return currentframe
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
@@ -210,13 +205,9 @@ class Enemy(pygame.sprite.Sprite):
 
 
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
-			print(player.hp)
 			player.hp -= self.damage
 			player.lastcollision = 0
-
-	
 		
-
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
@@ -618,7 +609,6 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
-		global framenum
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -629,7 +619,6 @@ class CameraGroup(pygame.sprite.Group):
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
 
-		framenum +=1
 		if player.hp > 0:
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
@@ -653,10 +642,11 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-
+werp=0
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(640,300)))
+		item_group.add(Shop_Item(item,(640+100*werp,300)))
+		werp +=1
 
 
 def new_level(num):
@@ -699,7 +689,6 @@ def new_level(num):
 		#collision_group.add(pillar)
 
 def shop(num):
-	shopping = True
 	camera_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
@@ -711,13 +700,13 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	camera_group.add(item_group)
+	camera_group.add(item_group.sprites()[0:3])
 
 new_level(1)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,150)
+#pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -727,7 +716,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print("GERGEWGWGW")
+			print(item_group.sprites()[0:3])
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
