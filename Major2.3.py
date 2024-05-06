@@ -326,7 +326,10 @@ class Boss(pygame.sprite.Sprite):
 		self.isdead = False
 		self.isattacking = False
 		self.current_index = 0
-		
+		self.shoot_cooldown1 =self.weapon1["cooldown"]
+		self.shoot_cooldown2 =self.weapon2["cooldown"]
+		self.i1 = 0
+		self.i2 = 0
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		
@@ -419,9 +422,9 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.flippedattack1[floor(self.i)]
 		if self.isattacking == True:
 			if self.flipped == False:
-				self.image = self.attacking[floor(self.i)]
+				self.image = self.attack1[floor(self.i)]
 			else:
-				self.image = self.flippedattacking[floor(self.i)]
+				self.image = self.flippedattack1[floor(self.i)]
 		if self.i2 >=8-self.k and self.isattacking == True:
 				self.isattacking = False
 				self.aim = (player.rect.center)
@@ -473,19 +476,25 @@ class Boss(pygame.sprite.Sprite):
 			self.direction = (player.vector - self.vector).normalize()
 			if self.direction.x > 0 and self.hp >=0:
 				self.flipped = True
-				self.image = self.flippedwalking[floor(self.i)]
+				self.image = self.flippedwalking[floor(self.i1)]
 			if self.direction.x <0 and self.hp>=0:
 				self.flipped = False
-				self.image = self.walking[floor(self.i)]			
+				self.image = self.walking[floor(self.i1)]			
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
 		self.take_damage()
-		self.attack()
+		self.attack(player)
 		self.check_alive()
 		self.i+=self.k
-		if(self.i>=4):
+		self.i1 +=self.k
+		self.i2 +=self.k
+		if(self.i>=12):
 			self.i=0
+		if (self.i1 >=4):
+			self.i1=0
+		if (self.i2 >=8):
+			self.i2=0
 		if self.hp >0:
 			self.speed = monster_data[self.name]["speed"]
 		else:
@@ -925,7 +934,7 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	camera_group.add(item_group)
 
-
+bigboss = Boss((640, 300))
 new_level(1)
 meep = True
 sparetimer1 = pygame.USEREVENT + 1
@@ -953,8 +962,8 @@ while meep:
 				new_level(2)
 			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
 				bosspresent=True
-				enemy_group.add(Boss((640,300)))
-				camera_group.add(Boss((640,300)))
+				enemy_group.add(bigboss)
+				camera_group.add(bigboss)
 	camera_group.update(enemy_group,player)
 	camera_group.custom_draw(player)
 	pygame.display.update()
