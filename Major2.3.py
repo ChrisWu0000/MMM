@@ -2,6 +2,8 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
+
+import pygame.freetype
 from monster_data import *
 from level_data import *
 from prop_data import *
@@ -9,11 +11,7 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
-framenum = 0
-def get_frame():
-	global framenum
-	currentframe = framenum
-	return currentframe
+my_font = pygame.font.SysFont('Times', 30)
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
@@ -38,7 +36,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		
+		self.coin_drop_chance = enemy_info["coin_drop_chance"]
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -97,7 +95,8 @@ class Enemy(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
-				Item("Coin", self.rect.center)
+				if random() <= self.coin_drop_chance:
+					Item("Coin", self.rect.center)
 				self.kill()
 				self.k = 0.05
 				
@@ -110,7 +109,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.image = self.flippedwalking[floor(self.i)]
 				if self.direction.x <0 and self.hp>=0:
 					self.flipped = False
-					self.image = self.walking[floor(self.i)]
+					self.image = self.walking[floor(self.i)]	
 						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
@@ -153,6 +152,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.image = self.flippedattacking[floor(self.i)]
 			if self.i >=4-self.k and self.isattacking == True:
 					self.isattacking = False
+					self.collision_check = False
 					self.aim = (player.rect.center)
 					self.shoot()
 	def shoot(self):
@@ -209,13 +209,9 @@ class Enemy(pygame.sprite.Sprite):
 
 
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
-			print(player.hp)
 			player.hp -= self.damage
 			player.lastcollision = 0
-
-	
 		
-
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
@@ -249,6 +245,7 @@ class Player(pygame.sprite.Sprite):
 		self.direction = pygame.math.Vector2()
 		self.lastx = 1.0
 		self.lasty = 0
+		self.walklastx = 1.0
 		self.speed = 5
 		self.maxhp = 500
 		self.hp = self.maxhp
@@ -263,14 +260,13 @@ class Player(pygame.sprite.Sprite):
 		self.weapon = weapon_data["Basic"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
-		self.ishit = False
+		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
 		self.i=0
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
 		self.flippedidle=[]
-		self.gold = 500
 		self.walklastx = 0
 		for x in range(4):
 			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104).convert_alpha())
@@ -337,11 +333,18 @@ class Player(pygame.sprite.Sprite):
 				self.speed -= 0.1
 				enemy.collision_check = True
 				#self.check_collision(enemy_group)
+		if self.is_hit == True:
+			if self.flipped == False:
+					self.image = self.takedamage[floor(self.i)]
+			else:
+					self.image = self.flippedtakedamage[floor(self.i)]
+			if self.i >=4-self.k and self.is_hit == True:
+				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 		self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
 		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
-		self.collisionrect.midbottom = self.rect.midbottom	
+		self.collisionrect.midbottom = self.rect.midbottom
 	
 	def input(self):
 		keys = pygame.key.get_pressed()
@@ -458,14 +461,14 @@ class Player(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def update(self,enemy_group,player):
 		self.input()
-		self.check_collision(enemy_group)
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
-		self.check_alive()
 		if self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
 			self.space_shooting()
+		self.check_collision(enemy_group)
+		self.check_alive()
 		self.i+=self.k
 		if(self.i>=4):
 			self.i=0
@@ -498,11 +501,11 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.rect.center = position
 		item_group.add(self)
 	def purchase(self,player):
-		if player.gold >= self.item["cost"]:
-			player.gold -=self.item["cost"]
+		if player.coin_amount >= self.item["cost"]:
+			player.coin_amount -=self.item["cost"]
 			self.kill()
-		elif player.gold <self.item["cost"]:
-			print("Not enough gold")
+		elif player.coin_amount <self.item["cost"]:
+			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -546,6 +549,7 @@ class Bullet(pygame.sprite.Sprite):
 		if self.weapon["ranged"] == True:
 			if self.rect.colliderect(player.rect):
 					player.hp -= self.damage
+					player.is_hit = True
 					self.kill() 
 		else:
 			for x in enemy_group.sprites():
@@ -617,7 +621,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.x = self.camera_rect.left - self.camera_borders['left']
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
-		global framenum
+		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -627,8 +631,8 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		pygame.draw.rect(self.surface, "red", hp.rect1)
 		pygame.draw.rect(self.surface, "green", hp.rect2)
-
-		framenum +=1
+		screen.blit(prop_data["Coin"]["image"], (0,0))
+		screen.blit(self.text_surface, (30,0))
 		if player.hp > 0:
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
@@ -652,10 +656,10 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-
+shopping = False
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(640,300)))
+		item_group.add(Shop_Item(item,(0,0)))
 
 
 def new_level(num):
@@ -698,7 +702,8 @@ def new_level(num):
 		#collision_group.add(pillar)
 
 def shop(num):
-	shopping = True
+	global shopping
+	shopping =True
 	camera_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
@@ -710,13 +715,21 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	camera_group.add(item_group)
+	if len(item_group)>0:
+		item_group.sprites()[0].rect.center = (80,815)
+	if len(item_group)>1:
+		item_group.sprites()[1].rect.center = (400,815)
+	if len(item_group)>2:
+		item_group.sprites()[2].rect.center = (750,815)
+	if len(item_group)>3:
+		item_group.sprites()[3].rect.center = (1090,815)
+	camera_group.add(item_group.sprites()[0:4])
 
 new_level(1)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,150)
+pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -726,13 +739,13 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print("GERGEWGWGW")
+			print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_TAB:
 				shop(3)
-			if event.key == pygame.K_e:
+			if event.key == pygame.K_e and shopping == True:
 				for item in item_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
