@@ -252,7 +252,7 @@ class Player(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
-		self.coin_amount = 0
+		self.coin_amount = 1000
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = 200
@@ -503,7 +503,7 @@ class Shop_Item(pygame.sprite.Sprite):
 	def purchase(self,player):
 		if player.coin_amount >= self.item["cost"]:
 			player.coin_amount -=self.item["cost"]
-			
+			self.item["purchased"]=True
 			self.kill()
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
@@ -704,7 +704,7 @@ def new_level(num):
 
 def shop(num):
 	global shopping
-	shopping =True
+	shopping = True
 	camera_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
@@ -730,7 +730,7 @@ new_level(1)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-#pygame.time.set_timer(sparetimer1,1000)
+pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -739,8 +739,8 @@ while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
-		#if event.type == sparetimer1:
-			#print(player.rect.center)
+		if event.type == sparetimer1:
+			print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
@@ -750,14 +750,14 @@ while meep:
 				for item in item_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				new_level(2)			
+			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+				new_level(2)
+			elif event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
+				shop(3)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
-				game_pause = False
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				new_level(2)			
+				game_pause = False		
 	if game_pause == False:			
 		camera_group.update(enemy_group,player)
 		camera_group.custom_draw(player)
