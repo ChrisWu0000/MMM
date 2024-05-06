@@ -738,8 +738,8 @@ while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
-		if event.type == sparetimer1:
-			print(player.rect.center)
+		#if event.type == sparetimer1:
+			#print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
