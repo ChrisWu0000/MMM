@@ -316,7 +316,7 @@ class Boss(pygame.sprite.Sprite):
 		self.hp = enemy_info["health"]
 		self.speed = enemy_info["speed"]
 		self.push_power = enemy_info["push_power"]
-		self.currentimage = self.sprite_sheet.get_image(0, 80, 80)
+		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
 		self.image = self.currentimage
 		self.damage = enemy_info["attack_damage"]
 		self.mass = enemy_info["mass"]
@@ -334,8 +334,8 @@ class Boss(pygame.sprite.Sprite):
 		self.rect.center = position
 		
 		self.collisionrect = self.rect
-		self.collisionrect.width = int(0.6*self.collisionrect.width)
-		self.collisionrect.height = int(0.8*self.collisionrect.height)
+		self.collisionrect.width = int(0.8*self.collisionrect.width)
+		self.collisionrect.height = int(0.9*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
 		self.speed_buildupy=0
@@ -380,6 +380,7 @@ class Boss(pygame.sprite.Sprite):
 			self.death.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
 			self.i+=1
 		self.i = 0
+
 	def check_alive(self): # checks if enemy dies
 		if self.hp <=0  and self.isdead == False:
 			self.i = 0
@@ -400,9 +401,9 @@ class Boss(pygame.sprite.Sprite):
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
 				if self.flipped == False:
-					self.image = self.takedamage[floor(self.i)]
+					self.image = self.takedamage[floor(self.i1)]
 				else:
-					self.image = self.flippedtakedamage[floor(self.i)]
+					self.image = self.flippedtakedamage[floor(self.i1)]
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
@@ -410,21 +411,21 @@ class Boss(pygame.sprite.Sprite):
 			self.i2 = 0
 			self.isattacking = True
 			if self.flipped == False:
-				self.image = self.attack2[floor(self.i)]
+				self.image = self.attack2[floor(self.i2)]
 			else:
-				self.image = self.flippedattack2[floor(self.i)]
+				self.image = self.flippedattack2[floor(self.i2)]
 		elif self.shoot_cooldown1 == 0 and self.isattacking == False:
 			self.i1 = 0
 			self.isattacking = True
 			if self.flipped == False:
-				self.image = self.attack1[floor(self.i)]
+				self.image = self.attack1[floor(self.i1)]
 			else:
-				self.image = self.flippedattack1[floor(self.i)]
+				self.image = self.flippedattack1[floor(self.i1)]
 		if self.isattacking == True:
 			if self.flipped == False:
-				self.image = self.attack1[floor(self.i)]
+				self.image = self.attack1[floor(self.i1)]
 			else:
-				self.image = self.flippedattack1[floor(self.i)]
+				self.image = self.flippedattack1[floor(self.i1)]
 		if self.i2 >=8-self.k and self.isattacking == True:
 				self.isattacking = False
 				self.aim = (player.rect.center)
@@ -469,7 +470,7 @@ class Boss(pygame.sprite.Sprite):
 			player.hp -= self.damage
 			player.lastcollision = pygame.time.get_ticks()
 
-		self.collisionrect.center = self.rect.center
+		self.collisionrect.midbottom = self.rect.midbottom
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
