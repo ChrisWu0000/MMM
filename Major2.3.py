@@ -394,15 +394,15 @@ class Player(pygame.sprite.Sprite):
 
 		if keys[pygame.K_1]:
 			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_2]:
+		elif keys[pygame.K_2] and weapon_data["Shotgun"]["purchased"]==True:
 			self.weapon = weapon_data["Shotgun"]
-		elif keys[pygame.K_3]:
+		elif keys[pygame.K_3] and weapon_data["Minigun"]["purchased"]==True:
 			self.weapon = weapon_data["Minigun"]
-		elif keys[pygame.K_4]:
+		elif keys[pygame.K_4] and weapon_data["Lag_Maker"]["purchased"]==True:
 			self.weapon = weapon_data["Lag_Maker"]
-		elif keys[pygame.K_5]:
+		elif keys[pygame.K_5] and weapon_data["Basic"]["purchased"]==True:
 			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_6]:
+		elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
 			self.weapon = weapon_data["Basic"]
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
@@ -503,6 +503,7 @@ class Shop_Item(pygame.sprite.Sprite):
 	def purchase(self,player):
 		if player.coin_amount >= self.item["cost"]:
 			player.coin_amount -=self.item["cost"]
+			
 			self.kill()
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
@@ -729,7 +730,7 @@ new_level(1)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1,1000)
+#pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
