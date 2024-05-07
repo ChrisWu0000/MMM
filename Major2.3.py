@@ -499,12 +499,16 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.image = self.item["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
-		item_group.add(self)
+		if item["type"] == "weapon":
+			weapons_group.add(self)
 	def purchase(self,player):
 		if player.coin_amount >= self.item["cost"]:
 			player.coin_amount -=self.item["cost"]
 			self.item["purchased"]=True
-			self.kill()
+			wares_group.remove(self)
+			camera_group.remove(self)
+			if item["type"] == "weapon":
+				weapons_group.remove(self)
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
@@ -648,6 +652,8 @@ collision_group = pygame.sprite.Group()
 physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+wares_group = pygame.sprite.Group()
+weapons_group = pygame.sprite.Group()
 player = Player((640,360))
 hp = Hp_Bar(player)
 player_group.add(hp)
@@ -660,7 +666,7 @@ all_sprite_group.add(player)
 shopping = False
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(0,0)))
+		item_group.add(Shop_Item(item,(80,815)))
 
 
 def new_level(num):
@@ -716,21 +722,29 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	if len(item_group)>0:
-		item_group.sprites()[0].rect.center = (80,815)
-	if len(item_group)>1:
-		item_group.sprites()[1].rect.center = (400,815)
-	if len(item_group)>2:
-		item_group.sprites()[2].rect.center = (750,815)
-	if len(item_group)>3:
-		item_group.sprites()[3].rect.center = (1090,815)
-	camera_group.add(item_group.sprites()[0:4])
+	if len(weapons_group)>0:
+		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
+		wares_group.sprites()[1].rect.center = (400,815)
+		
+		wares_group.sprites()[2].rect.center = (750,815)
+		
+		wares_group.sprites()[3].rect.center = (1090,815)
 
+	else:
+		wares_group.sprites()[0].rect.center = (80,815)
+		
+		wares_group.sprites()[1].rect.center = (400,815)
+		
+		wares_group.sprites()[2].rect.center = (750,815)
+		
+		wares_group.sprites()[3].rect.center = (1090,815)
+		
+	camera_group.add(wares_group.sprites()[0:4])
 new_level(1)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1,1000)
+#pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	#if player_group.has(player) == False: #If player dies, game ends
 			#meep = False
@@ -740,17 +754,18 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(player.rect.center)
+			print("meep")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 			if event.key == pygame.K_TAB:
 				shop(3)
 			if event.key == pygame.K_e and shopping == True:
-				for item in item_group:
+				for item in wares_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+				shopping = False
 				new_level(2)
 			elif event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
 				shop(3)
