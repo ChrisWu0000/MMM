@@ -100,16 +100,6 @@ class Enemy(pygame.sprite.Sprite):
 				self.kill()
 				self.k = 0.05
 				
-	def update_direction(self):
-			self.vector = pygame.Vector2(self.rect.center)
-			if 0 != pygame.Vector2.length(player.vector - self.vector):
-				self.direction = (player.vector - self.vector).normalize()
-				if self.direction.x > 0 and self.hp >=0:
-					self.flipped = True
-					self.image = self.flippedwalking[floor(self.i)]
-				if self.direction.x <0 and self.hp>=0:
-					self.flipped = False
-					self.image = self.walking[floor(self.i)]	
 						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
@@ -750,8 +740,19 @@ while meep:
 				for item in item_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
+<<<<<<< Updated upstream
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
 				new_level(2)			
+=======
+			
+			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
+				new_level(2)	
+			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
+				bosspresent=True
+				bigboss = Boss((640, 300))
+				enemy_group.add(bigboss)
+				camera_group.add(bigboss)		
+>>>>>>> Stashed changes
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
