@@ -203,8 +203,8 @@ class Enemy(pygame.sprite.Sprite):
 					self.check_collision(player)
 			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
-			self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
-			self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
+			self.rect.top = max(camera_group.level["top wall"], self.rect.top)
+			self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)
 			#for x in enemy_group:
 				#if self.rect.y == x.rect.y and self !=x:
 					#self.rect.y += 0.01		
@@ -551,8 +551,8 @@ class Player(pygame.sprite.Sprite):
 				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
-		self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
-		self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
+		self.rect.top = max(camera_group.level["top wall"], self.rect.top)
+		self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)
 		self.collisionrect.midbottom = self.rect.midbottom
 	
 	def input(self):
@@ -961,11 +961,12 @@ while meep:
 				for item in item_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
-			bigboss = Boss((640, 300))
+			
 			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
 				new_level(2)	
 			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
 				bosspresent=True
+				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
 				camera_group.add(bigboss)		
 			if event.key == pygame.K_p and game_pause == False:
