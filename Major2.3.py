@@ -502,11 +502,13 @@ class Shop_Item(pygame.sprite.Sprite):
 	def purchase(self,player):
 		if player.coin_amount >= self.item["cost"]:
 			player.coin_amount -=self.item["cost"]
-			self.item["purchased"]=True
 			wares_group.remove(self)
 			camera_group.remove(self)
 			if self.item["type"] == "weapon":
+				self.item["purchased"]=True
 				weapons_group.remove(self)
+			elif self.item["type"]== "upgrade":
+				print("frog")
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
