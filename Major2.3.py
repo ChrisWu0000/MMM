@@ -499,15 +499,13 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.image = self.item["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
-		if item["type"] == "weapon":
-			weapons_group.add(self)
 	def purchase(self,player):
 		if player.coin_amount >= self.item["cost"]:
 			player.coin_amount -=self.item["cost"]
 			self.item["purchased"]=True
 			wares_group.remove(self)
 			camera_group.remove(self)
-			if item["type"] == "weapon":
+			if self.item["type"] == "weapon":
 				weapons_group.remove(self)
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
@@ -666,11 +664,15 @@ all_sprite_group.add(player)
 shopping = False
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(80,815)))
+		if weapon_data[item]["type"] == "weapon":
+			weapons_group.add(Shop_Item(item,(80,815)))
+		else:
+			item_group.add(Shop_Item(item,(80,815)))
 
 
 def new_level(num):
 	camera_group.empty()
+	wares_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
@@ -712,6 +714,7 @@ def shop(num):
 	global shopping
 	shopping = True
 	camera_group.empty()
+	wares_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
@@ -724,21 +727,18 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-		wares_group.sprites()[1].rect.center = (400,815)
-		
-		wares_group.sprites()[2].rect.center = (750,815)
-		
-		wares_group.sprites()[3].rect.center = (1090,815)
-
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		for x in range(len(wares_group)):
+			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	else:
-		wares_group.sprites()[0].rect.center = (80,815)
-		
-		wares_group.sprites()[1].rect.center = (400,815)
-		
-		wares_group.sprites()[2].rect.center = (750,815)
-		
-		wares_group.sprites()[3].rect.center = (1090,815)
-		
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		for x in range(len(wares_group)):
+			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	camera_group.add(wares_group.sprites()[0:4])
 new_level(1)
 meep = True
