@@ -508,7 +508,11 @@ class Shop_Item(pygame.sprite.Sprite):
 				self.item["purchased"]=True
 				weapons_group.remove(self)
 			elif self.item["type"]== "upgrade":
-				print("frog")
+				for item in weapon_data:
+					if weapon_data[item]["type"] == "weapon":
+						weapon_data[item][self.item["change"]]+=self.item["value"]
+						if weapon_data[item][self.item["change"]] <=0:
+							weapon_data[item][self.item["change"]]=1
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
@@ -766,10 +770,10 @@ while meep:
 				for item in wares_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
 				shopping = False
 				new_level(2)
-			elif event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
 				shop(3)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
