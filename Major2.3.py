@@ -111,7 +111,7 @@ class Enemy(pygame.sprite.Sprite):
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
-		if self.weapon["ranged"]==False:
+		if self.weapon["ranged"] == False and self.isdead == False:
 			if self.collision_check == True and self.isattacking == False:
 				self.i = 0
 				self.isattacking = True
@@ -128,7 +128,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.isattacking = False
 					self.collision_check = False
 
-		elif self.weapon["ranged"]==True:
+		elif self.weapon["ranged"]==True and self.isdead == False:
 			if self.shoot_cooldown == 0 and self.isattacking == False:
 				self.i = 0
 				self.isattacking = True
@@ -337,14 +337,14 @@ class Boss(pygame.sprite.Sprite):
 				self.ishit = False			
 
 	def attack(self,player): #checks if enemy should attack
-		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking1 == False:
+		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking1 == False and self.isdead == False:
 			self.i2 = 0
 			self.isattacking2 = True
 			if self.flipped == False:
 				self.image = self.attack2[floor(self.i2)]
 			else:
 				self.image = self.flippedattack2[floor(self.i2)]
-		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking2 == False:
+		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking2 == False and self.isdead == False:
 			self.i1 = 0
 			self.isattacking1 = True
 			if self.flipped == False:
