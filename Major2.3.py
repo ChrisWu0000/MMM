@@ -414,6 +414,14 @@ class Player(pygame.sprite.Sprite):
 			self.shoot=False        		
 	def is_shooting(self):
 		projectiles = self.weapon["projectiles"]
+		base_angle=0
+		fox = 0
+		if self.weapon["spread"]==0:
+			fox = 1
+			if projectiles % 2 == 1:
+				base_angle = 0.05*(projectiles-1)
+			elif projectiles % 2 == 0:
+				base_angle = 0.05*(projectiles-1)-0.025
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -430,7 +438,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
@@ -442,6 +450,14 @@ class Player(pygame.sprite.Sprite):
 	def space_shooting(self):
 		projectiles = self.weapon["projectiles"]
 		self.angle = atan2(self.lasty, self.lastx)
+		base_angle=0
+		fox = 0
+		if self.weapon["spread"]==0:
+			fox = 1
+			if projectiles % 2 == 1:
+				base_angle = 0.05*(projectiles-1)
+			elif projectiles % 2 == 0:
+				base_angle = 0.05*(projectiles-1)-0.025
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -455,7 +471,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
