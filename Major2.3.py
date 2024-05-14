@@ -252,7 +252,7 @@ class Player(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
-		self.coin_amount = 1000
+		self.coin_amount = 0
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = 200
@@ -788,7 +788,7 @@ while meep:
 						item.purchase(player)
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
 				shopping = False
-				new_level(2)
+				new_level(1)
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
 				shop(3)
 			if event.key == pygame.K_p and game_pause == False:
