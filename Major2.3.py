@@ -375,10 +375,10 @@ class Boss(pygame.sprite.Sprite):
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown1 == 0:
-			self.shoot_cooldown1 = self.weapon1["cooldown"] + randint(0,50)
+			self.shoot_cooldown1 = self.weapon1["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon1["spread"],self.weapon1["spread"])/100,self.weapon1)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle,self.weapon1)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
@@ -388,7 +388,7 @@ class Boss(pygame.sprite.Sprite):
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown2 == 0:
-			self.shoot_cooldown2 = self.weapon2["cooldown"] + randint(0,50)
+			self.shoot_cooldown2 = self.weapon2["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon2["spread"],self.weapon2["spread"])/100,self.weapon2)
@@ -454,6 +454,10 @@ class Boss(pygame.sprite.Sprite):
 		self.take_damage()
 		self.attack(player)
 		self.check_alive()
+		if self.shoot_cooldown1>0:
+			self.shoot_cooldown1-=1
+		if self.shoot_cooldown2>0:
+			self.shoot_cooldown2-=1
 		self.i+=self.k
 		self.i1 +=self.k
 		self.i2 +=self.k
