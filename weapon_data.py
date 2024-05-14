@@ -2,6 +2,8 @@ import pygame
 weapon_data = {
   "bell":{"type":"enemy_weapon","availible":False,"ranged":False},
   "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":4,"duration":200,"spread":5,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.8},
+  "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":80,"projectiles":1,"speed":5,"duration":300,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.6},
+  "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":8,"speed":6,"duration":200,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.1},
   #--------
   "Basic":{"type":"weapon","purchased":True,"availible":False,"cost":25,"ranged":False,"damage":50,"cooldown":30,"projectiles":1,"speed":12,"duration":55,"spread":0,"sprite":"Weapons/Bullet.png","scaling":4,"image": pygame.image.load("Enemies/Bell.png")},
   "Shotgun":{"type":"weapon","purchased":False,"availible":True,"cost":25,"ranged":False,"damage":35,"cooldown":60,"projectiles":9,"speed":20,"duration":25,"spread":60,"sprite":"Weapons/Bullet.png","scaling":4,"image": pygame.image.load("Enemies/Sax.png")},

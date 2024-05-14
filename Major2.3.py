@@ -11,6 +11,7 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
+bosspresent=False
 my_font = pygame.font.SysFont('Times', 30)
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
@@ -230,6 +231,248 @@ class Enemy(pygame.sprite.Sprite):
 		else:
 			self.speed = 0
 		self.enemylist = []
+
+class Boss(pygame.sprite.Sprite):
+	def __init__(self, position):
+		super().__init__()
+		self.position = pygame.math.Vector2(position) 
+		self.name = 'top_brass'
+		enemy_info = monster_data[self.name]
+		self.weapon1 = weapon_data['top_brass1']
+		self.weapon2 = weapon_data['top_brass2']
+		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
+		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
+		self.hp = enemy_info["health"]
+		self.speed = enemy_info["speed"]
+		self.push_power = enemy_info["push_power"]
+		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
+		self.image = self.currentimage
+		self.damage = enemy_info["attack_damage"]
+		self.mass = enemy_info["mass"]
+		self.collision_check = False #all of these are used to detect which animation to use
+		self.flipped = False
+		self.ishit = False
+		self.isdead = False
+		self.current_index = 0
+		self.isattacking1 = False
+		self.isattacking2 = False
+		self.shoot_cooldown1 =self.weapon1["cooldown"]
+		self.shoot_cooldown2 =self.weapon2["cooldown"]
+		self.i1 = 0
+		self.i2 = 0
+		self.rect = self.image.get_rect()
+		self.rect.center = position
+		
+		self.collisionrect = self.rect
+		self.collisionrect.width = int(0.8*self.collisionrect.width)
+		self.collisionrect.height = int(0.9*self.collisionrect.height)
+		self.collisionrect.midbottom = self.rect.midbottom
+
+		self.speed_buildupy=0
+		self.speed_buildupx=0
+		self.frogx =0
+		self.frogy =0
+
+		self.i=0
+		self.k = 0.05 # 4/self.k = #ticks for animation to loop
+		self.walking=[]
+		self.flippedwalking=[]
+		for x in range(4):
+			self.flippedwalking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
+			self.walking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.i+=1
+
+		self.attack1=[]
+		self.flippedattack1=[]
+		for x in range(4):
+			self.flippedattack1.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
+			self.attack1.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.i+=1
+		
+		self.attack2=[]
+		self.flippedattack2=[]
+		for x in range(8):
+			self.flippedattack2.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
+			self.attack2.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.i+=1
+
+		self.takedamage=[]
+		self.flippedtakedamage=[]
+		for x in range(4):
+			self.flippedtakedamage.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
+			self.takedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.i+=1
+
+		self.death=[]
+		self.flippeddeath=[]
+		for x in range(12):
+			self.flippeddeath.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
+			self.death.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.i+=1
+		self.i = 0
+
+	def check_alive(self): # checks if enemy dies
+		if self.hp <=0  and self.isdead == False:
+			self.i = 0
+			self.isdead = True
+			if self.flipped == False:
+				self.image = self.death[floor(self.i)]
+			else:
+				self.image = self.flippeddeath[floor(self.i)]
+			enemy_group.remove(self)
+			collision_group.remove(self)
+		if self.hp <=0  and self.isdead == True:
+			if self.flipped == False:
+				self.image = self.death[floor(self.i)]
+			else:
+				self.image = self.flippeddeath[floor(self.i)]
+			if self.i >= 12-self.k:
+				self.kill()		
+	def take_damage(self): #checks if enemy is hit
+			if self.ishit == True:
+				if self.flipped == False:
+					self.image = self.takedamage[floor(self.i1)]
+				else:
+					self.image = self.flippedtakedamage[floor(self.i1)]
+			if self.i >=4-self.k and self.ishit == True:
+				self.ishit = False			
+
+	def attack(self,player): #checks if enemy should attack
+		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking1 == False and self.isdead == False:
+			self.i2 = 0
+			self.isattacking2 = True
+			if self.flipped == False:
+				self.image = self.attack2[floor(self.i2)]
+			else:
+				self.image = self.flippedattack2[floor(self.i2)]
+		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking2 == False and self.isdead == False:
+			self.i1 = 0
+			self.isattacking1 = True
+			if self.flipped == False:
+				self.image = self.attack1[floor(self.i1)]
+			else:
+				self.image = self.flippedattack1[floor(self.i1)]
+		if self.isattacking1 == True:
+			if self.flipped == False:
+				self.image = self.attack1[floor(self.i1)]
+			else:
+				self.image = self.flippedattack1[floor(self.i1)]
+		if self.i1 >=4-self.k and self.isattacking1 == True:
+				self.isattacking1 = False
+				self.aim = (player.rect.center)
+				self.shoot1()
+		if self.isattacking2 == True:
+			if self.flipped == False:
+				self.image = self.attack2[floor(self.i1)]
+			else:
+				self.image = self.flippedattack2[floor(self.i1)]
+		if self.i2 >=8-self.k and self.isattacking2 == True:
+				self.isattacking2 = False
+				self.aim = (player.rect.center)
+				self.shoot2()
+	def shoot1(self):
+		projectiles = self.weapon1["projectiles"]
+		self.lastx = (self.aim[0] - self.rect.centerx)
+		self.lasty = (self.aim[1] - self.rect.centery)
+		self.angle = atan2(self.lasty, self.lastx)
+		if self.shoot_cooldown1 == 0:
+			self.shoot_cooldown1 = self.weapon1["cooldown"]
+			spawn_bullet_pos = self.rect.center
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle,self.weapon1)
+				weapon_group.add(self.bullet)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
+	def shoot2(self):
+		projectiles = self.weapon2["projectiles"]
+		base_angle = 0.08*(projectiles-1)-0.04
+		self.lastx = (self.aim[0] - self.rect.centerx)
+		self.lasty = (self.aim[1] - self.rect.centery)
+		self.angle = atan2(self.lasty, self.lastx)
+		if self.shoot_cooldown2 == 0:
+			self.shoot_cooldown2 = self.weapon2["cooldown"]
+			spawn_bullet_pos = self.rect.center
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
+				weapon_group.add(self.bullet)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
+
+	def check_collision(self,player): #Chris version of collision
+		if self.hp >0:
+			self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
+			self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
+			self.frogx = int(self.speed_buildupx)
+			self.speed_buildupx = float(self.speed_buildupx)-int(self.speed_buildupx)
+			self.frogy = int(self.speed_buildupy)
+			self.speed_buildupy =  float(self.speed_buildupy)-int(self.speed_buildupy)
+			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
+			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
+			self.collisionrect.midbottom = self.rect.midbottom
+			for enemy in enemy_group:
+				if dist(self.collisionrect.center, enemy.collisionrect.center)<10 and enemy != self:
+					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx+(10-20*random())
+					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy+(10-20*random())
+					self.collisionrect.midbottom = self.rect.midbottom
+					self.speed -= 0.1
+					self.check_collision(player)
+				if self.rect.bottom == enemy.rect.bottom and self.rect.bottom < player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
+					self.rect.y -=0.01
+				elif self.rect.bottom == enemy.rect.bottom and self.rect.bottom > player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
+					self.rect.y +=0.01
+
+			if self.collisionrect.colliderect(player.rect):
+					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
+					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
+					self.collisionrect.midbottom = self.rect.midbottom
+					self.speed -= 0.1
+					self.collision_check = True
+					self.check_collision(player)
+			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
+			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
+			self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
+			self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
+			#for x in enemy_group:
+				#if self.rect.y == x.rect.y and self !=x:
+					#self.rect.y += 0.01		
+
+
+		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+			player.hp -= self.damage
+			player.lastcollision = 0
+	def update_direction(self):
+		self.vector = pygame.Vector2(self.rect.center)
+		if 0 != pygame.Vector2.length(player.vector - self.vector):
+			self.direction = (player.vector - self.vector).normalize()
+			if self.direction.x > 0 and self.hp >=0:
+				self.flipped = True
+				self.image = self.flippedwalking[floor(self.i1)]
+			if self.direction.x <0 and self.hp>=0:
+				self.flipped = False
+				self.image = self.walking[floor(self.i1)]			
+	def update(self,enemy_group,player):
+		self.update_direction()
+		self.check_collision(player)
+		self.take_damage()
+		self.attack(player)
+		self.check_alive()
+		if self.shoot_cooldown1>0:
+			self.shoot_cooldown1-=1
+		if self.shoot_cooldown2>0:
+			self.shoot_cooldown2-=1
+		self.i+=self.k
+		self.i1 +=self.k
+		self.i2 +=self.k
+		if(self.i>=12):
+			self.i=0
+		if (self.i1 >=4):
+			self.i1=0
+		if (self.i2 >=8):
+			self.i2=0
+		if self.hp >0:
+			self.speed = monster_data[self.name]["speed"]
+		else:
+			self.speed = 0
 
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos):
@@ -551,19 +794,19 @@ class Item(pygame.sprite.Sprite):
 			if dist(self.rect.center, player.rect.center)<30:
 				player.coin_amount +=1	
 				self.kill()
-	
+
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
 		self.weapon = weapon
+		self.angle = angle
 		self.image = pygame.image.load(self.weapon["sprite"])
-		self.image = pygame.transform.rotozoom(self.image, 0, self.weapon["scaling"])
+		self.image = pygame.transform.rotozoom(self.image,sin(self.angle)*30, self.weapon["scaling"])
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
 		self.speed = self.weapon["speed"]
-		self.angle = angle
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
@@ -780,6 +1023,11 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
+			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
+				bosspresent=True
+				bigboss = Boss((640, 300))
+				enemy_group.add(bigboss)
+				camera_group.add(bigboss)
 			if event.key == pygame.K_TAB:
 				shop(3)
 			if event.key == pygame.K_e and shopping == True:
