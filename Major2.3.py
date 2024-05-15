@@ -875,7 +875,7 @@ def spawn(name, x):
 	for i in range(x):
 			random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 			random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-			if dist(player.rect.center, (random_x, random_y)) < 500:
+			if dist(player.rect.center, (random_x, random_y)) < 100:
 				random_x = (camera_group.background_image.get_size()[0]-100)/2
 				random_y = (camera_group.background_image.get_size()[1]-100)/2
 			extra=Enemy(name, (random_x,random_y))
@@ -941,7 +941,7 @@ while meep:
 	
 	if len(enemy_group) == 0 and wave < 4: 
 		j+=1
-		if j == 600:
+		if j == 120:
 			spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]))
 			spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]))
 			wave +=1
