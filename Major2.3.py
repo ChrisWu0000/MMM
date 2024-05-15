@@ -184,8 +184,8 @@ class Enemy(pygame.sprite.Sprite):
 			self.collisionrect.midbottom = self.rect.midbottom
 			for enemy in enemy_group:
 				if dist(self.collisionrect.center, enemy.collisionrect.center)<10 and enemy != self:
-					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx+(10-20*random())
-					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy+(10-20*random())
+					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx+2*(10-20*random())
+					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy+2*(10-20*random())
 					self.collisionrect.midbottom = self.rect.midbottom
 					self.speed -= 0.1
 					#self.check_collision(player)
@@ -871,12 +871,21 @@ shopping = False
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		item_group.add(Shop_Item(item,(0,0)))
-
-
+def spawn(name, x):
+	for i in range(x):
+			random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
+			random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+			if dist(player.rect.center, (random_x, random_y)) < 500:
+				random_x = (camera_group.background_image.get_size()[0]-100)/2
+				random_y = (camera_group.background_image.get_size()[1]-100)/2
+			extra=Enemy(name, (random_x,random_y))
+			camera_group.add(extra)
+			enemy_group.add(extra)
+			collision_group.add(extra)
+			all_sprite_group.add(extra)	
 def new_level(num):
-	global k, l
-	k = 0
-	l = 0
+	global wave
+	wave = 1
 	camera_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
@@ -888,54 +897,9 @@ def new_level(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	for i in range(level_data[num]["num_bell"]):
-		if len(enemy_group) < 50 and level_data[num]["num_bell"] < 25 and level_data[num]["num_sax"] < 25:
-			random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-			random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-			if dist(player.rect.center, (random_x, random_y)) < 5000:
-				random_x = (camera_group.background_image.get_size()[0]-100)/2
-				random_y = (camera_group.background_image.get_size()[1]-100)/2
-			extra=Enemy("bell", (random_x,random_y))
-			camera_group.add(extra)
-			enemy_group.add(extra)
-			collision_group.add(extra)
-			all_sprite_group.add(extra)
-		elif len(enemy_group) < 25:
-			random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-			random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-			if dist(player.rect.center, (random_x, random_y)) < 500:
-				random_x = (camera_group.background_image.get_size()[0]-100)/2
-				random_y = (camera_group.background_image.get_size()[1]-100)/2
-			extra=Enemy("bell", (random_x,random_y))
-			camera_group.add(extra)
-			enemy_group.add(extra)
-			collision_group.add(extra)
-			all_sprite_group.add(extra)
-			k+=1
-	for i in range(level_data[num]["num_sax"]):
-		if len(enemy_group) < 50:
-			random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-			random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-			if dist(player.rect.center, (random_x, random_y)) < 5000:
-				random_x = (camera_group.background_image.get_size()[0]-100)/2
-				random_y = (camera_group.background_image.get_size()[1]-100)/2
-			extra=Enemy("sax", (random_x,random_y))
-			camera_group.add(extra)
-			enemy_group.add(extra)
-			collision_group.add(extra)
-			all_sprite_group.add(extra)
-			l+=1
-		"""elif len(enemy_group) < 25:
-			random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-			random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-			if dist(player.rect.center, (random_x, random_y)) < 500:
-				random_x = (camera_group.background_image.get_size()[0]-100)/2
-				random_y = (camera_group.background_image.get_size()[1]-100)/2
-			extra=Enemy("bell", (random_x,random_y))
-			camera_group.add(extra)
-			enemy_group.add(extra)
-			collision_group.add(extra)
-			all_sprite_group.add(extra)"""
+	spawn("bell", min(floor(level_data[num]["num_bell"]/3), 25))
+	spawn("sax", min(floor(level_data[num]["num_sax"]/3), 25))
+	wave +=1
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
@@ -971,41 +935,17 @@ new_level(levelnum)
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
+j = 0
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	if len(enemy_group) <50: 
-		if player.rect.centerx > camera_group.background_image.get_size()[0]/2:
-			if l <= level_data[levelnum]["num_sax"]:
-				extra=Enemy("sax", (0,camera_group.background_image.get_size()[1]/2))
-				l+=1
-				camera_group.add(extra)
-				enemy_group.add(extra)
-				collision_group.add(extra)
-				all_sprite_group.add(extra)
-			if k <= level_data[levelnum]["num_bell"]:
-				extra=Enemy("bell", (0,camera_group.background_image.get_size()[1]/2))
-				k+=1
-				camera_group.add(extra)
-				enemy_group.add(extra)
-				collision_group.add(extra)
-				all_sprite_group.add(extra)
-		else:
-			if k <= level_data[levelnum]["num_bell"]:
-				extra=Enemy("bell", (camera_group.background_image.get_size()[0],camera_group.background_image.get_size()[1]/2))
-				k +=1
-				camera_group.add(extra)
-				enemy_group.add(extra)
-				collision_group.add(extra)
-				all_sprite_group.add(extra)
-			if l <= level_data[levelnum]["num_sax"]:
-				extra=Enemy("sax", (0,camera_group.background_image.get_size()[1]/2))
-				l +=1
-				camera_group.add(extra)
-				enemy_group.add(extra)
-				collision_group.add(extra)
-				all_sprite_group.add(extra)
-	#if len(enemy_group) == 0: #No enemies left, game ends
-		#meep = False
+	
+	if len(enemy_group) == 0 and wave < 4: 
+		j+=1
+		if j == 600:
+			spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]))
+			spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]))
+			wave +=1
+			j = 0
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
@@ -1020,10 +960,7 @@ while meep:
 				for item in item_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
-			
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				levelnum +=1
-				new_level(levelnum)	
+
 			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
 				bosspresent=True
 				bigboss = Boss((640, 300))
@@ -1033,9 +970,10 @@ while meep:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
 				game_pause = False
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
+			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and wave > level_data[levelnum]["num_wave"]:
 				levelnum+=1
-				new_level(levelnum)			
+				new_level(levelnum)
+				wave = 0			
 	if game_pause == False:			
 		camera_group.update(enemy_group,player)
 		camera_group.custom_draw(player)
