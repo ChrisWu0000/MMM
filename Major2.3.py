@@ -254,6 +254,8 @@ class Boss(pygame.sprite.Sprite):
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
 		self.hp = enemy_info["health"]
+		self.maxhp = self.hp
+		self.ratio = self.hp/self.maxhp
 		self.speed = enemy_info["speed"]
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
@@ -750,17 +752,18 @@ class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
-		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.y-20, 50, 10)
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y-20, 50*self.player.ratio, 10)
-		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.y-22, 54, 14)
+		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, 50, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, 50*self.player.ratio, 10)
+		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.top-22, 54, 14)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
 		self.rect1.topleft = (self.player.rect.x+20, self.player.rect.top - 20)-camera_group.offset
 		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, 50*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
-		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.y-22)-camera_group.offset
-		#self.rect2.width = 150 * self.player.ratio
+		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.top-22)-camera_group.offset
 		self.rect = self.rect1.union(self.rect2)
+		pygame.draw.rect(camera_group.surface, "red", self.rect1)
+		pygame.draw.rect(camera_group.surface, "green", self.rect2)
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -908,9 +911,7 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
-		hp.update(enemy_group, player)
-		pygame.draw.rect(self.surface, "red", hp.rect1)
-		pygame.draw.rect(self.surface, "green", hp.rect2)
+		#hp.update(enemy_group, player)
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,0))
 		if player.hp > 0:
@@ -1054,6 +1055,7 @@ while meep:
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
 				camera_group.add(bigboss)
+				bosshp = Hp_Bar(bigboss)
 			if event.key == pygame.K_TAB:
 				shop(16)
 			if event.key == pygame.K_e and shopping == True:
@@ -1061,7 +1063,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
+			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False and  wave > level_data[levelnum]["num_wave"]:
 				bosspresent=True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
@@ -1076,8 +1078,8 @@ while meep:
 				wave = 0			
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
 				shopping = False
-				new_level(1)
-			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
+				new_level(levelnum)
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]:
 				shop(16)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
