@@ -1078,7 +1078,7 @@ while meep:
 				shopping = False
 				new_level(1)
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
-				shop(3)
+				shop(16)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
