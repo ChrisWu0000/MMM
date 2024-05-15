@@ -384,6 +384,7 @@ class Boss(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def shoot2(self):
 		projectiles = self.weapon2["projectiles"]
+		base_angle = 0.08*(projectiles-1)-0.04
 		self.lastx = (self.aim[0] - self.rect.centerx)
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
@@ -391,7 +392,7 @@ class Boss(pygame.sprite.Sprite):
 			self.shoot_cooldown2 = self.weapon2["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon2["spread"],self.weapon2["spread"])/100,self.weapon2)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
@@ -635,15 +636,15 @@ class Player(pygame.sprite.Sprite):
 
 		if keys[pygame.K_1]:
 			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_2]:
+		elif keys[pygame.K_2] and weapon_data["Shotgun"]["purchased"]==True:
 			self.weapon = weapon_data["Shotgun"]
-		elif keys[pygame.K_3]:
+		elif keys[pygame.K_3] and weapon_data["Minigun"]["purchased"]==True:
 			self.weapon = weapon_data["Minigun"]
-		elif keys[pygame.K_4]:
+		elif keys[pygame.K_4] and weapon_data["Lag_Maker"]["purchased"]==True:
 			self.weapon = weapon_data["Lag_Maker"]
-		elif keys[pygame.K_5]:
+		elif keys[pygame.K_5] and weapon_data["Basic"]["purchased"]==True:
 			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_6]:
+		elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
 			self.weapon = weapon_data["Basic"]
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
@@ -655,6 +656,14 @@ class Player(pygame.sprite.Sprite):
 			self.shoot=False        		
 	def is_shooting(self):
 		projectiles = self.weapon["projectiles"]
+		base_angle=0
+		fox = 0
+		if self.weapon["spread"]==0:
+			fox = 1
+			if projectiles % 2 == 1:
+				base_angle = 0.05*(projectiles-1)
+			elif projectiles % 2 == 0:
+				base_angle = 0.05*(projectiles-1)-0.025
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -671,7 +680,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
@@ -683,6 +692,14 @@ class Player(pygame.sprite.Sprite):
 	def space_shooting(self):
 		projectiles = self.weapon["projectiles"]
 		self.angle = atan2(self.lasty, self.lastx)
+		base_angle=0
+		fox = 0
+		if self.weapon["spread"]==0:
+			fox = 1
+			if projectiles % 2 == 1:
+				base_angle = 0.05*(projectiles-1)
+			elif projectiles % 2 == 0:
+				base_angle = 0.05*(projectiles-1)-0.025
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -696,7 +713,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
@@ -741,11 +758,20 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.image = self.item["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
-		item_group.add(self)
 	def purchase(self,player):
 		if player.coin_amount >= self.item["cost"]:
 			player.coin_amount -=self.item["cost"]
-			self.kill()
+			wares_group.remove(self)
+			camera_group.remove(self)
+			if self.item["type"] == "weapon":
+				self.item["purchased"]=True
+				weapons_group.remove(self)
+			elif self.item["type"]== "upgrade":
+				for item in weapon_data:
+					if weapon_data[item]["type"] == "weapon":
+						weapon_data[item][self.item["change"]]+=self.item["value"]
+						if weapon_data[item][self.item["change"]] <=0:
+							weapon_data[item][self.item["change"]]=1
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
@@ -768,19 +794,19 @@ class Item(pygame.sprite.Sprite):
 			if dist(self.rect.center, player.rect.center)<30:
 				player.coin_amount +=1	
 				self.kill()
-	
+
 class Bullet(pygame.sprite.Sprite): 
 	def __init__(self, x, y, angle,weapon): 
 		super().__init__()
 		self.weapon = weapon
+		self.angle = angle
 		self.image = pygame.image.load(self.weapon["sprite"])
-		self.image = pygame.transform.rotozoom(self.image, 0, self.weapon["scaling"])
+		self.image = pygame.transform.rotozoom(self.image,sin(self.angle)*30, self.weapon["scaling"])
 		self.rect = self.image.get_rect()
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
 		self.speed = self.weapon["speed"]
-		self.angle = angle
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
@@ -889,6 +915,8 @@ collision_group = pygame.sprite.Group()
 physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
+wares_group = pygame.sprite.Group()
+weapons_group = pygame.sprite.Group()
 player = Player((640,360))
 hp = Hp_Bar(player)
 player_group.add(hp)
@@ -901,11 +929,15 @@ all_sprite_group.add(player)
 shopping = False
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(0,0)))
+		if weapon_data[item]["type"] == "weapon":
+			weapons_group.add(Shop_Item(item,(80,815)))
+		else:
+			item_group.add(Shop_Item(item,(80,815)))
 
 
 def new_level(num):
 	camera_group.empty()
+	wares_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
@@ -945,8 +977,9 @@ def new_level(num):
 
 def shop(num):
 	global shopping
-	shopping =True
+	shopping = True
 	camera_group.empty()
+	wares_group.empty()
 	camera_group.add(player)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
@@ -957,18 +990,21 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	camera_group.add(item_group)
-
-	if len(item_group)>0:
-		item_group.sprites()[0].rect.center = (80,815)
-	if len(item_group)>1:
-		item_group.sprites()[1].rect.center = (400,815)
-	if len(item_group)>2:
-		item_group.sprites()[2].rect.center = (750,815)
-	if len(item_group)>3:
-		item_group.sprites()[3].rect.center = (1090,815)
-	camera_group.add(item_group.sprites()[0:4])
-
+	if len(weapons_group)>0:
+		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		for x in range(len(wares_group)):
+			wares_group.sprites()[x].rect.center = (50+350*x,815)
+	else:
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		for x in range(len(wares_group)):
+			wares_group.sprites()[x].rect.center = (50+350*x,815)
+	camera_group.add(wares_group.sprites()[0:4])
 new_level(1)
 meep = True
 game_pause = False
@@ -983,29 +1019,30 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(player.rect.center)
+			print("meep")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
-			if event.key == pygame.K_TAB:
-				shop(3)
-			if event.key == pygame.K_e and shopping == True:
-				for item in item_group:
-					if player.rect.colliderect(item.rect):
-						item.purchase(player)
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				new_level(2)	
 			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
 				bosspresent=True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
-				camera_group.add(bigboss)		
+				camera_group.add(bigboss)
+			if event.key == pygame.K_TAB:
+				shop(3)
+			if event.key == pygame.K_e and shopping == True:
+				for item in wares_group:
+					if player.rect.colliderect(item.rect):
+						item.purchase(player)
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+				shopping = False
+				new_level(1)
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False:
+				shop(3)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
-				game_pause = False
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200:
-				new_level(2)			
+				game_pause = False		
 	if game_pause == False:			
 		camera_group.update(enemy_group,player)
 		camera_group.custom_draw(player)
