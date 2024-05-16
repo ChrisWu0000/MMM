@@ -214,16 +214,6 @@ class Enemy(pygame.sprite.Sprite):
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
 			player.lastcollision = 0
-	def update_direction(self):
-		self.vector = pygame.Vector2(self.rect.center)
-		if 0 != pygame.Vector2.length(player.vector - self.vector):
-			self.direction = (player.vector - self.vector).normalize()
-			if self.direction.x > 0 and self.hp >=0:
-				self.flipped = True
-				self.image = self.flippedwalking[floor(self.i)]
-			if self.direction.x <0 and self.hp>=0:
-				self.flipped = False
-				self.image = self.walking[floor(self.i)]			
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
@@ -650,15 +640,15 @@ class Player(pygame.sprite.Sprite):
 
 		if keys[pygame.K_1]:
 			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_2]:
+		elif keys[pygame.K_2] and weapon_data["Shotgun"]["purchased"]==True:
 			self.weapon = weapon_data["Shotgun"]
-		elif keys[pygame.K_3]:
+		elif keys[pygame.K_3] and weapon_data["Minigun"]["purchased"]==True:
 			self.weapon = weapon_data["Minigun"]
-		elif keys[pygame.K_4]:
+		elif keys[pygame.K_4] and weapon_data["Lag_Maker"]["purchased"]==True:
 			self.weapon = weapon_data["Lag_Maker"]
-		elif keys[pygame.K_5]:
+		elif keys[pygame.K_5] and weapon_data["Basic"]["purchased"]==True:
 			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_6]:
+		elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
 			self.weapon = weapon_data["Basic"]
 		if pygame.mouse.get_pressed() == (1, 0, 0):
 			self.shoot = 1
@@ -911,7 +901,9 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
-		#hp.update(enemy_group, player)
+		hp.update(enemy_group, player)
+		pygame.draw.rect(self.surface, "red", hp.rect1)
+		pygame.draw.rect(self.surface, "green", hp.rect2)
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,0))
 		if player.hp > 0:
@@ -942,8 +934,6 @@ all_sprite_group.add(player)
 shopping = False
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
-		item_group.add(Shop_Item(item,(0,0)))
-
 		if weapon_data[item]["type"] == "weapon":
 			weapons_group.add(Shop_Item(item,(80,815)))
 		else:
@@ -999,18 +989,7 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	camera_group.add(item_group)
-
-	if len(item_group)>0:
-		item_group.sprites()[0].rect.center = (80,815)
-	if len(item_group)>1:
-		item_group.sprites()[1].rect.center = (400,815)
-	if len(item_group)>2:
-		item_group.sprites()[2].rect.center = (750,815)
-	if len(item_group)>3:
-		item_group.sprites()[3].rect.center = (1090,815)
-	camera_group.add(item_group.sprites()[0:4])
-
+	
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1050,14 +1029,8 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
-			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False:
-				bosspresent=True
-				bigboss = Boss((640, 300))
-				enemy_group.add(bigboss)
-				camera_group.add(bigboss)
-				bosshp = Hp_Bar(bigboss)
 			if event.key == pygame.K_TAB:
-				shop(16)
+				shop(0)
 			if event.key == pygame.K_e and shopping == True:
 				for item in wares_group:
 					if player.rect.colliderect(item.rect):
@@ -1067,20 +1040,15 @@ while meep:
 				bosspresent=True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
-				camera_group.add(bigboss)		
-			if event.key == pygame.K_p and game_pause == False:
-				game_pause = True
-			elif event.key == pygame.K_p and game_pause == True:
-				game_pause = False
-			if event.key == pygame.K_9 and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and wave > level_data[levelnum]["num_wave"]:
-				levelnum+=1
-				new_level(levelnum)
-				wave = 0			
+				camera_group.add(bigboss)	
+				bosshp = Hp_Bar(bigboss)		
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
 				shopping = False
-				new_level(levelnum)
+				levelnum+=1
+				new_level(levelnum)		
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]:
-				shop(16)
+				shopping = True
+				shop(0)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
