@@ -12,6 +12,7 @@ from math import floor
 import Spritesheet
 pygame.init()
 bosspresent=False
+LevelNum=1.0
 my_font = pygame.font.SysFont('Times', 30)
 
 class Enemy(pygame.sprite.Sprite): 
@@ -749,6 +750,7 @@ class Hp_Bar(pygame.sprite.Sprite):
 		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.y-22)-camera_group.offset
 		#self.rect2.width = 150 * self.player.ratio
 		self.rect = self.rect1.union(self.rect2)
+
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -774,6 +776,7 @@ class Shop_Item(pygame.sprite.Sprite):
 							weapon_data[item][self.item["change"]]=1
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
+
 class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -905,6 +908,7 @@ class CameraGroup(pygame.sprite.Group):
 			pygame.draw.rect(self.surface, "black", hp.rect3)
 			pygame.draw.rect(self.surface, "red", hp.rect1)
 			pygame.draw.rect(self.surface, "green", hp.rect2)
+
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
@@ -933,7 +937,6 @@ for item in weapon_data:
 			weapons_group.add(Shop_Item(item,(80,815)))
 		else:
 			item_group.add(Shop_Item(item,(80,815)))
-
 
 def new_level(num):
 	camera_group.empty()
@@ -1005,7 +1008,9 @@ def shop(num):
 		for x in range(len(wares_group)):
 			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	camera_group.add(wares_group.sprites()[0:4])
-new_level(1)
+
+new_level(2)
+LevelNum+=0.2
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
