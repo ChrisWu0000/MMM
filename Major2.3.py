@@ -1009,8 +1009,8 @@ def shop(num):
 			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	camera_group.add(wares_group.sprites()[0:4])
 
-new_level(2)
-LevelNum+=0.2
+new_level(floor(LevelNum))
+LevelNum+=0.2 #This doesn't work :(
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
