@@ -16,5 +16,5 @@ level_data = {
     13:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 230, "num_sax": 0,"num_wave":3, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":-640, "spawny":394, "top wall": 160, "left wall": -1100, "right wall": 2424, "bottom wall":788},
     14:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 290, "num_sax": 0,"num_wave":3,"num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":-640, "spawny":394, "top wall": 160, "left wall": -1100, "right wall": 2424, "bottom wall":788},
     15:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 500, "num_sax": 0,"num_wave":3, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":-640, "spawny":394, "top wall": 160, "left wall": -1100, "right wall": 2424, "bottom wall":788},
-    16:{"room": pygame.image.load("Rooms/Shop.png"),"spawnx":800, "spawny":1000, "top wall": -100, "left wall": -1100, "right wall": 2424, "bottom wall":1788}
+    0:{"room": pygame.image.load("Rooms/Shop.png"),"spawnx":800, "spawny":1000, "top wall": -100, "left wall": -1100, "right wall": 2424, "bottom wall":1788}
 }
