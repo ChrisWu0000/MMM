@@ -941,10 +941,10 @@ for item in weapon_data:
 			weapons_group.add(Shop_Item(item,(80,815)))
 		else:
 			item_group.add(Shop_Item(item,(80,815)))
-def checkdistance():
+def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	if dist(player.rect.center, (random_x, random_y)) < 500:
+	if dist(player.rect.center, (random_x, random_y)) < 500: #can be changed
 			return checkdistance()
 	else:
 		return (random_x, random_y)
@@ -956,8 +956,13 @@ def spawn(name, x, numspawn):
 				camera_group.add(extra)
 				enemy_group.add(extra)
 				collision_group.add(extra)
+				if name == "bell":
+					numbell +=1
+				if name == "sax":
+					numsax +=1
+				
 	else:
-		if name == "bell":
+		if name == "bell": #tells you how many bells/sax have been spawned in this wave
 			numbell = -1
 		if name == "sax":
 			numsax = -1
@@ -982,10 +987,8 @@ def new_level(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	for x in range( min(floor(level_data[num]["num_bell"]/3), 25)):
 		spawn("bell", min(floor(level_data[num]["num_bell"]/3), 25), numbell)
-		numbell+=1
 	for x in range( min(floor(level_data[num]["num_sax"]/3), 25)):
 		spawn("sax", min(floor(level_data[num]["num_sax"]/3), 25), numsax)
-		numsax+=1
 	wave +=1
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
@@ -1041,7 +1044,7 @@ while meep:
 		j+=1
 		if j >= 120:
 				spawnenemies = True 
-	if framenum %12 == 0 and spawnenemies == True:
+	if framenum %12 == 0 and spawnenemies == True: #makes it spawn every 12 frames
 		spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
 		numbell+=1
 		spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
