@@ -109,7 +109,7 @@ class Enemy(pygame.sprite.Sprite):
 				if self.direction.x > 0 and self.hp >=0:
 					self.flipped = True
 					self.image = self.flippedwalking[floor(self.i)]
-				if self.direction.x <0 and self.hp>=0:
+				if self.direction.x <=0 and self.hp>=0:
 					self.flipped = False
 					self.image = self.walking[floor(self.i)]	
 						
