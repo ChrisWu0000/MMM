@@ -12,7 +12,6 @@ from math import floor
 import Spritesheet
 pygame.init()
 bosspresent=False
-LevelNum=1.0
 my_font = pygame.font.SysFont('Times', 30)
 
 class Enemy(pygame.sprite.Sprite): 
@@ -102,7 +101,18 @@ class Enemy(pygame.sprite.Sprite):
 					Item("Coin", self.rect.center)
 				self.kill()
 				self.k = 0.05
-	
+				
+	def update_direction(self):
+			self.vector = pygame.Vector2(self.rect.center)
+			if 0 != pygame.Vector2.length(player.vector - self.vector):
+				self.direction = (player.vector - self.vector).normalize()
+				if self.direction.x > 0 and self.hp >=0:
+					self.flipped = True
+					self.image = self.flippedwalking[floor(self.i)]
+				if self.direction.x <0 and self.hp>=0:
+					self.flipped = False
+					self.image = self.walking[floor(self.i)]	
+						
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
 				if self.flipped == False:
@@ -112,7 +122,7 @@ class Enemy(pygame.sprite.Sprite):
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
-		if self.weapon["ranged"] == False and self.isdead == False:
+		if self.weapon["ranged"]==False:
 			if self.collision_check == True and self.isattacking == False:
 				self.i = 0
 				self.isattacking = True
@@ -129,7 +139,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.isattacking = False
 					self.collision_check = False
 
-		elif self.weapon["ranged"]==True and self.isdead == False:
+		elif self.weapon["ranged"]==True:
 			if self.shoot_cooldown == 0 and self.isattacking == False:
 				self.i = 0
 				self.isattacking = True
@@ -233,8 +243,8 @@ class Boss(pygame.sprite.Sprite):
 		self.weapon2 = weapon_data['top_brass2']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.hp = enemy_info["health"]
-		self.maxhp = self.hp
+		self.maxhp = enemy_info["health"]
+		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
 		self.speed = enemy_info["speed"]
 		self.push_power = enemy_info["push_power"]
@@ -368,7 +378,7 @@ class Boss(pygame.sprite.Sprite):
 		self.lastx = (self.aim[0] - self.rect.centerx)
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
-		if self.shoot_cooldown1 == 0:
+		if self.shoot_cooldown1 == 0 and self.hp > 0:
 			self.shoot_cooldown1 = self.weapon1["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
@@ -382,7 +392,7 @@ class Boss(pygame.sprite.Sprite):
 		self.lastx = (self.aim[0] - self.rect.centerx)
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
-		if self.shoot_cooldown2 == 0:
+		if self.shoot_cooldown2 == 0 and self.hp >0:
 			self.shoot_cooldown2 = self.weapon2["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
@@ -449,6 +459,7 @@ class Boss(pygame.sprite.Sprite):
 		self.take_damage()
 		self.attack(player)
 		self.check_alive()
+		self.ratio = self.hp/self.maxhp
 		if self.shoot_cooldown1>0:
 			self.shoot_cooldown1-=1
 		if self.shoot_cooldown2>0:
@@ -732,18 +743,22 @@ class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
-		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, 50, 10)
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, 50*self.player.ratio, 10)
-		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.top-22, 54, 14)
+		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, self.player.rect.width-40, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, (self.player.rect.width-40)*self.player.ratio, 10)
+		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.top-22, self.player.rect.width-36, 14)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
 		self.rect1.topleft = (self.player.rect.x+20, self.player.rect.top - 20)-camera_group.offset
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, 50*self.player.ratio, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, (self.player.rect.width-40)*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
 		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.top-22)-camera_group.offset
 		self.rect = self.rect1.union(self.rect2)
-		pygame.draw.rect(camera_group.surface, "red", self.rect1)
-		pygame.draw.rect(camera_group.surface, "green", self.rect2)
+		if self.player.hp > 0:
+			pygame.draw.rect(camera_group.surface, "black", self.rect3)
+			pygame.draw.rect(camera_group.surface, "red", self.rect1)
+			pygame.draw.rect(camera_group.surface, "green", self.rect2)
+		else:
+			self.kill()
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -769,7 +784,6 @@ class Shop_Item(pygame.sprite.Sprite):
 							weapon_data[item][self.item["change"]]=1
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
-
 class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -889,18 +903,16 @@ class CameraGroup(pygame.sprite.Group):
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
+		if bosspresent == True:
+			self.remove(bosshp)
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
+		if bosspresent == True:
+			self.add(bosshp)
 		hp.update(enemy_group, player)
-		pygame.draw.rect(self.surface, "red", hp.rect1)
-		pygame.draw.rect(self.surface, "green", hp.rect2)
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,0))
-		if player.hp > 0:
-			pygame.draw.rect(self.surface, "black", hp.rect3)
-			pygame.draw.rect(self.surface, "red", hp.rect1)
-			pygame.draw.rect(self.surface, "green", hp.rect2)
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
@@ -918,7 +930,6 @@ player = Player((640,360))
 hp = Hp_Bar(player)
 player_group.add(hp)
 camera_group.add(hp)
-#collision_group.add(player)
 player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
@@ -1033,7 +1044,8 @@ while meep:
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
 				camera_group.add(bigboss)	
-				bosshp = Hp_Bar(bigboss)		
+				bosshp = Hp_Bar(bigboss)
+				camera_group.add(bosshp)		
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
 				shopping = False
 				levelnum+=1
@@ -1045,9 +1057,9 @@ while meep:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
 				game_pause = False		
-	if game_pause == False:			
+	if game_pause == False:
+		camera_group.custom_draw(player)			
 		camera_group.update(enemy_group,player)
-		camera_group.custom_draw(player)
- 
+
 	pygame.display.update()
 	clock.tick(120)
