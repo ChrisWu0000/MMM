@@ -203,7 +203,7 @@ class Enemy(pygame.sprite.Sprite):
 					elif self.rect.bottom == enemy.rect.bottom and self.rect.bottom > player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
 						self.rect.y +=0.01
 
-			if self.collisionrect.colliderect(player.rect):
+			if self.collisionrect.colliderect(player.rect) and player.dashing == False:
 					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
 					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
 					self.collisionrect.midbottom = self.rect.midbottom
@@ -516,6 +516,10 @@ class Player(pygame.sprite.Sprite):
 		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
+		self.dash = False
+		self.dash_cooldown = 0
+		self.dashing = False
+		self.dash_duration = 0
 		self.i=0
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
@@ -588,9 +592,9 @@ class Player(pygame.sprite.Sprite):
 				#self.check_collision(enemy_group)
 		if self.is_hit == True:
 			if self.flipped == False:
-					self.image = self.takedamage[floor(self.i)]
+				self.image = self.takedamage[floor(self.i)]
 			else:
-					self.image = self.flippedtakedamage[floor(self.i)]
+				self.image = self.flippedtakedamage[floor(self.i)]
 			if self.i >=4-self.k and self.is_hit == True:
 				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
@@ -598,73 +602,77 @@ class Player(pygame.sprite.Sprite):
 		self.rect.top = max(camera_group.level["top wall"], self.rect.top)
 		self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)
 		self.collisionrect.midbottom = self.rect.midbottom
+		
 	
 	def input(self):
-		keys = pygame.key.get_pressed()
+		if self.dashing == False:
+			keys = pygame.key.get_pressed()
 
-		if keys[pygame.K_w] and keys[pygame.K_s]:
-			self.direction.y = 0
-			if(self.lastx>0):
-				self.image=self.flippedidle[floor(self.i)]
-			elif(self.lastx<0):
-				self.image=self.idle[floor(self.i)]
-		elif  keys[pygame.K_w]:
-			self.direction.y = -1
+			if keys[pygame.K_w] and keys[pygame.K_s]:
+				self.direction.y = 0
+				if(self.lastx>0):
+					self.image=self.flippedidle[floor(self.i)]
+				elif(self.lastx<0):
+					self.image=self.idle[floor(self.i)]
+			elif  keys[pygame.K_w]:
+				self.direction.y = -1
 
-		elif keys[pygame.K_s]:
-			self.direction.y = 1
+			elif keys[pygame.K_s]:
+				self.direction.y = 1
 
-		else:
-			self.direction.y = 0
-	
-		if keys[pygame.K_d] and keys[pygame.K_a]:
-			self.direction.x = 0
-			if(self.lastx>0):
-				self.image=self.flippedidle[floor(self.i)]
-			elif(self.lastx<0):
-				self.image=self.idle[floor(self.i)]
-		elif keys[pygame.K_d]:
-			self.direction.x = 1
-		elif keys[pygame.K_a]:
-			self.direction.x = -1
-		else:
-			self.direction.x = 0
-		if self.direction.x !=0 or self.direction.y !=0:
-			self.lasty = self.direction.y
-			self.lastx = self.direction.x
+			else:
+				self.direction.y = 0
 		
-		if self.direction.x !=0:
-			self.walklastx = self.direction.x
-		if(self.walklastx>0):
-			self.image=self.flippedwalking[floor(self.i)]
-		elif(self.walklastx<0):
-			self.image=self.walking[floor(self.i)]
-		if self.direction.y ==0 and self.direction.x == 0:
+			if keys[pygame.K_d] and keys[pygame.K_a]:
+				self.direction.x = 0
+				if(self.lastx>0):
+					self.image=self.flippedidle[floor(self.i)]
+				elif(self.lastx<0):
+					self.image=self.idle[floor(self.i)]
+			elif keys[pygame.K_d]:
+				self.direction.x = 1
+			elif keys[pygame.K_a]:
+				self.direction.x = -1
+			else:
+				self.direction.x = 0
+			if self.direction.x !=0 or self.direction.y !=0:
+				self.lasty = self.direction.y
+				self.lastx = self.direction.x
+			
+			if self.direction.x !=0:
+				self.walklastx = self.direction.x
 			if(self.walklastx>0):
-				self.image=self.flippedidle[floor(self.i)]
+				self.image=self.flippedwalking[floor(self.i)]
 			elif(self.walklastx<0):
-				self.image=self.idle[floor(self.i)]	
+				self.image=self.walking[floor(self.i)]
+			if self.direction.y ==0 and self.direction.x == 0:
+				if(self.walklastx>0):
+					self.image=self.flippedidle[floor(self.i)]
+				elif(self.walklastx<0):
+					self.image=self.idle[floor(self.i)]	
 
-		if keys[pygame.K_1]:
-			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_2] and weapon_data["Shotgun"]["purchased"]==True:
-			self.weapon = weapon_data["Shotgun"]
-		elif keys[pygame.K_3] and weapon_data["Minigun"]["purchased"]==True:
-			self.weapon = weapon_data["Minigun"]
-		elif keys[pygame.K_4] and weapon_data["Lag_Maker"]["purchased"]==True:
-			self.weapon = weapon_data["Lag_Maker"]
-		elif keys[pygame.K_5] and weapon_data["Basic"]["purchased"]==True:
-			self.weapon = weapon_data["Basic"]
-		elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
-			self.weapon = weapon_data["Basic"]
-		if pygame.mouse.get_pressed() == (1, 0, 0):
-			self.shoot = 1
-			#self.is_shooting()
-		elif keys[pygame.K_SPACE]:
-			self.shoot = 2
-			#self.space_shooting()
-		else:
-			self.shoot=False        		
+			if keys[pygame.K_1]:
+				self.weapon = weapon_data["Basic"]
+			elif keys[pygame.K_2] and weapon_data["Shotgun"]["purchased"]==True:
+				self.weapon = weapon_data["Shotgun"]
+			elif keys[pygame.K_3] and weapon_data["Minigun"]["purchased"]==True:
+				self.weapon = weapon_data["Minigun"]
+			elif keys[pygame.K_4] and weapon_data["Lag_Maker"]["purchased"]==True:
+				self.weapon = weapon_data["Lag_Maker"]
+			elif keys[pygame.K_5] and weapon_data["Basic"]["purchased"]==True:
+				self.weapon = weapon_data["Basic"]
+			elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
+				self.weapon = weapon_data["Basic"]
+			if pygame.mouse.get_pressed() == (0, 0, 1) and self.dash_cooldown == 0:
+				self.dash = True
+			elif pygame.mouse.get_pressed() == (1, 0, 0):
+				self.shoot = 1
+				#self.is_shooting()
+			elif keys[pygame.K_SPACE]:
+				self.shoot = 2
+				#self.space_shooting()
+			else:
+				self.shoot=False        		
 	def is_shooting(self):
 		projectiles = self.weapon["projectiles"]
 		base_angle=0
@@ -728,15 +736,51 @@ class Player(pygame.sprite.Sprite):
 				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
+	def dash_func(self):
+		#use the bullets as a dash basis.
+		self.dashing = True
+		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
+			self.image=self.attacking[2] #floor(self.i)
+		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
+			self.image=self.flippedattacking[2] #floor(self.i)
+		self.mouse_coords = pygame.mouse.get_pos() 
+		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.angle = atan2(self.lasty, self.lastx)
+		self.velx = cos(self.angle)*15
+		self.vely = sin(self.angle)*15
+		self.dash_duration = 20
+		self.dash_cooldown = 100
+		if(self.lastx==1):
+			self.image=self.flippedattacking[floor(self.i)]
+		elif(self.lastx==-1):
+			self.image=self.attacking[floor(self.i)]
+	def dash_movement(self):
+		self.rect.x +=self.velx
+		self.rect.y +=self.vely
+		self.rect.x = int(self.rect.x)
+		self.rect.y = int(self.rect.y)
+		if self.dash_duration <=0:
+			self.dashing = False
+			self.dash = False
+		else:
+			self.dash_duration -=1
 	def update(self,enemy_group,player):
 		self.input()
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
-		if self.shoot == 1:
+		if self.dash_cooldown > 0:
+			self.dash_cooldown -= 1
+		if self.dash == True and self.dash_cooldown == 0:
+			self.dash_func()
+		elif self.shoot == 1:
 			self.is_shooting()
 		elif self.shoot == 2:
 			self.space_shooting()
-		self.check_collision(enemy_group)
+		if self.dashing == True:
+			self.dash_movement()
+		elif self.dashing == False:
+			self.check_collision(enemy_group)
 		self.check_alive()
 		self.i+=self.k
 		if(self.i>=4):
@@ -1040,9 +1084,9 @@ numsax = 0
 new_level(levelnum)
 meep = True
 game_pause = False
-sparetimer1 = pygame.USEREVENT + 1
 j = 0
 spawnenemies = False
+sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	
