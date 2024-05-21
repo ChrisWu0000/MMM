@@ -50,7 +50,8 @@ class Enemy(pygame.sprite.Sprite):
 		self.frogx =0
 		self.frogy =0
 		self.b = (1-2*randint(0, 1)) #for sax stuff
-		self.i=0
+		self.i = 0
+		self.j = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
 		self.flippedwalking=[]
@@ -112,14 +113,14 @@ class Enemy(pygame.sprite.Sprite):
 				if self.direction.x <=0 and self.hp>=0:
 					self.flipped = False
 					self.image = self.walking[floor(self.i)]	
-						
+					
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
-				if self.flipped == False:
-					self.image = self.takedamage[floor(self.i)]
-				else:
-					self.image = self.flippedtakedamage[floor(self.i)]
-			if self.i >=4-self.k and self.ishit == True:
+				mask = pygame.mask.from_surface(self.image)
+				self.image = mask.to_surface()
+				self.image.set_colorkey((0,0,0))
+
+			if self.ishit == True and framenum-self.j > 24:	#can change this, #of frames of white
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
 		if self.weapon["ranged"]==False:
@@ -223,8 +224,8 @@ class Enemy(pygame.sprite.Sprite):
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
-		self.take_damage()
 		self.attack(player)
+		self.take_damage()
 		self.check_alive()
 		self.i+=self.k
 		if player.lastcollision < player.iframes:
@@ -517,7 +518,8 @@ class Player(pygame.sprite.Sprite):
 		self.isdead = False
 		self.isattacking = False
 		self.i=0
-		self.k = 0.01 # 4/self.k = #ticks for animation to loop
+		self.j=0
+		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
 		self.flippedidle=[]
 		self.walklastx = 0
@@ -587,11 +589,10 @@ class Player(pygame.sprite.Sprite):
 				enemy.collision_check = True
 				#self.check_collision(enemy_group)
 		if self.is_hit == True:
-			if self.flipped == False:
-					self.image = self.takedamage[floor(self.i)]
-			else:
-					self.image = self.flippedtakedamage[floor(self.i)]
-			if self.i >=4-self.k and self.is_hit == True:
+			mask = pygame.mask.from_surface(self.image)
+			self.image = mask.to_surface()
+			self.image.set_colorkey((0,0,0))
+			if framenum-self.j > 24 and self.is_hit == True:
 				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
@@ -834,12 +835,14 @@ class Bullet(pygame.sprite.Sprite):
 			if self.rect.colliderect(player.rect):
 					player.hp -= self.damage
 					player.is_hit = True
+					player.j = framenum
 					self.kill() 
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
 					x.hp -= self.damage
 					x.ishit = True
+					x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
 					self.kill() 
