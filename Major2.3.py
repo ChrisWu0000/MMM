@@ -49,7 +49,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.speed_buildupx=0
 		self.frogx =0
 		self.frogy =0
-
+		self.b = (1-2*randint(0, 1))
 		self.i=0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
@@ -173,6 +173,14 @@ class Enemy(pygame.sprite.Sprite):
 				
 	def check_collision(self,player): #Chris version of collision
 		if self.hp >0:
+			if self.name == "sax" and dist(self.rect.center, player.rect.center) < 1000:
+
+				a = self.b*self.direction.x
+				if self.b < 0:
+					self.direction.x  = self.direction.y
+				else:
+					self.direction.x  = -self.direction.y
+				self.direction.y = a
 			self.speed_buildupx += self.direction.x * (self.speed - int(self.speed))
 			self.speed_buildupy += self.direction.y * (self.speed - int(self.speed))
 			self.frogx = int(self.speed_buildupx)
@@ -209,8 +217,6 @@ class Enemy(pygame.sprite.Sprite):
 			#for x in enemy_group:
 				#if self.rect.y == x.rect.y and self !=x:
 					#self.rect.y += 0.01		
-
-
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
 			player.lastcollision = 0
