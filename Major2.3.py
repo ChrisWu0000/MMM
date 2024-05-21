@@ -492,7 +492,7 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = 1.0
 		self.lasty = 0
 		self.walklastx = 1.0
-		self.speed = 5
+		self.speed = 4
 		self.maxhp = 500
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
@@ -536,8 +536,8 @@ class Player(pygame.sprite.Sprite):
 		self.takedamage=[]
 		self.flippedtakedamage=[]
 		for x in range(4):
-			self.takedamage.append (self.sprite_sheet.get_image(self.i, 44, 52).convert_alpha())
-			self.flippedtakedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 44, 52).convert_alpha(), True, False))
+			self.takedamage.append (self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha())
+			self.flippedtakedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha(), True, False))
 			self.i+=1
 
 
@@ -735,7 +735,7 @@ class Player(pygame.sprite.Sprite):
 		if(self.i>=4):
 			self.i=0
 		self.vector = pygame.Vector2(self.rect.center)
-		self.speed = 5
+		self.speed = 4
 		self.ratio = self.hp/self.maxhp
 
 class Hp_Bar(pygame.sprite.Sprite):
