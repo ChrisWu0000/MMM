@@ -13,7 +13,7 @@ import Spritesheet
 pygame.init()
 bosspresent=False
 my_font = pygame.font.SysFont('Times', 30)
-
+difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
@@ -23,12 +23,12 @@ class Enemy(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.hp = enemy_info["health"]
-		self.speed = enemy_info["speed"]
+		self.hp = enemy_info["health"]*difficulty_mult
+		self.speed = enemy_info["speed"]*difficulty_mult
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]
+		self.damage = enemy_info["attack_damage"]*difficulty_mult
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -38,7 +38,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		self.coin_drop_chance = enemy_info["coin_drop_chance"]
+		self.coin_drop_chance = enemy_info["coin_drop_chance"]/difficulty_mult
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -1049,7 +1049,7 @@ j = 0
 spawnenemies = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	
+	difficulty_mult = 1+(levelnum)/10
 	if len(enemy_group) == 0 and wave < 4:
 		j+=1
 		if j >= 120:
