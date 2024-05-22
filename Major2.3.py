@@ -2,7 +2,7 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
-
+from Difficulties import *
 import pygame.freetype
 from monster_data import *
 from level_data import *
@@ -1040,6 +1040,7 @@ global framenum, spawnenemies, numbell, numsax
 framenum = 0
 numbell = 0
 numsax = 0
+
 new_level(levelnum)
 meep = True
 game_pause = False
