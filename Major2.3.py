@@ -2,7 +2,7 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
-
+from Difficulties import *
 import pygame.freetype
 from monster_data import *
 from level_data import *
@@ -13,7 +13,7 @@ import Spritesheet
 pygame.init()
 bosspresent=False
 my_font = pygame.font.SysFont('Times', 30)
-
+difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
 		super().__init__()
@@ -23,12 +23,12 @@ class Enemy(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.hp = enemy_info["health"]
-		self.speed = enemy_info["speed"]
+		self.hp = int(enemy_info["health"]*difficulty_mult)
+		self.speed = int(enemy_info["speed"]*difficulty_mult)
 		self.push_power = enemy_info["push_power"]
-		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
+		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]
+		self.damage = int(enemy_info["attack_damage"]*difficulty_mult)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -38,7 +38,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		self.coin_drop_chance = enemy_info["coin_drop_chance"]
+		self.coin_drop_chance = enemy_info["coin_drop_chance"]/difficulty_mult
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -50,34 +50,35 @@ class Enemy(pygame.sprite.Sprite):
 		self.frogx =0
 		self.frogy =0
 		self.b = (1-2*randint(0, 1)) #for sax stuff
-		self.i=0
+		self.i = 0
+		self.j = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
 		self.flippedwalking=[]
 		for x in range(4):
-			self.walking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.flippedwalking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.walking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.flippedwalking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 
 		self.attacking=[]
 		self.flippedattacking=[]
 		for x in range(4):
-			self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 
 		self.takedamage=[]
 		self.flippedtakedamage=[]
 		for x in range(4):
-			self.takedamage.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.flippedtakedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.takedamage.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.flippedtakedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 
 		self.death=[]
 		self.flippeddeath=[]
 		for x in range(4):
-			self.death.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.death.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 		self.i = 0
 	def check_alive(self): # checks if enemy dies
@@ -109,17 +110,17 @@ class Enemy(pygame.sprite.Sprite):
 				if self.direction.x > 0 and self.hp >=0:
 					self.flipped = True
 					self.image = self.flippedwalking[floor(self.i)]
-				if self.direction.x <0 and self.hp>=0:
+				if self.direction.x <=0 and self.hp>=0:
 					self.flipped = False
 					self.image = self.walking[floor(self.i)]	
-						
+					
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
-				if self.flipped == False:
-					self.image = self.takedamage[floor(self.i)]
-				else:
-					self.image = self.flippedtakedamage[floor(self.i)]
-			if self.i >=4-self.k and self.ishit == True:
+				mask = pygame.mask.from_surface(self.image)
+				self.image = mask.to_surface()
+				self.image.set_colorkey((0,0,0))
+
+			if self.ishit == True and framenum-self.j > 24:	#can change this, #of frames of white
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
 		if self.weapon["ranged"]==False:
@@ -223,8 +224,8 @@ class Enemy(pygame.sprite.Sprite):
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
-		self.take_damage()
 		self.attack(player)
+		self.take_damage()
 		self.check_alive()
 		self.i+=self.k
 		if player.lastcollision < player.iframes:
@@ -254,7 +255,7 @@ class Boss(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.speed = enemy_info["speed"]
 		self.push_power = enemy_info["push_power"]
-		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"])
+		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
 		self.damage = enemy_info["attack_damage"]
 		self.mass = enemy_info["mass"]
@@ -287,36 +288,36 @@ class Boss(pygame.sprite.Sprite):
 		self.walking=[]
 		self.flippedwalking=[]
 		for x in range(4):
-			self.flippedwalking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.walking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.flippedwalking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.walking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 
 		self.attack1=[]
 		self.flippedattack1=[]
 		for x in range(4):
-			self.flippedattack1.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.attack1.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.flippedattack1.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.attack1.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 		
 		self.attack2=[]
 		self.flippedattack2=[]
 		for x in range(8):
-			self.flippedattack2.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.attack2.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.flippedattack2.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.attack2.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 
 		self.takedamage=[]
 		self.flippedtakedamage=[]
 		for x in range(4):
-			self.flippedtakedamage.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.takedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.flippedtakedamage.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.takedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 
 		self.death=[]
 		self.flippeddeath=[]
 		for x in range(12):
-			self.flippeddeath.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha())
-			self.death.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"]).convert_alpha(), True, False))
+			self.flippeddeath.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.death.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
 		self.i = 0
 
@@ -489,7 +490,7 @@ class Player(pygame.sprite.Sprite):
 		super().__init__()
 		self.sprite_sheet_image = pygame.image.load('Player/Trent Sprite Sheet.png').convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.image = self.sprite_sheet.get_image(0, 66, 78).convert_alpha()
+		self.image = self.sprite_sheet.get_image(0, 88, 104, 104).convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.collisionrect = pygame.Rect(self.rect)
 		self.collisionrect.width = int(0.5*self.collisionrect.width)
@@ -521,42 +522,36 @@ class Player(pygame.sprite.Sprite):
 		self.dashing = False
 		self.dash_duration = 0
 		self.i=0
+		self.j=0
 		self.k = 0.1 # 4/self.k = #ticks for animation to loop
 		self.idle=[]
 		self.flippedidle=[]
 		self.walklastx = 0
 		for x in range(4):
-			self.idle.append (self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha())
-			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha(), True, False))
+			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha())
+			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha(), True, False))
 			self.i+=1
 		
 		self.walking=[]
 		self.flippedwalking=[]
 		for x in range(4):
-			self.walking.append (self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha())
-			self.flippedwalking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha(), True, False))
+			self.walking.append (self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha())
+			self.flippedwalking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha(), True, False))
 			self.i+=1
 
 		self.attacking=[]
 		self.flippedattacking=[]
 		for x in range(4):
-			self.attacking.append (self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha())
-			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha(), True, False))
-			self.i+=1
-
-		self.takedamage=[]
-		self.flippedtakedamage=[]
-		for x in range(4):
-			self.takedamage.append (self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha())
-			self.flippedtakedamage.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha(), True, False))
+			self.attacking.append (self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha())
+			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha(), True, False))
 			self.i+=1
 
 
 		self.death=[]
 		self.flippeddeath=[]
 		for x in range(4):
-			self.death.append (self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha())
-			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78).convert_alpha(), True, False))
+			self.death.append (self.sprite_sheet.get_image(self.i, 104, 104, 104).convert_alpha())
+			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 104, 104, 104).convert_alpha(), True, False))
 			self.i+=1
 		self.i = 0
 	def check_alive(self): # checks if player dies
@@ -591,11 +586,10 @@ class Player(pygame.sprite.Sprite):
 				enemy.collision_check = True
 				#self.check_collision(enemy_group)
 		if self.is_hit == True:
-			if self.flipped == False:
-				self.image = self.takedamage[floor(self.i)]
-			else:
-				self.image = self.flippedtakedamage[floor(self.i)]
-			if self.i >=4-self.k and self.is_hit == True:
+			mask = pygame.mask.from_surface(self.image)
+			self.image = mask.to_surface()
+			self.image.set_colorkey((0,0,0))
+		if framenum-self.j > 24 and self.is_hit == True:
 				self.is_hit = False	
 		self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 		self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
@@ -642,14 +636,9 @@ class Player(pygame.sprite.Sprite):
 			if self.direction.x !=0:
 				self.walklastx = self.direction.x
 			if(self.walklastx>0):
-				self.image=self.flippedwalking[floor(self.i)]
-			elif(self.walklastx<0):
-				self.image=self.walking[floor(self.i)]
-			if self.direction.y ==0 and self.direction.x == 0:
-				if(self.walklastx>0):
-					self.image=self.flippedidle[floor(self.i)]
-				elif(self.walklastx<0):
-					self.image=self.idle[floor(self.i)]	
+				self.image=self.flippedidle[floor(self.i)]
+			elif(self.walklastx<=0):
+				self.image=self.idle[floor(self.i)]	
 
 			if keys[pygame.K_1]:
 				self.weapon = weapon_data["Basic"]
@@ -863,6 +852,10 @@ class Bullet(pygame.sprite.Sprite):
 		self.image = pygame.image.load(self.weapon["sprite"])
 		self.image = pygame.transform.rotozoom(self.image,sin(self.angle)*30, self.weapon["scaling"])
 		self.rect = self.image.get_rect()
+		self.collisionrect = pygame.Rect(self.rect)
+		self.collisionrect.width = int(0.8*self.collisionrect.width)
+		self.collisionrect.height = int(0.8*self.collisionrect.height)
+		self.collisionrect.center = self.rect.center
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
@@ -875,15 +868,18 @@ class Bullet(pygame.sprite.Sprite):
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
-			if self.rect.colliderect(player.rect):
+			if self.collisionrect.colliderect(player.collisionrect):
 					player.hp -= self.damage
-					player.is_hit = True
+					if framenum - player.j > 24: #Iframes
+						player.is_hit = True
+						player.j = framenum
 					self.kill() 
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
 					x.hp -= self.damage
 					x.ishit = True
+					x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
 					self.kill() 
@@ -892,6 +888,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
+		self.collisionrect.center = self.rect.center
 		self.check_collision(player)
 		if self.spawn_time > self.bullet_lifetime:
 			self.kill()
@@ -1081,6 +1078,7 @@ global framenum, spawnenemies, numbell, numsax
 framenum = 0
 numbell = 0
 numsax = 0
+
 new_level(levelnum)
 meep = True
 game_pause = False
@@ -1089,7 +1087,7 @@ spawnenemies = False
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	
+	difficulty_mult = 1+(levelnum)/10
 	if len(enemy_group) == 0 and wave < 4:
 		j+=1
 		if j >= 120:
