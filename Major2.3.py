@@ -663,7 +663,7 @@ class Player(pygame.sprite.Sprite):
 				self.weapon = weapon_data["Basic"]
 			elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
 				self.weapon = weapon_data["Basic"]
-			if pygame.mouse.get_pressed() == (0, 0, 1) and self.dash_cooldown == 0:
+			if pygame.mouse.get_pressed()[2] == 1 and self.dash_cooldown == 0:
 				self.dash = True
 			elif pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = 1
@@ -1107,7 +1107,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print(pygame.display.get_surface())
+			print("hi")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
