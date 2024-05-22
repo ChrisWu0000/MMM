@@ -123,41 +123,42 @@ class Enemy(pygame.sprite.Sprite):
 			if self.ishit == True and framenum-self.j > 24:	#can change this, #of frames of white
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
-		if self.weapon["ranged"]==False:
-			if self.collision_check == True and self.isattacking == False:
-				self.i = 0
-				self.isattacking = True
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.isattacking == True:
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.i >=4-self.k and self.isattacking == True:
-					self.isattacking = False
-					self.collision_check = False
+		if self.hp > 0:
+			if self.weapon["ranged"]==False:
+				if self.collision_check == True and self.isattacking == False:
+					self.i = 0
+					self.isattacking = True
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.isattacking == True:
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.i >=4-self.k and self.isattacking == True:
+						self.isattacking = False
+						self.collision_check = False
 
-		elif self.weapon["ranged"]==True:
-			if self.shoot_cooldown == 0 and self.isattacking == False:
-				self.i = 0
-				self.isattacking = True
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.isattacking == True:
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.i >=4-self.k and self.isattacking == True:
-					self.isattacking = False
-					self.collision_check = False
-					self.aim = (player.rect.center)
-					self.shoot()
+			elif self.weapon["ranged"]==True:
+				if self.shoot_cooldown == 0 and self.isattacking == False:
+					self.i = 0
+					self.isattacking = True
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.isattacking == True:
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.i >=4-self.k and self.isattacking == True:
+						self.isattacking = False
+						self.collision_check = False
+						self.aim = (player.rect.center)
+						self.shoot()
 	def shoot(self):
 		projectiles = self.weapon["projectiles"]
 		self.lastx = (self.aim[0] - self.rect.centerx)
@@ -208,7 +209,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
 					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
 					self.collisionrect.midbottom = self.rect.midbottom
-					self.speed -= 0.1
+					self.speed -= 0.8
 					self.collision_check = True
 					self.check_collision(player)
 			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
@@ -573,14 +574,12 @@ class Player(pygame.sprite.Sprite):
 				self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-				#self.check_collision(enemy_group)
 		self.rect.y += self.direction.y * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-				#self.check_collision(enemy_group)
 		if self.is_hit == True:
 			mask = pygame.mask.from_surface(self.image)
 			self.image = mask.to_surface()
@@ -829,6 +828,7 @@ class Bullet(pygame.sprite.Sprite):
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
+			self.bullet_lifetime = self.weapon["duration"]*difficulty_mult
 			if self.collisionrect.colliderect(player.collisionrect):
 					player.hp -= self.damage
 					if framenum - player.j > 24: #Iframes
@@ -971,9 +971,9 @@ def spawn(name, x, numspawn):
 				
 	else:
 		if name == "bell": #tells you how many bells/sax have been spawned in this wave
-			numbell = -1
+			numbell = -100000
 		if name == "sax":
-			numsax = -1
+			numsax = -100000
 
 
 
@@ -993,10 +993,12 @@ def new_level(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	for x in range( min(floor(level_data[num]["num_bell"]/3), 25)):
-		spawn("bell", min(floor(level_data[num]["num_bell"]/3), 25), numbell)
-	for x in range( min(floor(level_data[num]["num_sax"]/3), 25)):
-		spawn("sax", min(floor(level_data[num]["num_sax"]/3), 25), numsax)
+	for x in range( min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25)):
+		spawn("bell", min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25), numbell)
+	for x in range( min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25)):
+		spawn("sax", min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25), numsax)
+	numbell = 0
+	numsax = 0
 	wave +=1
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
@@ -1045,22 +1047,31 @@ meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
 j = 0
+spawnbell = False
+spawnsax = False
 spawnenemies = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = 1+(levelnum)/10
-	if len(enemy_group) == 0 and wave < 4:
+	difficulty_mult = float(1.2**(levelnum-1))
+	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 		j+=1
 		if j >= 120:
-				spawnenemies = True 
-	if framenum %12 == 0 and spawnenemies == True: #makes it spawn every 12 frames
+				spawnbell = True 
+				spawnsax = True
+				spawnenemies = True
+	if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
 		spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
-		numbell+=1
+	if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
 		spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
-		numsax+=1
-		if numbell == 0 and numsax ==0:
-			wave +=1
+	if numbell <= 0:
+			numbell = 0
+			spawnbell = False
+	if numsax <=0:
+			numsax = 0
+			spawnsax = False
+	if numbell <= 0 and numsax <=0 and spawnsax == False and spawnbell == False and spawnenemies == True and framenum%12 == 0:		
 			spawnenemies = False
+			wave +=1
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
