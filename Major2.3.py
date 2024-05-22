@@ -490,7 +490,7 @@ class Player(pygame.sprite.Sprite):
 		super().__init__()
 		self.sprite_sheet_image = pygame.image.load('Player/Trent Sprite Sheet.png').convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.image = self.sprite_sheet.get_image(0, 88, 104, 104).convert_alpha()
+		self.image = self.sprite_sheet.get_image(0, 66, 78, 78).convert_alpha()
 		self.rect = self.image.get_rect(center = pos)
 		self.collisionrect = pygame.Rect(self.rect)
 		self.collisionrect.width = int(0.5*self.collisionrect.width)
@@ -528,30 +528,30 @@ class Player(pygame.sprite.Sprite):
 		self.flippedidle=[]
 		self.walklastx = 0
 		for x in range(4):
-			self.idle.append (self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha())
-			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha(), True, False))
+			self.idle.append (self.sprite_sheet.get_image(self.i, 66, 78, 78).convert_alpha())
+			self.flippedidle.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78, 78).convert_alpha(), True, False))
 			self.i+=1
 		
 		self.walking=[]
 		self.flippedwalking=[]
 		for x in range(4):
-			self.walking.append (self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha())
-			self.flippedwalking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha(), True, False))
+			self.walking.append (self.sprite_sheet.get_image(self.i, 66, 78, 78).convert_alpha())
+			self.flippedwalking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78, 78).convert_alpha(), True, False))
 			self.i+=1
 
 		self.attacking=[]
 		self.flippedattacking=[]
 		for x in range(4):
-			self.attacking.append (self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha())
-			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 88, 104, 104).convert_alpha(), True, False))
+			self.attacking.append (self.sprite_sheet.get_image(self.i, 66, 78, 78).convert_alpha())
+			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 66, 78, 78).convert_alpha(), True, False))
 			self.i+=1
 
 
 		self.death=[]
 		self.flippeddeath=[]
 		for x in range(4):
-			self.death.append (self.sprite_sheet.get_image(self.i, 104, 104, 104).convert_alpha())
-			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 104, 104, 104).convert_alpha(), True, False))
+			self.death.append (self.sprite_sheet.get_image(self.i, 78, 78, 78).convert_alpha())
+			self.flippeddeath.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, 78, 78, 78).convert_alpha(), True, False))
 			self.i+=1
 		self.i = 0
 	def check_alive(self): # checks if player dies
