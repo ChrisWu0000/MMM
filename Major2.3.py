@@ -11,6 +11,7 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
+global bosspresent
 bosspresent=False
 my_font = pygame.font.SysFont('Times', 30)
 difficulty_mult = 1
@@ -169,7 +170,7 @@ class Enemy(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
-				weapon_group.add(self.bullet)
+				enemy_weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 				
@@ -242,6 +243,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
+	global bosspresent
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -251,14 +253,14 @@ class Boss(pygame.sprite.Sprite):
 		self.weapon2 = weapon_data['top_brass2']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.maxhp = enemy_info["health"]
+		self.maxhp = enemy_info["health"]*difficulty_mult*difficulty_mult
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
-		self.speed = enemy_info["speed"]
+		self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]
+		self.damage = enemy_info["attack_damage"]*difficulty_mult*difficulty_mult
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -338,7 +340,9 @@ class Boss(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 12-self.k:
-				self.kill()		
+				self.kill()
+				bosspresent = False
+				player.hp = player.maxhp		
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
 				if self.flipped == False:
@@ -391,7 +395,6 @@ class Boss(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle,self.weapon1)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def shoot2(self):
@@ -405,7 +408,6 @@ class Boss(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 
@@ -507,7 +509,7 @@ class Player(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
-		self.coin_amount = 0
+		self.coin_amount = 10
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = 200
@@ -685,7 +687,6 @@ class Player(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 			if(self.lastx==1):
@@ -718,7 +719,6 @@ class Player(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def update(self,enemy_group,player):
@@ -843,7 +843,11 @@ class Bullet(pygame.sprite.Sprite):
 					x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
-					self.kill() 
+					self.kill()
+			for x in enemy_weapon_group.sprites():
+				if self.collisionrect.colliderect(x.collisionrect):
+					self.kill()
+					x.kill() 
 	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
 		self.rect.y +=self.vely
@@ -867,7 +871,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.level = level_data[1]
 		self.background_image = self.level["room"].convert_alpha()
 		self.bg_rect = self.background_image.get_rect(topleft = (0,0))
-		self.camera_borders = {'left': 300, 'right': 300, 'top': 200, 'bottom': 200}
+		self.camera_borders = {'left': 500, 'right': 500, 'top': 400, 'bottom': 400}
 		l = self.camera_borders['left']
 		t = self.camera_borders['top']
 		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
@@ -927,7 +931,7 @@ clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-weapon_group = pygame.sprite.Group()
+enemy_weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
@@ -1037,7 +1041,7 @@ def shop(num):
 			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	camera_group.add(wares_group.sprites()[0:4])
 levelnum = 1
-global framenum, spawnenemies, numbell, numsax
+global framenum, numbell, numsax
 framenum = 0
 numbell = 0
 numsax = 0
@@ -1088,7 +1092,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False and  wave > level_data[levelnum]["num_wave"]:
+			if  len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
 				bosspresent=True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
