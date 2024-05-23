@@ -11,7 +11,7 @@ weapon_data = {
   "Lag_Maker":{"type":"weapon","purchased":False,"availible":True,"cost":400,"ranged":False,"damage":200,"cooldown":10,"projectiles":20,"speed":20,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":4,"image": pygame.image.load("Enemies/DevlinDeving.png")},
   #--------
   "Upgrade1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Coin.png"),"change":"damage","value":5},
-  "Upgrade2":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Weapons/Bullet.png"),"change":"cooldown","value":-4},
+  "Upgrade2":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Weapons/Bullet.png"),"change":"cooldown","value":0.85},
   "Upgrade3":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Player/DevlinDeving.png"),"change":"speed","value":2},
   "Upgrade4":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Weapons/Enemy_Bullet.png"),"change":"duration","value":5},
   "Upgrade5":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Column.png"),"change":"projectiles","value":1}
