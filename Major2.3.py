@@ -1089,30 +1089,39 @@ numsax = 0
 new_level(levelnum)
 meep = True
 game_pause = False
-j = 0
-spawnenemies = False
 sparetimer1 = pygame.USEREVENT + 1
+j = 0
+spawnbell = False
+spawnsax = False
+spawnenemies = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = 1+(levelnum)/10
-	if len(enemy_group) == 0 and wave < 4:
+	difficulty_mult = float(1.2**(levelnum-1))
+	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 		j+=1
 		if j >= 120:
-				spawnenemies = True 
-	if framenum %12 == 0 and spawnenemies == True: #makes it spawn every 12 frames
+				spawnbell = True 
+				spawnsax = True
+				spawnenemies = True
+	if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
 		spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
-		numbell+=1
+	if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
 		spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
-		numsax+=1
-		if numbell == 0 and numsax ==0:
-			wave +=1
+	if numbell <= 0:
+			numbell = 0
+			spawnbell = False
+	if numsax <=0:
+			numsax = 0
+			spawnsax = False
+	if numbell <= 0 and numsax <=0 and spawnsax == False and spawnbell == False and spawnenemies == True and framenum%12 == 0:		
 			spawnenemies = False
+			wave +=1
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print("hi")
+			print("meep")
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
@@ -1123,7 +1132,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False and  wave > level_data[levelnum]["num_wave"]:
+			if  len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
 				bosspresent=True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
