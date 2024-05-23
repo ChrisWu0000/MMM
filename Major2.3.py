@@ -663,7 +663,9 @@ class Player(pygame.sprite.Sprite):
 				self.weapon = weapon_data["Basic"]
 			elif keys[pygame.K_6] and weapon_data["Basic"]["purchased"]==True:
 				self.weapon = weapon_data["Basic"]
-			if pygame.mouse.get_pressed()[2] == 1 and self.dash_cooldown == 0:
+			if pygame.mouse.get_pressed()[2] and self.dash_cooldown == 0:
+				self.dash = True
+			elif keys[pygame.K_x] and self.dash_cooldown == 0:
 				self.dash = True
 			elif pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = 1
@@ -737,15 +739,26 @@ class Player(pygame.sprite.Sprite):
 	def dash_func(self):
 		#use the bullets as a dash basis.
 		self.dashing = True
-		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
-			self.image=self.attacking[2] #floor(self.i)
-		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
-			self.image=self.flippedattacking[2] #floor(self.i)
+		
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)
 		self.velx = cos(self.angle)*15
+		if self.velx < 0:
+			self.walklastx = -1
+		else:
+			self.walklastx = 1
+		if (self.direction.x==0 and self.direction.y==0 and self.velx<0):
+			self.image=self.attacking[2] #floor(self.i)
+			mask = pygame.mask.from_surface(self.image)
+			self.image = mask.to_surface()
+			self.image.set_colorkey((0,0,0))
+		elif (self.direction.x==0 and self.direction.y==0 and self.velx>=0):
+			self.image=self.flippedattacking[2] #floor(self.i)
+			mask = pygame.mask.from_surface(self.image)
+			self.image = mask.to_surface()
+			self.image.set_colorkey((0,0,0))
 		self.vely = sin(self.angle)*15
 		self.dash_duration = 20
 		self.dash_cooldown = 100
@@ -827,8 +840,8 @@ class Shop_Item(pygame.sprite.Sprite):
 			elif self.item["type"]== "upgrade":
 				for item in weapon_data:
 					if weapon_data[item]["type"] == "weapon":
-						if weapon_data[item][self.item["change"]] == "cooldown":
-							weapon_data[item][self.item["change"]] = max(int(weapon_data[item][self.item["value"]]*self.item["value"]), 5)
+						if self.item["change"] == "cooldown":
+							weapon_data[item][self.item["change"]] = max(int(weapon_data[item][self.item["change"]]*self.item["value"]), 5)
 						else:
 							weapon_data[item][self.item["change"]]+=self.item["value"]
 		elif player.coin_amount <self.item["cost"]:
