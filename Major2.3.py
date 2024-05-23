@@ -632,13 +632,20 @@ class Player(pygame.sprite.Sprite):
 			if self.direction.x !=0 or self.direction.y !=0:
 				self.lasty = self.direction.y
 				self.lastx = self.direction.x
-			
+
+
 			if self.direction.x !=0:
 				self.walklastx = self.direction.x
 			if(self.walklastx>0):
-				self.image=self.flippedidle[floor(self.i)]
-			elif(self.walklastx<=0):
-				self.image=self.idle[floor(self.i)]	
+				self.image=self.flippedwalking[floor(self.i)]
+			elif(self.walklastx<0):
+				self.image=self.walking[floor(self.i)]
+			if self.direction.y ==0 and self.direction.x == 0:
+				if(self.walklastx>0):
+					self.image=self.flippedidle[floor(self.i)]
+				elif(self.walklastx<=0):
+					self.image=self.idle[floor(self.i)]	
+	
 
 			if keys[pygame.K_1]:
 				self.weapon = weapon_data["Basic"]
