@@ -11,6 +11,7 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
+global bosspresent
 bosspresent=False
 my_font = pygame.font.SysFont('Times', 30)
 difficulty_mult = 1
@@ -38,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		self.coin_drop_chance = enemy_info["coin_drop_chance"]/difficulty_mult
+		self.coin_drop_chance = max(enemy_info["coin_drop_chance"]/difficulty_mult, 0.1)
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -123,41 +124,42 @@ class Enemy(pygame.sprite.Sprite):
 			if self.ishit == True and framenum-self.j > 24:	#can change this, #of frames of white
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
-		if self.weapon["ranged"]==False:
-			if self.collision_check == True and self.isattacking == False:
-				self.i = 0
-				self.isattacking = True
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.isattacking == True:
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.i >=4-self.k and self.isattacking == True:
-					self.isattacking = False
-					self.collision_check = False
+		if self.hp > 0:
+			if self.weapon["ranged"]==False:
+				if self.collision_check == True and self.isattacking == False:
+					self.i = 0
+					self.isattacking = True
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.isattacking == True:
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.i >=4-self.k and self.isattacking == True:
+						self.isattacking = False
+						self.collision_check = False
 
-		elif self.weapon["ranged"]==True:
-			if self.shoot_cooldown == 0 and self.isattacking == False:
-				self.i = 0
-				self.isattacking = True
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.isattacking == True:
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i)]
-				else:
-					self.image = self.flippedattacking[floor(self.i)]
-			if self.i >=4-self.k and self.isattacking == True:
-					self.isattacking = False
-					self.collision_check = False
-					self.aim = (player.rect.center)
-					self.shoot()
+			elif self.weapon["ranged"]==True:
+				if self.shoot_cooldown == 0 and self.isattacking == False:
+					self.i = 0
+					self.isattacking = True
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.isattacking == True:
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i)]
+					else:
+						self.image = self.flippedattacking[floor(self.i)]
+				if self.i >=4-self.k and self.isattacking == True:
+						self.isattacking = False
+						self.collision_check = False
+						self.aim = (player.rect.center)
+						self.shoot()
 	def shoot(self):
 		projectiles = self.weapon["projectiles"]
 		self.lastx = (self.aim[0] - self.rect.centerx)
@@ -168,7 +170,7 @@ class Enemy(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
-				weapon_group.add(self.bullet)
+				enemy_weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 				
@@ -208,7 +210,7 @@ class Enemy(pygame.sprite.Sprite):
 					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
 					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
 					self.collisionrect.midbottom = self.rect.midbottom
-					self.speed -= 0.1
+					self.speed -= 0.8
 					self.collision_check = True
 					self.check_collision(player)
 			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
@@ -241,6 +243,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
+	global bosspresent
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -250,14 +253,14 @@ class Boss(pygame.sprite.Sprite):
 		self.weapon2 = weapon_data['top_brass2']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.maxhp = enemy_info["health"]
+		self.maxhp = enemy_info["health"]*difficulty_mult*difficulty_mult
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
-		self.speed = enemy_info["speed"]
+		self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]
+		self.damage = enemy_info["attack_damage"]*difficulty_mult*difficulty_mult
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -324,12 +327,14 @@ class Boss(pygame.sprite.Sprite):
 	def check_alive(self): # checks if enemy dies
 		if self.hp <=0  and self.isdead == False:
 			self.i = 0
+			self.k = self.k*1.5
 			self.isdead = True
 			if self.flipped == False:
 				self.image = self.death[floor(self.i)]
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			enemy_group.remove(self)
+			bosspresent = False
 			collision_group.remove(self)
 		if self.hp <=0  and self.isdead == True:
 			if self.flipped == False:
@@ -337,7 +342,9 @@ class Boss(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 12-self.k:
-				self.kill()		
+				self.kill()
+				bosspresent = False
+				player.hp = player.maxhp		
 	def take_damage(self): #checks if enemy is hit
 			if self.ishit == True:
 				if self.flipped == False:
@@ -390,7 +397,6 @@ class Boss(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle,self.weapon1)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def shoot2(self):
@@ -404,7 +410,6 @@ class Boss(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 
@@ -506,7 +511,7 @@ class Player(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.mass = 10
 		self.shoot = 0
-		self.coin_amount = 0
+		self.coin_amount = 10
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.lastcollision = 200
@@ -557,6 +562,7 @@ class Player(pygame.sprite.Sprite):
 	def check_alive(self): # checks if player dies
 		if self.hp <=0  and self.isdead == False:
 			self.i = 0
+			self.k = self.k/2
 			self.isdead = True
 			if self.flipped == False:
 				self.image = self.death[floor(self.i)]
@@ -577,14 +583,12 @@ class Player(pygame.sprite.Sprite):
 				self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-				#self.check_collision(enemy_group)
 		self.rect.y += self.direction.y * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
 				self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-				#self.check_collision(enemy_group)
 		if self.is_hit == True:
 			mask = pygame.mask.from_surface(self.image)
 			self.image = mask.to_surface()
@@ -696,7 +700,6 @@ class Player(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 			if(self.lastx==1):
@@ -729,7 +732,6 @@ class Player(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
-				weapon_group.add(self.bullet)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def dash_func(self):
@@ -825,9 +827,10 @@ class Shop_Item(pygame.sprite.Sprite):
 			elif self.item["type"]== "upgrade":
 				for item in weapon_data:
 					if weapon_data[item]["type"] == "weapon":
-						weapon_data[item][self.item["change"]]+=self.item["value"]
-						if weapon_data[item][self.item["change"]] <=0:
-							weapon_data[item][self.item["change"]]=1
+						if weapon_data[item][self.item["change"]] == "cooldown":
+							weapon_data[item][self.item["change"]] = max(int(weapon_data[item][self.item["value"]]*self.item["value"]), 5)
+						else:
+							weapon_data[item][self.item["change"]]+=self.item["value"]
 		elif player.coin_amount <self.item["cost"]:
 			print("Not enough coins")
 class Item(pygame.sprite.Sprite):
@@ -875,6 +878,7 @@ class Bullet(pygame.sprite.Sprite):
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
+			self.bullet_lifetime = self.weapon["duration"]*difficulty_mult
 			if self.collisionrect.colliderect(player.collisionrect):
 					player.hp -= self.damage
 					if framenum - player.j > 24: #Iframes
@@ -884,14 +888,23 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					x.hp -= self.damage
+					if self.spawn_time < self.bullet_lifetime/5:
+						x.hp -= self.damage*3
+					else:
+						x.hp -= self.damage
 					x.ishit = True
 					x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
-					self.kill() 
+					self.kill()
+			for x in enemy_weapon_group.sprites():
+				if self.collisionrect.colliderect(x.collisionrect):
+					self.kill()
+					x.kill() 
 	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
+		if self.weapon["ranged"] == True:
+			self.speed = self.weapon["speed"]*difficulty_mult
 		self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
@@ -913,7 +926,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.level = level_data[1]
 		self.background_image = self.level["room"].convert_alpha()
 		self.bg_rect = self.background_image.get_rect(topleft = (0,0))
-		self.camera_borders = {'left': 300, 'right': 300, 'top': 200, 'bottom': 200}
+		self.camera_borders = {'left': 500, 'right': 500, 'top': 400, 'bottom': 400}
 		l = self.camera_borders['left']
 		t = self.camera_borders['top']
 		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
@@ -954,6 +967,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
+		self.fpsdisplay = my_font.render(str(int(clock.get_fps())), True , (0,0,0))
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -967,13 +981,15 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,0))
+		if displayfps == True:
+			screen.blit(self.fpsdisplay, (0,40))
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
 camera_group = CameraGroup()
 player_group = pygame.sprite.Group()
 enemy_group = pygame.sprite.Group()
-weapon_group = pygame.sprite.Group()
+enemy_weapon_group = pygame.sprite.Group()
 collision_group = pygame.sprite.Group()
 physics_group = pygame.sprite.Group()
 all_sprite_group = pygame.sprite.Group()
@@ -998,7 +1014,7 @@ for item in weapon_data:
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
-	if dist(player.rect.center, (random_x, random_y)) < 500: #can be changed
+	if dist(player.rect.center, (random_x, random_y)) < 340: #can be changed
 			return checkdistance()
 	else:
 		return (random_x, random_y)
@@ -1017,9 +1033,9 @@ def spawn(name, x, numspawn):
 				
 	else:
 		if name == "bell": #tells you how many bells/sax have been spawned in this wave
-			numbell = -1
+			numbell = -100000
 		if name == "sax":
-			numsax = -1
+			numsax = -100000
 
 
 
@@ -1039,10 +1055,12 @@ def new_level(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	for x in range( min(floor(level_data[num]["num_bell"]/3), 25)):
-		spawn("bell", min(floor(level_data[num]["num_bell"]/3), 25), numbell)
-	for x in range( min(floor(level_data[num]["num_sax"]/3), 25)):
-		spawn("sax", min(floor(level_data[num]["num_sax"]/3), 25), numsax)
+	for x in range( min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25)):
+		spawn("bell", min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25), numbell)
+	for x in range( min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25)):
+		spawn("sax", min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25), numsax)
+	numbell = 0
+	numsax = 0
 	wave +=1
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
@@ -1081,7 +1099,7 @@ def shop(num):
 			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	camera_group.add(wares_group.sprites()[0:4])
 levelnum = 1
-global framenum, spawnenemies, numbell, numsax
+global framenum, numbell, numsax
 framenum = 0
 numbell = 0
 numsax = 0
@@ -1094,9 +1112,10 @@ j = 0
 spawnbell = False
 spawnsax = False
 spawnenemies = False
+displayfps = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = float(1.2**(levelnum-1))
+	difficulty_mult = float(1.2**(levelnum-1))*2**(max(0, levelnum-10))
 	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 		j+=1
 		if j >= 120:
@@ -1149,7 +1168,11 @@ while meep:
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
 			elif event.key == pygame.K_p and game_pause == True:
-				game_pause = False		
+				game_pause = False
+			if event.key == pygame.K_BACKQUOTE and displayfps == False:
+				displayfps = True
+			elif event.key == pygame.K_BACKQUOTE and displayfps == True:
+				displayfps = False
 	if game_pause == False:
 		camera_group.custom_draw(player)
 		framenum +=1			
