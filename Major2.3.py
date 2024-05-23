@@ -1026,7 +1026,7 @@ for item in weapon_data:
 			item_group.add(Shop_Item(item,(80,815)))
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
-	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
+	random_y = randint(camera_group.bg_rect.y+100,camera_group.background_image.get_size()[1]-200)
 	if dist(player.rect.center, (random_x, random_y)) < 340: #can be changed
 			return checkdistance()
 	else:
