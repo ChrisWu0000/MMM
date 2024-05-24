@@ -11,7 +11,9 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 pygame.init()
-global bosspresent
+global bosspresent, wave
+wave = 1
+levelnum = 1
 bosspresent=False
 my_font = pygame.font.SysFont('Times', 30)
 difficulty_mult = 1
@@ -39,7 +41,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 		self.current_index = 0
 		self.shoot_cooldown = 0
-		self.coin_drop_chance = max(enemy_info["coin_drop_chance"]/difficulty_mult, 0.1)
+		self.coin_drop_chance = enemy_info["coin_drop_chance"]
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		self.collisionrect = pygame.Rect(self.rect)
@@ -744,7 +746,7 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)
-		self.velx = cos(self.angle)*15
+		self.velx = cos(self.angle)*10
 		if self.velx < 0:
 			self.walklastx = -1
 		else:
@@ -759,9 +761,9 @@ class Player(pygame.sprite.Sprite):
 			mask = pygame.mask.from_surface(self.image)
 			self.image = mask.to_surface()
 			self.image.set_colorkey((0,0,0))
-		self.vely = sin(self.angle)*15
-		self.dash_duration = 20
-		self.dash_cooldown = 100
+		self.vely = sin(self.angle)*10
+		self.dash_duration = 16
+		self.dash_cooldown = 40
 		if(self.lastx==1):
 			self.image=self.flippedattacking[floor(self.i)]
 		elif(self.lastx==-1):
@@ -830,8 +832,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 	def purchase(self,player):
-		if player.coin_amount >= self.item["cost"]:
-			player.coin_amount -=self.item["cost"]
+		if player.coin_amount >= floor((self.item["cost"]*difficulty_mult)/2)*2:
+			player.coin_amount -=floor((self.item["cost"]*difficulty_mult)/2)*2
 			wares_group.remove(self)
 			camera_group.remove(self)
 			if self.item["type"] == "weapon":
@@ -893,10 +895,11 @@ class Bullet(pygame.sprite.Sprite):
 		if self.weapon["ranged"] == True:
 			self.bullet_lifetime = self.weapon["duration"]*difficulty_mult
 			if self.collisionrect.colliderect(player.collisionrect):
-					player.hp -= self.damage
-					if framenum - player.j > 24: #Iframes
-						player.is_hit = True
-						player.j = framenum
+					if player.dashing == False:
+						player.hp -= self.damage
+						if framenum - player.j > 24: #Iframes
+							player.is_hit = True
+							player.j = framenum
 					self.kill() 
 		else:
 			for x in enemy_group.sprites():
@@ -910,10 +913,10 @@ class Bullet(pygame.sprite.Sprite):
 					if x.collision_check == False:
 						x.i = 0
 					self.kill()
-			for x in enemy_weapon_group.sprites():
-				if self.collisionrect.colliderect(x.collisionrect):
-					self.kill()
-					x.kill() 
+			#for x in enemy_weapon_group.sprites():
+				#if self.collisionrect.colliderect(x.collisionrect):
+					#self.kill()
+					#x.kill() 
 	def update(self,enemy_group,player):
 		self.rect.x +=self.velx
 		if self.weapon["ranged"] == True:
@@ -929,6 +932,7 @@ class Bullet(pygame.sprite.Sprite):
 			self.spawn_time +=1
 		
 class CameraGroup(pygame.sprite.Group):
+	global wave
 	def __init__(self):
 		super().__init__()
 		self.surface=pygame.display.get_surface()	
@@ -945,7 +949,14 @@ class CameraGroup(pygame.sprite.Group):
 		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
 		h = self.surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
 		self.camera_rect = pygame.Rect(l,t,w,h)
-
+		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
+	def draw_wavebar(self):
+			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
+			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
+			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
+			pygame.draw.rect(camera_group.surface, "black", self.rect3)
+			pygame.draw.rect(camera_group.surface, "red", self.rect1)
+			pygame.draw.rect(camera_group.surface, "green", self.rect2)
 	def center_target_camera(self,target):
 		if target.rect.left < self.camera_rect.left:
 			self.camera_rect.left = max(target.rect.left, self.bg_rect.x, )
@@ -992,10 +1003,14 @@ class CameraGroup(pygame.sprite.Group):
 		if bosspresent == True:
 			self.add(bosshp)
 		hp.update(enemy_group, player)
+		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,0))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
+		if wavebar == True:
+			self.draw_wavebar()
+
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
@@ -1054,7 +1069,7 @@ def spawn(name, x, numspawn):
 
 
 def new_level(num):
-	global wave, numbell, numsax
+	global wave, numbell, numsax, wavebar
 	wave = 1
 	camera_group.empty()
 	wares_group.empty()
@@ -1072,6 +1087,7 @@ def new_level(num):
 		spawn("bell", min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25), numbell)
 	for x in range( min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25)):
 		spawn("sax", min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25), numsax)
+	wavebar = True
 	numbell = 0
 	numsax = 0
 	wave +=1
@@ -1081,8 +1097,9 @@ def new_level(num):
 		#collision_group.add(pillar)
 
 def shop(num):
-	global shopping
+	global shopping, wavebar
 	shopping = True
+	wavebar = False
 	camera_group.empty()
 	wares_group.empty()
 	camera_group.add(player)
@@ -1116,7 +1133,7 @@ global framenum, numbell, numsax
 framenum = 0
 numbell = 0
 numsax = 0
-
+wavebar = False
 new_level(levelnum)
 meep = True
 game_pause = False
