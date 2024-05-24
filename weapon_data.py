@@ -2,7 +2,6 @@ import pygame
 weapon_data = {
   "bell":{"type":"enemy_weapon","availible":False,"ranged":False},
   "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":3,"duration":200,"spread":5,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.6},
-  "drum":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":8,"cooldown":400,"projectiles":10,"speed":2,"duration":50,"spread":300,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.8},
   "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":80,"projectiles":1,"speed":5,"duration":300,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.6},
   "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":8,"speed":6,"duration":200,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.1},
   #--------
