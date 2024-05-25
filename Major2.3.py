@@ -54,6 +54,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.frogy =0
 		self.b = (1-2*randint(0, 1)) #for sax stuff
 		self.i = 0
+		self.i2 = 0
 		self.j = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
@@ -157,6 +158,11 @@ class Enemy(pygame.sprite.Sprite):
 						self.image = self.attacking[floor(self.i)]
 					else:
 						self.image = self.flippedattacking[floor(self.i)]
+				if self.name == 'drum' and self.i2 >=8-self.k and self.isattacking == True:
+					self.isattacking = False
+					self.collision_check = False
+					self.aim = (player.rect.center)
+					self.shoot()
 				if self.i >=4-self.k and self.isattacking == True:
 						self.isattacking = False
 						self.collision_check = False
@@ -232,12 +238,17 @@ class Enemy(pygame.sprite.Sprite):
 		self.take_damage()
 		self.check_alive()
 		self.i+=self.k
+		self.i2+=self.k
 		if player.lastcollision < player.iframes:
 			player.lastcollision +=1
 		if self.shoot_cooldown >0:
 			self.shoot_cooldown -= 1
 		if(self.i>=4):
 			self.i=0
+		if(self.i2>=8 and self.type=='drum'):
+			self.i2=0
+		elif(self.i2>=4):
+			self.i2=0
 		if self.hp >0:
 			self.speed = monster_data[self.name]["speed"]
 		else:
@@ -739,7 +750,6 @@ class Player(pygame.sprite.Sprite):
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def dash_func(self):
-		#use the bullets as a dash basis.
 		self.dashing = True
 		
 		self.mouse_coords = pygame.mouse.get_pos() 
@@ -1047,7 +1057,7 @@ def checkdistance(): #makes sure that spawns are further than 500 from player
 	else:
 		return (random_x, random_y)
 def spawn(name, x, numspawn):
-	global numbell, numsax
+	global numbell, numsax, numdrum
 	if numspawn < x:
 				a = checkdistance()
 				extra=Enemy(name, a)
@@ -1058,18 +1068,21 @@ def spawn(name, x, numspawn):
 					numbell +=1
 				if name == "sax":
 					numsax +=1
-				
+				if name == "drum":
+					numdrum +=1
 	else:
 		if name == "bell": #tells you how many bells/sax have been spawned in this wave
 			numbell = -100000
 		if name == "sax":
 			numsax = -100000
+		if name == "drum":
+			numdrum = -100000
 
 
 
 
 def new_level(num):
-	global wave, numbell, numsax, wavebar
+	global wave, numbell, numsax, numdrum, wavebar
 	wave = 1
 	camera_group.empty()
 	wares_group.empty()
@@ -1087,9 +1100,13 @@ def new_level(num):
 		spawn("bell", min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25), numbell)
 	for x in range( min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25)):
 		spawn("sax", min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25), numsax)
+	
+	for x in range( min(floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), 25)):
+		spawn("drum", min(floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), 25), numdrum)
 	wavebar = True
 	numbell = 0
 	numsax = 0
+	numdrum = 0
 	wave +=1
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
@@ -1129,11 +1146,12 @@ def shop(num):
 			wares_group.sprites()[x].rect.center = (50+350*x,815)
 	camera_group.add(wares_group.sprites()[0:4])
 levelnum = 1
-global framenum, numbell, numsax
+global framenum, numbell, numsax, numdrum
 framenum = 0
 numbell = 0
 numsax = 0
 wavebar = False
+numdrum = 0
 new_level(levelnum)
 meep = True
 game_pause = False
@@ -1141,6 +1159,7 @@ sparetimer1 = pygame.USEREVENT + 1
 j = 0
 spawnbell = False
 spawnsax = False
+spawndrum = False
 spawnenemies = False
 displayfps = False
 #pygame.time.set_timer(sparetimer1,1000)
@@ -1152,17 +1171,23 @@ while meep:
 				spawnbell = True 
 				spawnsax = True
 				spawnenemies = True
+				spawndrum = True
 	if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
 		spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
 	if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
 		spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
+	if framenum %12 == 0 and spawndrum == True: #makes it spawn every 12 frames
+		spawn("drum", floor(level_data[levelnum]["num_drum"]/level_data[levelnum]["num_wave"]), numdrum)
 	if numbell <= 0:
 			numbell = 0
 			spawnbell = False
 	if numsax <=0:
 			numsax = 0
 			spawnsax = False
-	if numbell <= 0 and numsax <=0 and spawnsax == False and spawnbell == False and spawnenemies == True and framenum%12 == 0:		
+	if numdrum <=0:
+			numdrum = 0
+			spawndrum = False
+	if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
 			spawnenemies = False
 			wave +=1
 
