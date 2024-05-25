@@ -437,25 +437,6 @@ class Boss(pygame.sprite.Sprite):
 			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
 			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
 			self.collisionrect.midbottom = self.rect.midbottom
-			for enemy in enemy_group:
-				if dist(self.collisionrect.center, enemy.collisionrect.center)<10 and enemy != self:
-					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx+(10-20*random())
-					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy+(10-20*random())
-					self.collisionrect.midbottom = self.rect.midbottom
-					self.speed -= 0.1
-					self.check_collision(player)
-				if self.rect.bottom == enemy.rect.bottom and self.rect.bottom < player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
-					self.rect.y -=0.01
-				elif self.rect.bottom == enemy.rect.bottom and self.rect.bottom > player.rect.bottom and (self.rect.left <= enemy.rect.right or self.rect.right >= enemy.rect.left):
-					self.rect.y +=0.01
-
-			if self.collisionrect.colliderect(player.rect):
-					self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
-					self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
-					self.collisionrect.midbottom = self.rect.midbottom
-					self.speed -= 0.1
-					self.collision_check = True
-					self.check_collision(player)
 			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
@@ -756,7 +737,7 @@ class Player(pygame.sprite.Sprite):
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
 		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)
-		self.velx = cos(self.angle)*10
+		self.velx = cos(self.angle)*20
 		if self.velx < 0:
 			self.walklastx = -1
 		else:
@@ -771,9 +752,9 @@ class Player(pygame.sprite.Sprite):
 			mask = pygame.mask.from_surface(self.image)
 			self.image = mask.to_surface()
 			self.image.set_colorkey((0,0,0))
-		self.vely = sin(self.angle)*10
-		self.dash_duration = 16
-		self.dash_cooldown = 40
+		self.vely = sin(self.angle)*20
+		self.dash_duration = 12
+		self.dash_cooldown = 100
 		if(self.lastx==1):
 			self.image=self.flippedattacking[floor(self.i)]
 		elif(self.lastx==-1):
@@ -1210,6 +1191,7 @@ while meep:
 				bosspresent=True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
+				collision_group.add(bigboss)
 				camera_group.add(bigboss)	
 				bosshp = Hp_Bar(bigboss)
 				camera_group.add(bosshp)		
