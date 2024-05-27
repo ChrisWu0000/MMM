@@ -63,10 +63,16 @@ class Enemy(pygame.sprite.Sprite):
 
 		self.attacking=[]
 		self.flippedattacking=[]
-		for x in range(4):
-			self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
-			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
-			self.i+=1
+		if(self.name=='drum'):
+			for x in range(8):
+				self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+				self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
+				self.i+=1
+		elif(self.name!='drum'):
+			for x in range(4):
+				self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+				self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
+				self.i+=1
 
 		self.takedamage=[]
 		self.flippedtakedamage=[]
@@ -241,9 +247,9 @@ class Enemy(pygame.sprite.Sprite):
 			self.shoot_cooldown -= 1
 		if(self.i>=4):
 			self.i=0
-		if(self.i2>=8 and self.type=='drum'):
+		if(self.i2>=8 and self.name=='drum'):
 			self.i2=0
-		elif(self.i2>=4):
+		elif(self.i2>=4 and self.name!='drum'):
 			self.i2=0
 		if self.hp >0:
 			self.speed = monster_data[self.name]["speed"]
@@ -1030,8 +1036,6 @@ def spawn(name, x, numspawn):
 			numdrum = -1
 
 
-
-
 def new_level(num):
 	global wave, numbell, numsax, numdrum
 	wave = 1
@@ -1051,8 +1055,8 @@ def new_level(num):
 		spawn("bell", min(floor(level_data[num]["num_bell"]/3), 25), numbell)
 	for x in range( min(floor(level_data[num]["num_sax"]/3), 25)):
 		spawn("sax", min(floor(level_data[num]["num_sax"]/3), 25), numsax)
-	for x in range( min(floor(level_data[num]["num_sax"]/3), 25)):
-		spawn("drum", min(floor(level_data[num]["num_sax"]/3), 25), numdrum)
+	for x in range( min(floor(level_data[num]["num_drum"]/3), 25)):
+		spawn("drum", min(floor(level_data[num]["num_drum"]/3), 25), numdrum)
 	wave +=1
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
