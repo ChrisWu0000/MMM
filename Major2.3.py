@@ -103,7 +103,8 @@ class Enemy(pygame.sprite.Sprite):
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
 				if random() <= self.coin_drop_chance:
-					Item("Coin", self.rect.center)
+					for i in range(monster_data[self.name]["coin_drop"]):
+						Item("Coin", (self.rect.centerx+30*(i**0.00001)*(-1)**i, self.rect.centery))
 				self.kill()
 				self.k = 0.05
 				
@@ -849,6 +850,7 @@ class Item(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		camera_group.add(self)
+		self.coin_amount = self.prop["coin_num"]
 	def update(self, enemy_group, player):
 		if self.prop["collectable"] == True:
 			if dist(self.rect.center, player.rect.center)<100:
@@ -857,7 +859,7 @@ class Item(pygame.sprite.Sprite):
 					self.direction = (player.vector - self.vector).normalize()
 					self.rect.center += self.direction *10	
 			if dist(self.rect.center, player.rect.center)<30:
-				player.coin_amount +=1	
+				player.coin_amount +=self.coin_amount	
 				self.kill()
 
 class Bullet(pygame.sprite.Sprite): 
