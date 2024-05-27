@@ -517,6 +517,7 @@ class Player(pygame.sprite.Sprite):
 		self.lasty = 0
 		self.walklastx = 1.0
 		self.speed = 4
+		self.notmouse = False
 		self.maxhp = 500
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
@@ -676,7 +677,9 @@ class Player(pygame.sprite.Sprite):
 				self.weapon = weapon_data["Basic"]
 			if pygame.mouse.get_pressed()[2] and self.dash_cooldown == 0:
 				self.dash = True
-			elif keys[pygame.K_x] and self.dash_cooldown == 0:
+				self.notmouse = False
+			elif (keys[pygame.K_LSHIFT] or keys[pygame.K_f])and self.dash_cooldown == 0:
+				self.notmouse = True
 				self.dash = True
 			elif pygame.mouse.get_pressed() == (1, 0, 0):
 				self.shoot = 1
@@ -749,10 +752,10 @@ class Player(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def dash_func(self):
 		self.dashing = True
-		
-		self.mouse_coords = pygame.mouse.get_pos() 
-		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
-		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		if self.notmouse == False:
+			self.mouse_coords = pygame.mouse.get_pos() 
+			self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+			self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.angle = atan2(self.lasty, self.lastx)
 		self.velx = cos(self.angle)*15
 		if self.velx < 0:
