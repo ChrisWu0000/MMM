@@ -1112,7 +1112,9 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	
+	if event.key == pygame.K_r:
+			player.coin_amount -= 5
+			shop(0)
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1182,8 +1184,7 @@ while meep:
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
-			if event.key == pygame.K_TAB:
-				shop(0)
+
 			if event.key == pygame.K_e and shopping == True:
 				for item in wares_group:
 					if player.rect.colliderect(item.rect):
