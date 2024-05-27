@@ -801,15 +801,15 @@ class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
-		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, self.player.rect.width-40, 10)
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, (self.player.rect.width-40)*self.player.ratio, 10)
-		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.top-22, self.player.rect.width-36, 14)
+		self.rect1 = pygame.Rect(self.player.rect.x+10, self.player.rect.top-20, self.player.rect.width-20, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+10, self.player.rect.top-20, (self.player.rect.width-20)*self.player.ratio, 10)
+		self.rect3 = pygame.Rect(self.player.rect.x+8, self.player.rect.top-22, self.player.rect.width-16, 14)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
-		self.rect1.topleft = (self.player.rect.x+20, self.player.rect.top - 20)-camera_group.offset
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, (self.player.rect.width-40)*self.player.ratio, 10)
+		self.rect1.topleft = (self.player.rect.x+10, self.player.rect.top - 20)-camera_group.offset
+		self.rect2 = pygame.Rect(self.player.rect.x+10, self.player.rect.y+20, (self.player.rect.width-20)*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
-		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.top-22)-camera_group.offset
+		self.rect3.topleft = (self.player.rect.x+8, self.player.rect.top-22)-camera_group.offset
 		self.rect = self.rect1.union(self.rect2)
 		if self.player.hp > 0:
 			pygame.draw.rect(camera_group.surface, "black", self.rect3)
