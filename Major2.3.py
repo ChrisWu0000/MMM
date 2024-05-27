@@ -1176,7 +1176,14 @@ while meep:
 	if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
 			spawnenemies = False
 			wave +=1
-
+	if len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
+		bosspresent=True
+		bigboss = Boss((640, 300))
+		enemy_group.add(bigboss)
+		collision_group.add(bigboss)
+		camera_group.add(bigboss)	
+		bosshp = Hp_Bar(bigboss)
+		camera_group.add(bosshp)		
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
@@ -1192,14 +1199,6 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if  len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
-				bosspresent=True
-				bigboss = Boss((640, 300))
-				enemy_group.add(bigboss)
-				collision_group.add(bigboss)
-				camera_group.add(bigboss)	
-				bosshp = Hp_Bar(bigboss)
-				camera_group.add(bosshp)		
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
 				shopping = False
 				levelnum+=1
