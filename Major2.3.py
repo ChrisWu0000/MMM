@@ -834,6 +834,10 @@ class Shop_Item(pygame.sprite.Sprite):
 			if self.item["type"] == "weapon":
 				self.item["purchased"]=True
 				weapons_group.remove(self)
+			elif self.item["type"] == "healing":
+				player.hp += self.item["value"]
+				if player.hp > player.maxhp:
+					player.hp = 500
 			elif self.item["type"]== "upgrade":
 				for item in weapon_data:
 					if weapon_data[item]["type"] == "weapon":

@@ -21,5 +21,7 @@ weapon_data = {
   "Upgrade4.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Weapons/Enemy_Bullet.png"),"change":"duration","value":5},
   "Upgrade5":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Column.png"),"change":"projectiles","value":1},
   "Upgrade5.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Column.png"),"change":"projectiles","value":1},
+  "Upgrade6":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Coin3.png"),"value":100},
+  "Upgrade6.1":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Coin3.png"),"value":100},
   
 }
