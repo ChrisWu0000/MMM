@@ -825,18 +825,42 @@ class Shop_Item(pygame.sprite.Sprite):
 	def purchase(self,player):
 		if player.coin_amount >= floor((self.item["cost"]*difficulty_mult)/2)*2:
 			player.coin_amount -=floor((self.item["cost"]*difficulty_mult)/2)*2
-			wares_group.remove(self)
-			camera_group.remove(self)
-			if self.item["type"] == "weapon":
+			if self.item["type"] == "refresh":
+				print("shop refreshed")
+				camera_group.remove(wares_group)
+				wares_group.empty()
+				wares_group.add(shopkeep)
+				if len(weapons_group)>0:
+					wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					for x in range(len(wares_group)-1):
+						wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+				else:
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					for x in range(len(wares_group)-1):
+						wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+				camera_group.add(wares_group.sprites()[0:5])
+			elif self.item["type"] == "weapon":
+				wares_group.remove(self)
+				camera_group.remove(self)
 				self.item["purchased"]=True
 				weapons_group.remove(self)
 			elif self.item["type"] == "healing":
+				wares_group.remove(self)
+				camera_group.remove(self)
 				player.hp += self.item["value"]
 				print("healed")
 				if player.hp >= player.maxhp:
 					print("overhealed")
 					player.hp = 500
 			elif self.item["type"]== "upgrade":
+				wares_group.remove(self)
+				camera_group.remove(self)
 				for item in weapon_data:
 					if weapon_data[item]["type"] == "weapon":
 						if self.item["change"] == "cooldown":
@@ -1031,6 +1055,7 @@ physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
+shopkeep = Shop_Item("refresh",(650,575))
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1107,7 +1132,9 @@ def shop(num):
 	wavebar = False
 	camera_group.empty()
 	wares_group.empty()
+	wares_group.add(shopkeep)
 	camera_group.add(player)
+	camera_group.add(shopkeep)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
 	camera_group.bg_rect = camera_group.background_image.get_rect(midtop = (camera_group.half_w,0))
@@ -1123,16 +1150,16 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		for x in range(len(wares_group)):
-			wares_group.sprites()[x].rect.center = (50+350*x,815)
+		for x in range(len(wares_group)-1):
+			wares_group.sprites()[x+1].rect.center = (50+350*x,815)
 	else:
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		for x in range(len(wares_group)):
-			wares_group.sprites()[x].rect.center = (50+350*x,815)
-	camera_group.add(wares_group.sprites()[0:4])
+		for x in range(len(wares_group)-1):
+			wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+	camera_group.add(wares_group.sprites()[0:5])
 levelnum = 1
 global framenum, numbell, numsax, numdrum
 framenum = 0
@@ -1201,7 +1228,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 400 and player.rect.centery >=150 and shopping == True:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
