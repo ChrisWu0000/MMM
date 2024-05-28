@@ -55,6 +55,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.b = (1-2*randint(0, 1)) #for sax stuff
 		self.i = 0
 		self.i2 = 0
+		self.attackframes = enemy_info["attack_frames"]
 		self.j = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
@@ -66,7 +67,7 @@ class Enemy(pygame.sprite.Sprite):
 
 		self.attacking=[]
 		self.flippedattacking=[]
-		for x in range(4):
+		for x in range(self.attackframes):
 			self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
 			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
 			self.i+=1
@@ -131,44 +132,41 @@ class Enemy(pygame.sprite.Sprite):
 		if self.hp > 0:
 			if self.weapon["ranged"]==False:
 				if self.collision_check == True and self.isattacking == False:
+					self.i2 = 0
 					self.i = 0
 					self.isattacking = True
 					if self.flipped == False:
-						self.image = self.attacking[floor(self.i)]
+						self.image = self.attacking[floor(self.i2)]
 					else:
-						self.image = self.flippedattacking[floor(self.i)]
+						self.image = self.flippedattacking[floor(self.i2)]
 				if self.isattacking == True:
 					if self.flipped == False:
-						self.image = self.attacking[floor(self.i)]
+						self.image = self.attacking[floor(self.i2)]
 					else:
-						self.image = self.flippedattacking[floor(self.i)]
-				if self.i >=4-self.k and self.isattacking == True:
+						self.image = self.flippedattacking[floor(self.i2)]
+				if self.i2 >=self.attackframes-self.k and self.isattacking == True:
 						self.isattacking = False
 						self.collision_check = False
 
 			elif self.weapon["ranged"]==True:
 				if self.shoot_cooldown == 0 and self.isattacking == False:
+					self.i2 = 0
 					self.i = 0
 					self.isattacking = True
 					if self.flipped == False:
-						self.image = self.attacking[floor(self.i)]
+						self.image = self.attacking[floor(self.i2)]
 					else:
-						self.image = self.flippedattacking[floor(self.i)]
+						self.image = self.flippedattacking[floor(self.i2)]
 				if self.isattacking == True:
 					if self.flipped == False:
-						self.image = self.attacking[floor(self.i)]
+						self.image = self.attacking[floor(self.i2)]
 					else:
-						self.image = self.flippedattacking[floor(self.i)]
-				if self.name == 'drum' and self.i2 >=8-self.k and self.isattacking == True:
+						self.image = self.flippedattacking[floor(self.i2)]
+				if self.i2 >=self.attackframes-self.k and self.isattacking == True:
 					self.isattacking = False
 					self.collision_check = False
 					self.aim = (player.rect.center)
 					self.shoot()
-				if self.i >=4-self.k and self.isattacking == True:
-						self.isattacking = False
-						self.collision_check = False
-						self.aim = (player.rect.center)
-						self.shoot()
 	def shoot(self):
 		projectiles = self.weapon["projectiles"]
 		self.lastx = (self.aim[0] - self.rect.centerx)
@@ -244,11 +242,9 @@ class Enemy(pygame.sprite.Sprite):
 			player.lastcollision +=1
 		if self.shoot_cooldown >0:
 			self.shoot_cooldown -= 1
-		if(self.i>=4):
+		if self.i>=4:
 			self.i=0
-		if(self.i2>=8 and self.type=='drum'):
-			self.i2=0
-		elif(self.i2>=4):
+		if self.i2>=self.attackframes:
 			self.i2=0
 		if self.hp >0:
 			self.speed = monster_data[self.name]["speed"]
@@ -665,7 +661,7 @@ class Player(pygame.sprite.Sprite):
 			elif (keys[pygame.K_LSHIFT] or keys[pygame.K_f])and self.dash_cooldown == 0:
 				self.notmouse = True
 				self.dash = True
-			elif pygame.mouse.get_pressed() == (1, 0, 0):
+			elif pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_m]:
 				self.shoot = 1
 				#self.is_shooting()
 			elif keys[pygame.K_SPACE]:
@@ -893,7 +889,7 @@ class Bullet(pygame.sprite.Sprite):
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
-			self.bullet_lifetime = self.weapon["duration"]*difficulty_mult
+			self.bullet_lifetime = self.weapon["duration"]*(difficulty_mult/2)
 			if self.collisionrect.colliderect(player.collisionrect):
 					if player.dashing == False:
 						player.hp -= self.damage
@@ -918,12 +914,12 @@ class Bullet(pygame.sprite.Sprite):
 					#self.kill()
 					#x.kill() 
 	def update(self,enemy_group,player):
-		self.rect.x +=self.velx
 		if self.weapon["ranged"] == True:
 			self.speed = self.weapon["speed"]*difficulty_mult
-		self.rect.y +=self.vely
-		self.rect.x = int(self.rect.x)
-		self.rect.y = int(self.rect.y)
+		self.x +=self.velx
+		self.y +=self.vely
+		self.rect.centerx = int(self.x)
+		self.rect.centery = int(self.y)
 		self.collisionrect.center = self.rect.center
 		self.check_collision(player)
 		if self.spawn_time > self.bullet_lifetime:
