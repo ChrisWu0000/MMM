@@ -173,7 +173,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,50)
+			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,100)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
@@ -832,7 +832,9 @@ class Shop_Item(pygame.sprite.Sprite):
 				weapons_group.remove(self)
 			elif self.item["type"] == "healing":
 				player.hp += self.item["value"]
-				if player.hp > player.maxhp:
+				print("healed")
+				if player.hp >= player.maxhp:
+					print("overhealed")
 					player.hp = 500
 			elif self.item["type"]== "upgrade":
 				for item in weapon_data:
