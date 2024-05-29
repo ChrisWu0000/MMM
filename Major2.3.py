@@ -1177,7 +1177,7 @@ spawnsax = False
 spawndrum = False
 spawnenemies = False
 displayfps = False
-pygame.time.set_timer(sparetimer1,1000)
+#pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	difficulty_mult = float(1.2**(levelnum-1))*2**(max(0, levelnum-10))
 	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
