@@ -836,14 +836,14 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
-						wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 				else:
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
-						wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 				camera_group.add(wares_group.sprites()[0:5])
 			elif self.item["type"] == "weapon":
 				wares_group.remove(self)
@@ -1059,9 +1059,9 @@ shopkeep = Shop_Item("refresh",(650,575))
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
-			weapons_group.add(Shop_Item(item,(80,815)))
+			weapons_group.add(Shop_Item(item,(125,900)))
 		else:
-			item_group.add(Shop_Item(item,(80,815)))
+			item_group.add(Shop_Item(item,(125,900)))
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y+100,camera_group.background_image.get_size()[1]-200)
@@ -1151,14 +1151,14 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
-			wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 	else:
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
-			wares_group.sprites()[x+1].rect.center = (50+350*x,815)
+			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 	camera_group.add(wares_group.sprites()[0:5])
 levelnum = 1
 global framenum, numbell, numsax, numdrum
@@ -1177,7 +1177,7 @@ spawnsax = False
 spawndrum = False
 spawnenemies = False
 displayfps = False
-#pygame.time.set_timer(sparetimer1,1000)
+pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	difficulty_mult = float(1.2**(levelnum-1))*2**(max(0, levelnum-10))
 	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
@@ -1217,7 +1217,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print("meep")
+			print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
@@ -1228,7 +1228,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 400 and player.rect.centery >=150 and shopping == True:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		

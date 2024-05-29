@@ -1,7 +1,7 @@
 import pygame
 
 level_data = {
-    1:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 1, "num_sax": 0,"num_drum": 0,"num_wave":1, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":640, "spawny":394, "top wall": 200, "left wall": -1100, "right wall": 2424, "bottom wall":788},
+    1:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 15, "num_sax": 1,"num_drum": 1,"num_wave":2, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":640, "spawny":394, "top wall": 200, "left wall": -1100, "right wall": 2424, "bottom wall":788},
     2:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 5, "num_sax": 15,"num_drum": 1,"num_wave":3, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":-640, "spawny":394, "top wall": 200, "left wall": -1100, "right wall": 2424, "bottom wall":788},
     3:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 15, "num_sax": 5,"num_drum": 15,"num_wave":3, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":-640, "spawny":394, "top wall": 200, "left wall": -1100, "right wall": 2424, "bottom wall":788},
     4:{"room": pygame.image.load("Rooms/Level1.png"), "num_bell": 45, "num_sax": 9,"num_drum": 12,"num_wave":4, "num_pillar":6, "pillar_posx1":-592,"pillar_posxjump":492, "pillar_posy1": 630, "pillar_posyjump":0, "spawnx":-640, "spawny":394, "top wall": 200, "left wall": -1100, "right wall": 2424, "bottom wall":788},
