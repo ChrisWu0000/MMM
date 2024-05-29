@@ -889,7 +889,7 @@ class Bullet(pygame.sprite.Sprite):
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
-			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult))) 
+			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), 5000) 
 			if self.collisionrect.colliderect(player.collisionrect):
 					if player.dashing == False:
 						player.hp -= self.damage
@@ -1125,8 +1125,21 @@ def main_menu():
 					sys.exit()
 
 		pygame.display.update()
+def draw_pause():
+    surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
+    
+    pygame.draw.rect(surface, (128, 128, 128, 100), [0, 0, 1280, 720])  
+    pygame.draw.rect(surface, (192, 192, 192, 200), [340, 235, 600, 50], 0, 10)  
+    reset = pygame.draw.rect(surface, (255, 255, 255, 200), [340, 305, 280, 50], 0, 10) 
+    save = pygame.draw.rect(surface, (255, 255, 255, 200), [660, 305, 280, 50], 0, 10)  
 
+    screen.blit(surface, (0, 0))
 
+    screen.blit(my_font.render('Game Paused: Press P to Resume', True, (0, 0, 0, 200)), (440, 245))
+    screen.blit(my_font.render('Restart', True, (0, 0, 0, 200)), (440, 315)) 
+    screen.blit(my_font.render('Save', True, (0, 0, 0, 200)), (760, 315))  
+
+    return reset, save
 
 
 def new_level(num):
@@ -1272,6 +1285,7 @@ while meep:
 				shop(0)
 			if event.key == pygame.K_p and game_pause == False:
 				game_pause = True
+				goose = 1
 			elif event.key == pygame.K_p and game_pause == True:
 				game_pause = False
 			if event.key == pygame.K_BACKQUOTE and displayfps == False:
@@ -1282,6 +1296,8 @@ while meep:
 		camera_group.custom_draw(player)
 		framenum +=1			
 		camera_group.update(enemy_group,player)
-
+	if game_pause == True and goose == 1:
+		reset, save = draw_pause()
+		goose = 0
 	pygame.display.update()
 	clock.tick(120)
