@@ -16,9 +16,10 @@ global bosspresent, wave
 wave = 1
 levelnum = 1
 bosspresent=False
-my_font = pygame.font.SysFont('Times', 30)
+
 def get_font(size):
-	return pygame.font.SysFont('Times', size)
+	return pygame.font.SysFont('Sylfaen', size)
+my_font = get_font(30)
 difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
@@ -801,15 +802,15 @@ class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
-		self.rect1 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, self.player.rect.width-40, 10)
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.top-20, (self.player.rect.width-40)*self.player.ratio, 10)
-		self.rect3 = pygame.Rect(self.player.rect.x+18, self.player.rect.top-22, self.player.rect.width-36, 14)
+		self.rect1 = pygame.Rect(self.player.rect.x+10, self.player.rect.top-20, self.player.rect.width-20, 10)
+		self.rect2 = pygame.Rect(self.player.rect.x+10, self.player.rect.top-20, (self.player.rect.width-20)*self.player.ratio, 10)
+		self.rect3 = pygame.Rect(self.player.rect.x+8, self.player.rect.top-22, self.player.rect.width-16, 14)
 		self.rect = pygame.Rect.union(self.rect2, self.rect1)
 	def update(self, enemy_group, player):
-		self.rect1.topleft = (self.player.rect.x+20, self.player.rect.top - 20)-camera_group.offset
-		self.rect2 = pygame.Rect(self.player.rect.x+20, self.player.rect.y+20, (self.player.rect.width-40)*self.player.ratio, 10)
+		self.rect1.topleft = (self.player.rect.x+10, self.player.rect.top - 20)-camera_group.offset
+		self.rect2 = pygame.Rect(self.player.rect.x+10, self.player.rect.y+20, (self.player.rect.width-20)*self.player.ratio, 10)
 		self.rect2.topleft = self.rect1.topleft
-		self.rect3.topleft = (self.player.rect.x+18, self.player.rect.top-22)-camera_group.offset
+		self.rect3.topleft = (self.player.rect.x+8, self.player.rect.top-22)-camera_group.offset
 		self.rect = self.rect1.union(self.rect2)
 		if self.player.hp > 0:
 			pygame.draw.rect(camera_group.surface, "black", self.rect3)
@@ -935,9 +936,9 @@ class Button():
 		self.base_color, self.hovering_color = base_color, hovering_color
 		self.text_input = text_input
 		self.text = self.font.render(self.text_input, True, self.base_color)
+		self.isrect = False
 		if self.image is None:
 			self.image = self.text
-		self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
 		self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
 
 	def update(self, screen):
@@ -979,8 +980,8 @@ class CameraGroup(pygame.sprite.Group):
 			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
 			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
 			pygame.draw.rect(camera_group.surface, "black", self.rect3)
-			pygame.draw.rect(camera_group.surface, "red", self.rect1)
-			pygame.draw.rect(camera_group.surface, "green", self.rect2)
+			pygame.draw.rect(camera_group.surface, "white", self.rect1)
+			pygame.draw.rect(camera_group.surface, "blue", self.rect2)
 	def center_target_camera(self,target):
 		if target.rect.left < self.camera_rect.left:
 			self.camera_rect.left = max(target.rect.left, self.bg_rect.x, )
@@ -1029,7 +1030,7 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
-		screen.blit(self.text_surface, (30,0))
+		screen.blit(self.text_surface, (30,2))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
@@ -1098,14 +1099,14 @@ def main_menu():
 
 		MENU_MOUSE_POS = pygame.mouse.get_pos()
 
-		PLAY_BUTTON = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 150), 
-							text_input="PLAY", font=get_font(35), base_color="#d7fcd4", hovering_color="White")
-		OPTIONS_BUTTON = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 250), 
-							text_input="OPTIONS", font=get_font(35), base_color="#d7fcd4", hovering_color="White")
-		QUIT_BUTTON = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 350), 
-							text_input="QUIT", font=get_font(35), base_color="#d7fcd4", hovering_color="White")
+		Play_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 150), 
+							text_input="PLAY", font=get_font(35), base_color="black", hovering_color="White")
+		Options_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 250), 
+							text_input="OPTIONS", font=get_font(35), base_color="black", hovering_color="White")
+		Quit_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 350), 
+							text_input="QUIT", font=get_font(35), base_color="black", hovering_color="White")
 
-		for button in [PLAY_BUTTON, OPTIONS_BUTTON, QUIT_BUTTON]:
+		for button in [Play_button, Options_button, Quit_button]:
 			button.changeColor(MENU_MOUSE_POS)
 			button.update(screen)
 		
@@ -1114,32 +1115,44 @@ def main_menu():
 				pygame.quit()
 				sys.exit()
 			if event.type == pygame.MOUSEBUTTONDOWN:
-				if PLAY_BUTTON.checkForInput(MENU_MOUSE_POS):
+				if Play_button.checkForInput(MENU_MOUSE_POS):
 					meep = False
 					new_level(levelnum)
-				if OPTIONS_BUTTON.checkForInput(MENU_MOUSE_POS):
+				if Options_button.checkForInput(MENU_MOUSE_POS):
 					meep = False
 					new_level(levelnum)
-				if QUIT_BUTTON.checkForInput(MENU_MOUSE_POS):
+				if Quit_button.checkForInput(MENU_MOUSE_POS):
 					pygame.quit()
 					sys.exit()
 
 		pygame.display.update()
-def draw_pause():
-    surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
-    
-    pygame.draw.rect(surface, (128, 128, 128, 100), [0, 0, 1280, 720])  
-    pygame.draw.rect(surface, (192, 192, 192, 200), [340, 235, 600, 50], 0, 10)  
-    reset = pygame.draw.rect(surface, (255, 255, 255, 200), [340, 305, 280, 50], 0, 10) 
-    save = pygame.draw.rect(surface, (255, 255, 255, 200), [660, 305, 280, 50], 0, 10)  
+def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
+	def checkForInput(rect, position):
+		if position[0] in range(rect.left, rect.right) and position[1] in range(rect.top, rect.bottom):
+			return True
+		return False
+	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
+	MOUSE_POS = pygame.mouse.get_pos()
+	Quit_button = Button(image=None, pos=(640, 335), text_input="Reset", font=get_font(35), base_color="black", hovering_color="White")
+	Save_button = Button(image=None, pos=(640, 435), text_input="Save and quit", font=get_font(35), base_color="black", hovering_color="White")
+	if goose == 1:
+		pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
+		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
+	pygame.draw.rect(surface, (192, 192, 192, 200), [340, 235, 600, 50], 0, 10)  
+	for button in [Quit_button, Save_button]:
+			button.changeColor(MOUSE_POS)
+			button.update(screen)
+	screen.blit(surface, (0, 0))
 
-    screen.blit(surface, (0, 0))
+	screen.blit(my_font.render('Game Paused: Press P to Resume', True, (0, 0, 0, 200)), (440, 245))
+	if event.type == pygame.MOUSEBUTTONDOWN:
+				if checkForInput(MOUSE_POS):
+					pygame.quit()
+					sys.exit() 
+				if checkForInput(MOUSE_POS):
+					pygame.quit()
+					sys.exit() 
 
-    screen.blit(my_font.render('Game Paused: Press P to Resume', True, (0, 0, 0, 200)), (440, 245))
-    screen.blit(my_font.render('Restart', True, (0, 0, 0, 200)), (440, 315)) 
-    screen.blit(my_font.render('Save', True, (0, 0, 0, 200)), (760, 315))  
-
-    return reset, save
 
 
 def new_level(num):
@@ -1227,7 +1240,7 @@ spawnenemies = False
 displayfps = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = float(1.2**(levelnum-1))*2**(max(0, levelnum-10))
+	difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
 	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 		j+=1
 		if j >= 120:
@@ -1263,7 +1276,7 @@ while meep:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
 
-			if event.key == pygame.K_e and shopping == True:
+			if event.key == pygame.K_e and shopping == True and game_pause == False:
 				for item in wares_group:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
@@ -1276,11 +1289,11 @@ while meep:
 				camera_group.add(bigboss)	
 				bosshp = Hp_Bar(bigboss)
 				camera_group.add(bosshp)		
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True and game_pause == False:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
-			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]:
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False:
 				shopping = True
 				shop(0)
 			if event.key == pygame.K_p and game_pause == False:
@@ -1296,8 +1309,8 @@ while meep:
 		camera_group.custom_draw(player)
 		framenum +=1			
 		camera_group.update(enemy_group,player)
-	if game_pause == True and goose == 1:
-		reset, save = draw_pause()
+	if game_pause == True:
+		draw_pause()
 		goose = 0
 	pygame.display.update()
 	clock.tick(120)
