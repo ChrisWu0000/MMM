@@ -52,6 +52,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.b = (1-2*randint(0, 1)) #for sax stuff
 		self.i = 0
 		self.i2 = 0
+		self.attackframes = enemy_info["attack_frames"]
 		self.j = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
@@ -63,16 +64,10 @@ class Enemy(pygame.sprite.Sprite):
 
 		self.attacking=[]
 		self.flippedattacking=[]
-		if(self.name=='drum'):
-			for x in range(8):
-				self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
-				self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
-				self.i+=1
-		elif(self.name!='drum'):
-			for x in range(4):
-				self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
-				self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
-				self.i+=1
+		for x in range(self.attackframes):
+			self.attacking.append (self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha())
+			self.flippedattacking.append (pygame.transform.flip(self.sprite_sheet.get_image(self.i, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"]).convert_alpha(), True, False))
+			self.i+=1
 
 		self.takedamage=[]
 		self.flippedtakedamage=[]
@@ -130,42 +125,40 @@ class Enemy(pygame.sprite.Sprite):
 			if self.ishit == True and framenum-self.j > 24:	#can change this, #of frames of white
 				self.ishit = False			
 	def attack(self,player): #checks if enemy should attack
-		if self.weapon["ranged"]==False:
-			if self.collision_check == True and self.isattacking == False:
-				self.i2 = 0
-				self.isattacking = True
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i2)]
-				else:
-					self.image = self.flippedattacking[floor(self.i2)]
-			if self.isattacking == True:
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i2)]
-				else:
-					self.image = self.flippedattacking[floor(self.i2)]
-			if self.i2 >=4-self.k and self.isattacking == True:
-					self.isattacking = False
-					self.collision_check = False
+		if self.hp > 0:
+			if self.weapon["ranged"]==False:
+				if self.collision_check == True and self.isattacking == False:
+					self.i2 = 0
+					self.i = 0
+					self.isattacking = True
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i2)]
+					else:
+						self.image = self.flippedattacking[floor(self.i2)]
+				if self.isattacking == True:
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i2)]
+					else:
+						self.image = self.flippedattacking[floor(self.i2)]
+				if self.i2 >=self.attackframes-self.k and self.isattacking == True:
+						self.isattacking = False
+						self.collision_check = False
 
-		elif self.weapon["ranged"]==True:
-			if self.shoot_cooldown == 0 and self.isattacking == False:
-				self.i2 = 0
-				self.isattacking = True
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i2)]
-				else:
-					self.image = self.flippedattacking[floor(self.i2)]
-			if self.isattacking == True:
-				if self.flipped == False:
-					self.image = self.attacking[floor(self.i2)]
-				else:
-					self.image = self.flippedattacking[floor(self.i2)]
-			if self.name == 'drum' and self.i2 >=8-self.k and self.isattacking == True:
-					self.isattacking = False
-					self.collision_check = False
-					self.aim = (player.rect.center)
-					self.shoot()
-			elif self.i2 >=4-self.k and self.isattacking == True:
+			elif self.weapon["ranged"]==True:
+				if self.shoot_cooldown == 0 and self.isattacking == False:
+					self.i2 = 0
+					self.i = 0
+					self.isattacking = True
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i2)]
+					else:
+						self.image = self.flippedattacking[floor(self.i2)]
+				if self.isattacking == True:
+					if self.flipped == False:
+						self.image = self.attacking[floor(self.i2)]
+					else:
+						self.image = self.flippedattacking[floor(self.i2)]
+				if self.i2 >=self.attackframes-self.k and self.isattacking == True:
 					self.isattacking = False
 					self.collision_check = False
 					self.aim = (player.rect.center)
@@ -176,7 +169,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,50)
+			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,100)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
@@ -245,11 +238,9 @@ class Enemy(pygame.sprite.Sprite):
 			player.lastcollision +=1
 		if self.shoot_cooldown >0:
 			self.shoot_cooldown -= 1
-		if(self.i>=4):
+		if self.i>=4:
 			self.i=0
-		if(self.i2>=8 and self.name=='drum'):
-			self.i2=0
-		elif(self.i2>=4 and self.name!='drum'):
+		if self.i2>=self.attackframes:
 			self.i2=0
 		if self.hp >0:
 			self.speed = monster_data[self.name]["speed"]
@@ -671,7 +662,7 @@ class Player(pygame.sprite.Sprite):
 				self.weapon = weapon_data["Basic"]
 			if pygame.mouse.get_pressed()[2] == 1 and self.dash_cooldown == 0:
 				self.dash = True
-			elif pygame.mouse.get_pressed() == (1, 0, 0):
+			elif pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_m]:
 				self.shoot = 1
 				#self.is_shooting()
 			elif keys[pygame.K_SPACE]:
@@ -825,14 +816,44 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 	def purchase(self,player):
-		if player.coin_amount >= self.item["cost"]:
-			player.coin_amount -=self.item["cost"]
-			wares_group.remove(self)
-			camera_group.remove(self)
-			if self.item["type"] == "weapon":
+		if player.coin_amount >= floor((self.item["cost"]*difficulty_mult)/2)*2:
+			player.coin_amount -=floor((self.item["cost"]*difficulty_mult)/2)*2
+			if self.item["type"] == "refresh":
+				print("shop refreshed")
+				camera_group.remove(wares_group)
+				wares_group.empty()
+				wares_group.add(shopkeep)
+				if len(weapons_group)>0:
+					wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					for x in range(len(wares_group)-1):
+						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+				else:
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					for x in range(len(wares_group)-1):
+						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+				camera_group.add(wares_group.sprites()[0:5])
+			elif self.item["type"] == "weapon":
+				wares_group.remove(self)
+				camera_group.remove(self)
 				self.item["purchased"]=True
 				weapons_group.remove(self)
+			elif self.item["type"] == "healing":
+				wares_group.remove(self)
+				camera_group.remove(self)
+				player.hp += self.item["value"]
+				print("healed")
+				if player.hp >= player.maxhp:
+					print("overhealed")
+					player.hp = 500
 			elif self.item["type"]== "upgrade":
+				wares_group.remove(self)
+				camera_group.remove(self)
 				for item in weapon_data:
 					if weapon_data[item]["type"] == "weapon":
 						weapon_data[item][self.item["change"]]+=self.item["value"]
@@ -885,6 +906,7 @@ class Bullet(pygame.sprite.Sprite):
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
+			self.bullet_lifetime = self.weapon["duration"]*(difficulty_mult/2)
 			if self.collisionrect.colliderect(player.collisionrect):
 					player.hp -= self.damage
 					if framenum - player.j > 24: #Iframes
@@ -901,10 +923,12 @@ class Bullet(pygame.sprite.Sprite):
 						x.i = 0
 					self.kill() 
 	def update(self,enemy_group,player):
-		self.rect.x +=self.velx
-		self.rect.y +=self.vely
-		self.rect.x = int(self.rect.x)
-		self.rect.y = int(self.rect.y)
+		if self.weapon["ranged"] == True:
+			self.speed = self.weapon["speed"]*difficulty_mult
+		self.x +=self.velx
+		self.y +=self.vely
+		self.rect.centerx = int(self.x)
+		self.rect.centery = int(self.y)
 		self.collisionrect.center = self.rect.center
 		self.check_collision(player)
 		if self.spawn_time > self.bullet_lifetime:
@@ -999,12 +1023,13 @@ physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
+shopkeep = Shop_Item("refresh",(650,575))
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
-			weapons_group.add(Shop_Item(item,(80,815)))
+			weapons_group.add(Shop_Item(item,(125,900)))
 		else:
-			item_group.add(Shop_Item(item,(80,815)))
+			item_group.add(Shop_Item(item,(125,900)))
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y,camera_group.background_image.get_size()[1]-200)
@@ -1068,7 +1093,9 @@ def shop(num):
 	shopping = True
 	camera_group.empty()
 	wares_group.empty()
+	wares_group.add(shopkeep)
 	camera_group.add(player)
+	camera_group.add(shopkeep)
 	camera_group.level = level_data[num]
 	camera_group.background_image = camera_group.level["room"].convert_alpha()
 	camera_group.bg_rect = camera_group.background_image.get_rect(midtop = (camera_group.half_w,0))
@@ -1084,16 +1111,16 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		for x in range(len(wares_group)):
-			wares_group.sprites()[x].rect.center = (50+350*x,815)
+		for x in range(len(wares_group)-1):
+			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 	else:
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		for x in range(len(wares_group)):
-			wares_group.sprites()[x].rect.center = (50+350*x,815)
-	camera_group.add(wares_group.sprites()[0:4])
+		for x in range(len(wares_group)-1):
+			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+	camera_group.add(wares_group.sprites()[0:5])
 levelnum = 1
 global framenum, spawnenemies, numbell, numsax, numdrum
 framenum = 0
@@ -1109,8 +1136,8 @@ spawnenemies = False
 sparetimer1 = pygame.USEREVENT + 1
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = 1+(levelnum)/10
-	if len(enemy_group) == 0 and wave < 4:
+	difficulty_mult = float(1.1**(levelnum-1))*1.8**(max(0, levelnum-10))
+	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 		j+=1
 		if j >= 120:
 				spawnenemies = True 
@@ -1129,7 +1156,7 @@ while meep:
 		if event.type == pygame.QUIT:
 			meep = False
 		if event.type == sparetimer1:
-			print("hi")
+			print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 			if event.key == pygame.K_ESCAPE:
 				meep = False
@@ -1140,14 +1167,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_8 and len(enemy_group)==0 and bosspresent==False and  wave > level_data[levelnum]["num_wave"]:
-				bosspresent=True
-				bigboss = Boss((640, 300))
-				enemy_group.add(bigboss)
-				camera_group.add(bigboss)	
-				bosshp = Hp_Bar(bigboss)
-				camera_group.add(bosshp)		
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 1000 and player.rect.centerx >= 300 and player.rect.centery <= 700 and player.rect.centery >=450 and shopping == True:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
