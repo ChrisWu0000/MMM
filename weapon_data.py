@@ -2,7 +2,7 @@ import pygame
 weapon_data = {
   #--------ENEMY-WEAPONS------
   "bell":{"type":"enemy_weapon","availible":False,"ranged":False},
-  "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":3,"duration":180,"spread":10,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.6},
+  "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":3,"duration":170,"spread":10,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.6},
   "drum":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":8,"cooldown":400,"projectiles":10,"speed":2,"duration":70,"spread":300,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.8},
   "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":25,"cooldown":80,"projectiles":1,"speed":5,"duration":300,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.6},
   "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":100,"projectiles":8,"speed":6,"duration":200,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.1},
@@ -26,5 +26,5 @@ weapon_data = {
   "Upgrade6.1":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Coin3.png"),"value":150},
   
   
-  "refresh":{"type":"refresh","purchased":False,"availible":False,"cost":25,"ranged":False,"image": pygame.image.load("Props/Shopkeep.png")},
+  "refresh":{"type":"refresh","purchased":False,"availible":False,"cost":1,"ranged":False,"image": pygame.image.load("Props/Shopkeep.png")},
 }
