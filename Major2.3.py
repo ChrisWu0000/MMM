@@ -561,7 +561,6 @@ class Player(pygame.sprite.Sprite):
 	def check_alive(self): # checks if player dies
 		if self.hp <=0  and self.isdead == False:
 			self.i = 0
-			self.k = self.k/2
 			self.isdead = True
 			if self.flipped == False:
 				self.image = self.death[floor(self.i)]
@@ -575,6 +574,8 @@ class Player(pygame.sprite.Sprite):
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 4-self.k:
 				self.kill()
+				player_group.empty()
+				self.isdead = False
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
@@ -1016,7 +1017,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
-		self.fpsdisplay = my_font.render(str(int(clock.get_fps())), True , (0,0,0))
+		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
 		self.surface.blit(self.background_image,ground_offset)
@@ -1058,6 +1059,32 @@ physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
+def save():
+	with open("save_data", "w") as s:
+		s.write(levelnum)
+		s.write(wares_group)
+		s.write(player)
+
+def restart():
+	camera_group.empty()
+	player_group.empty() 
+	enemy_group.empty() 
+	enemy_weapon_group.empty() 
+	collision_group.empty()
+	physics_group.empty() 
+	all_sprite_group.empty()
+	item_group.empty()
+	wares_group.empty() 
+	weapons_group.empty()
+	levelnum = 0
+	player.hp = player.maxhp
+	hp = Hp_Bar(player)
+	player_group.add(hp)
+	camera_group.add(hp)
+	player_group.add(player)
+	physics_group.add(player)
+	camera_group.add(player)
+	all_sprite_group.add(player) 
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1129,18 +1156,21 @@ def main_menu():
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 	global game_pause
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
-	MOUSE_POS = pygame.mouse.get_pos()
-	Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(45), base_color="black", hovering_color="White")
-	Quit_button = Button(image=None, pos=(640, 425), text_input="Admit Defeat", font=get_font(35), base_color="black", hovering_color="White")
-	Save_button = Button(image=None, pos=(640, 475), text_input="Save and quit", font=get_font(35), base_color="black", hovering_color="White")
+
 	if goose == 1:
 		pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
-		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
+	pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 	pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
-	for button in [Quit_button, Save_button, Continue_button]:
+	screen.blit(surface, (0, 0))
+	MOUSE_POS = pygame.mouse.get_pos()
+	Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(35), base_color="black", hovering_color="White")
+	Option_button = Button(image=None, pos=(640, 325), text_input="Options", font=get_font(35), base_color="black", hovering_color="White")
+	Quit_button = Button(image=None, pos=(640, 425), text_input="Give Up", font=get_font(35), base_color="black", hovering_color="White")
+	Save_button = Button(image=None, pos=(640, 475), text_input="Save and Quit", font=get_font(35), base_color="black", hovering_color="White")
+	for button in [Quit_button, Save_button, Continue_button, Option_button]:
 			button.changeColor(MOUSE_POS)
 			button.update(screen)
-	screen.blit(surface, (0, 0))
+
 
 	screen.blit(my_font.render('Paused', True, (0, 0, 0, 200)), (600, 125))
 	for event in pygame.event.get():
@@ -1150,11 +1180,13 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if Continue_button.checkForInput(MOUSE_POS):
 					game_pause = False
-					
+				if Option_button.checkForInput(MOUSE_POS):
+					pass	
 				if Save_button.checkForInput(MOUSE_POS):
 					pygame.quit()
 					sys.exit()
 				if Quit_button.checkForInput(MOUSE_POS):
+					save()
 					pygame.quit()
 					sys.exit()
 
@@ -1245,6 +1277,9 @@ spawnenemies = False
 displayfps = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
+	if len(player_group) == 0:
+		restart()
+		main_menu()
 	if game_pause == False:
 		difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
