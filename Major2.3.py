@@ -18,7 +18,7 @@ levelnum = 1
 bosspresent=False
 
 def get_font(size):
-	return pygame.font.SysFont('Sylfaen', size)
+	return pygame.font.SysFont('Perpetua', size)
 my_font = get_font(30)
 difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
@@ -936,9 +936,9 @@ class Button():
 		self.base_color, self.hovering_color = base_color, hovering_color
 		self.text_input = text_input
 		self.text = self.font.render(self.text_input, True, self.base_color)
-		self.isrect = False
 		if self.image is None:
 			self.image = self.text
+		self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
 		self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
 
 	def update(self, screen):
@@ -955,7 +955,7 @@ class Button():
 		if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top, self.rect.bottom):
 			self.text = self.font.render(self.text_input, True, self.hovering_color)
 		else:
-			self.text = self.font.render(self.text_input, True, self.base_color)		
+			self.text = self.font.render(self.text_input, True, self.base_color)	
 class CameraGroup(pygame.sprite.Group):
 	global wave
 	def __init__(self):
@@ -1127,31 +1127,36 @@ def main_menu():
 
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
-	def checkForInput(rect, position):
-		if position[0] in range(rect.left, rect.right) and position[1] in range(rect.top, rect.bottom):
-			return True
-		return False
+	global game_pause
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
 	MOUSE_POS = pygame.mouse.get_pos()
-	Quit_button = Button(image=None, pos=(640, 335), text_input="Reset", font=get_font(35), base_color="black", hovering_color="White")
-	Save_button = Button(image=None, pos=(640, 435), text_input="Save and quit", font=get_font(35), base_color="black", hovering_color="White")
+	Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(45), base_color="black", hovering_color="White")
+	Quit_button = Button(image=None, pos=(640, 425), text_input="Admit Defeat", font=get_font(35), base_color="black", hovering_color="White")
+	Save_button = Button(image=None, pos=(640, 475), text_input="Save and quit", font=get_font(35), base_color="black", hovering_color="White")
 	if goose == 1:
 		pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
-	pygame.draw.rect(surface, (192, 192, 192, 200), [340, 235, 600, 50], 0, 10)  
-	for button in [Quit_button, Save_button]:
+	pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
+	for button in [Quit_button, Save_button, Continue_button]:
 			button.changeColor(MOUSE_POS)
 			button.update(screen)
 	screen.blit(surface, (0, 0))
 
-	screen.blit(my_font.render('Game Paused: Press P to Resume', True, (0, 0, 0, 200)), (440, 245))
-	if event.type == pygame.MOUSEBUTTONDOWN:
-				if checkForInput(MOUSE_POS):
+	screen.blit(my_font.render('Paused', True, (0, 0, 0, 200)), (600, 125))
+	for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				sys.exit()
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				if Continue_button.checkForInput(MOUSE_POS):
+					game_pause = False
+					
+				if Save_button.checkForInput(MOUSE_POS):
 					pygame.quit()
-					sys.exit() 
-				if checkForInput(MOUSE_POS):
+					sys.exit()
+				if Quit_button.checkForInput(MOUSE_POS):
 					pygame.quit()
-					sys.exit() 
+					sys.exit()
 
 
 
@@ -1240,32 +1245,33 @@ spawnenemies = False
 displayfps = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
-	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
-		j+=1
-		if j >= 120:
-				spawnbell = True 
-				spawnsax = True
-				spawnenemies = True
-				spawndrum = True
-	if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
-		spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
-	if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
-		spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
-	if framenum %12 == 0 and spawndrum == True: #makes it spawn every 12 frames
-		spawn("drum", floor(level_data[levelnum]["num_drum"]/level_data[levelnum]["num_wave"]), numdrum)
-	if numbell <= 0:
-			numbell = 0
-			spawnbell = False
-	if numsax <=0:
-			numsax = 0
-			spawnsax = False
-	if numdrum <=0:
-			numdrum = 0
-			spawndrum = False
-	if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
-			spawnenemies = False
-			wave +=1
+	if game_pause == False:
+		difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
+		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
+			j+=1
+			if j >= 120:
+					spawnbell = True 
+					spawnsax = True
+					spawnenemies = True
+					spawndrum = True
+		if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
+			spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
+		if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
+			spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
+		if framenum %12 == 0 and spawndrum == True: #makes it spawn every 12 frames
+			spawn("drum", floor(level_data[levelnum]["num_drum"]/level_data[levelnum]["num_wave"]), numdrum)
+		if numbell <= 0:
+				numbell = 0
+				spawnbell = False
+		if numsax <=0:
+				numsax = 0
+				spawnsax = False
+		if numdrum <=0:
+				numdrum = 0
+				spawndrum = False
+		if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
+				spawnenemies = False
+				wave +=1
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -1311,6 +1317,7 @@ while meep:
 		camera_group.update(enemy_group,player)
 	if game_pause == True:
 		draw_pause()
+		player.shoot_cooldown += 1
 		goose = 0
 	pygame.display.update()
 	clock.tick(120)
