@@ -813,6 +813,13 @@ class Hp_Bar(pygame.sprite.Sprite):
 			pygame.draw.rect(camera_group.surface, "green", self.rect2)
 		else:
 			self.kill()
+class Gun_Sprite(pygame.sprite.Sprite):
+	def __init__(self, name, direction):
+		self.name = name
+		self.item = weapon_data[self.name]
+		self.image = self.item["playerimage"].convert_alpha()
+		self.direction = direction
+
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
