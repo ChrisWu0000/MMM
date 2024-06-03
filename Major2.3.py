@@ -11,6 +11,9 @@ from weapon_data import *
 from math import floor
 import Spritesheet
 import sys
+import ast
+import re
+import os
 pygame.init()
 global bosspresent, wave
 wave = 1
@@ -1017,6 +1020,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.offset.y = self.camera_rect.top - self.camera_borders['top']
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
+		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
 		ground_offset = self.bg_rect.topleft - self.offset 
@@ -1032,6 +1036,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
+		screen.blit(self.levelnum_surface, (1200,10))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
@@ -1060,12 +1065,42 @@ camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
 def save():
-	with open("save_data", "w") as s:
-		s.write(levelnum)
-		s.write(wares_group)
-		s.write(player)
+	global savehp, savecoinamount
+	with open("save_data.txt", "w") as s:
+		s.write("%s\n"%(levelnum))
+		s.write("%s\n"%(savehp))
+		s.write("%s\n"%(savecoinamount))
+		s.write("%s\n"%(weapon_data["Basic"]))
+		for item in weapon_data:
+			try:
+				if weapon_data[item]["purchased"]==True:
+					s.write("%s\n"%(item))
+			except:
+				pass
+def load_save():
+	global levelnum
+	with open("save_data.txt", "r") as s:
+		levelnum = int(s.readline())
+		player.hp = int(s.readline())
+		player.coin_amount = int(s.readline())
+		i = str(s.readline())
+		i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
+		j = ast.literal_eval(i_sanitized)
+		for item in [weapon_data["Basic"],weapon_data["Shotgun"], weapon_data["Minigun"], weapon_data["Lag_Maker"] ]:
+			item["damage"] += int(j["damage"])-weapon_data["Basic"]["damage"]
+			item["cooldown"] = int(item["cooldown"]*(j["cooldown"]/weapon_data["Basic"]["cooldown"]))
+			item["projectiles"] += int(j["projectiles"])-weapon_data["Basic"]["projectiles"]
+			item["speed"] += int(j["speed"])-weapon_data["Basic"]["speed"]
+			item["duration"] += int(j["duration"])-weapon_data["Basic"]["duration"]
 
+		for line in s.readlines():
+			try:
+				weapon_data[str(line)]["purchased"] = True
+			except:
+				pass
+	new_level(levelnum)
 def restart():
+	global levelnum
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1076,15 +1111,17 @@ def restart():
 	item_group.empty()
 	wares_group.empty() 
 	weapons_group.empty()
-	levelnum = 0
+	levelnum = 1
 	player.hp = player.maxhp
+	player.coin_amount = 10
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
 	player_group.add(player)
 	physics_group.add(player)
 	camera_group.add(player)
-	all_sprite_group.add(player) 
+	all_sprite_group.add(player)
+	open('save_data.txt', 'w').close()
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1144,14 +1181,55 @@ def main_menu():
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if Play_button.checkForInput(MENU_MOUSE_POS):
 					meep = False
-					new_level(levelnum)
+					main_menu2()
 				if Options_button.checkForInput(MENU_MOUSE_POS):
 					meep = False
-					new_level(levelnum)
+					pass
 				if Quit_button.checkForInput(MENU_MOUSE_POS):
 					pygame.quit()
 					sys.exit()
 
+		pygame.display.update()
+def main_menu2():
+	meep2 = True
+	while meep2:
+		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
+
+		MENU_MOUSE_POS = pygame.mouse.get_pos()
+
+		New_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
+							text_input="NEW GAME", font=get_font(35), base_color="black", hovering_color="White")
+		if os.stat("save_data.txt").st_size != 0:
+			Continue_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
+							text_input="CONTINUE", font=get_font(35), base_color="black", hovering_color="White")
+			for button in [New_button,Continue_button]:
+				button.changeColor(MENU_MOUSE_POS)
+				button.update(screen)
+		
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if New_button.checkForInput(MENU_MOUSE_POS):
+						meep2 = False
+						new_level(levelnum)
+					if Continue_button.checkForInput(MENU_MOUSE_POS):
+						load_save()
+						meep2 = False
+		else:
+			for button in [New_button]:
+				button.changeColor(MENU_MOUSE_POS)
+				button.update(screen)
+		
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if New_button.checkForInput(MENU_MOUSE_POS):
+						meep2 = False
+						new_level(levelnum)
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 	global game_pause
@@ -1183,17 +1261,19 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 				if Option_button.checkForInput(MOUSE_POS):
 					pass	
 				if Save_button.checkForInput(MOUSE_POS):
-					pygame.quit()
-					sys.exit()
-				if Quit_button.checkForInput(MOUSE_POS):
 					save()
-					pygame.quit()
-					sys.exit()
+					main_menu()
+				if Quit_button.checkForInput(MOUSE_POS):
+					game_pause = False
+					player.hp = 0
+
 
 
 
 def new_level(num):
-	global wave, numbell, numsax, numdrum, wavebar
+	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
+	savecoinamount = player.coin_amount
+	savehp = player.hp
 	wave = 1
 	camera_group.empty()
 	wares_group.empty()
@@ -1265,6 +1345,8 @@ numbell = 0
 numsax = 0
 wavebar = False
 numdrum = 0
+savecoinamount = player.coin_amount
+savehp = player.hp
 main_menu()
 meep = True
 game_pause = False
@@ -1314,8 +1396,7 @@ while meep:
 		if event.type == sparetimer1:
 			print("meep")
 		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_ESCAPE:
-				meep = False
+
 
 			if event.key == pygame.K_e and shopping == True and game_pause == False:
 				for item in wares_group:
@@ -1337,10 +1418,10 @@ while meep:
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False:
 				shopping = True
 				shop(0)
-			if event.key == pygame.K_p and game_pause == False:
+			if (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == False:
 				game_pause = True
 				goose = 1
-			elif event.key == pygame.K_p and game_pause == True:
+			elif (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == True:
 				game_pause = False
 			if event.key == pygame.K_BACKQUOTE and displayfps == False:
 				displayfps = True
