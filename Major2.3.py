@@ -1065,7 +1065,9 @@ camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
 def save():
-	global savehp, savecoinamount
+	savecoinamount = player.coin_amount
+	savehp = player.hp
+	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
 		s.write("%s\n"%(savehp))
@@ -1100,7 +1102,10 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 				weapon_data[str(line)]["purchased"] = True
 			except:
 				pass
-	new_level(levelnum)
+	if shopping == True:
+		shop(0)
+	else:
+		new_level(levelnum)
 def restart():
 	global levelnum
 	camera_group.empty()
@@ -1275,8 +1280,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
-	savecoinamount = player.coin_amount
-	savehp = player.hp
+	save()
 	wave = 1
 	camera_group.empty()
 	wares_group.empty()
@@ -1421,6 +1425,7 @@ while meep:
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False:
 				shopping = True
 				shop(0)
+				save()
 			if (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == False:
 				game_pause = True
 				goose = 1
