@@ -1355,9 +1355,6 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	if event.key == pygame.K_r:
-			player.coin_amount -= 5
-			shop(0)
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1392,6 +1389,7 @@ spawnsax = False
 spawndrum = False
 spawnenemies = False
 displayfps = False
+boss_spawned = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
 	if len(player_group) == 0:
@@ -1424,6 +1422,7 @@ while meep:
 		if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
 				spawnenemies = False
 				wave +=1
+				boss_spawned = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -1438,8 +1437,9 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if  len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
+			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
 				bosspresent=True
+				boss_spawned = True
 				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
 				collision_group.add(bigboss)
