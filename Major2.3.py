@@ -1403,7 +1403,7 @@ while meep:
 		restart()
 		main_menu()
 	if game_pause == False:
-		difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
+		difficulty_mult = float(1.2**(levelnum-1))*1.4**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 			j+=1
 			if j >= 120:
