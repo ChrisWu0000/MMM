@@ -1215,7 +1215,7 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(levelnum)
+						new_level(1)
 					if Continue_button.checkForInput(MENU_MOUSE_POS):
 						load_save()
 						meep2 = False
