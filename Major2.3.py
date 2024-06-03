@@ -453,6 +453,13 @@ class Boss(pygame.sprite.Sprite):
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
 			player.lastcollision = 0
+		if self.collisionrect.colliderect(player.rect) and player.dashing == False:
+			self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
+			self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
+			self.collisionrect.midbottom = self.rect.midbottom
+			self.speed -= 0.8
+			self.collision_check = True
+			self.check_collision(player)
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
