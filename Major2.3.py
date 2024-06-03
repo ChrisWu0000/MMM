@@ -1079,7 +1079,7 @@ def save():
 				pass
 		enemy_group.empty()
 		collision_group.empty()
-def load_save():
+def load_save():#If you save, quit the game, then load save, then try to create new save, it does not work. Also loading a save with minigun it did not carry over
 	global levelnum
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
