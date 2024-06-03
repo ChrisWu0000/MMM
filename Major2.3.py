@@ -1394,40 +1394,37 @@ spawnenemies = False
 displayfps = False
 #pygame.time.set_timer(sparetimer1,1000)
 while meep:
-	difficulty_mult = float(1.1**(levelnum-1))*1.8**(max(0, levelnum-10))
-	if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
-		j+=1
-		if j >= 120:
-				spawnbell = True 
-				spawnsax = True
-				spawnenemies = True
-				spawndrum = True
-	if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
-		spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
-	if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
-		spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
-	if framenum %12 == 0 and spawndrum == True: #makes it spawn every 12 frames
-		spawn("drum", floor(level_data[levelnum]["num_drum"]/level_data[levelnum]["num_wave"]), numdrum)
-	if numbell <= 0:
-			numbell = 0
-			spawnbell = False
-	if numsax <=0:
-			numsax = 0
-			spawnsax = False
-	if numdrum <=0:
-			numdrum = 0
-			spawndrum = False
-	if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
-			spawnenemies = False
-			wave +=1
-	if len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
-		bosspresent=True
-		bigboss = Boss((640, 300))
-		enemy_group.add(bigboss)
-		collision_group.add(bigboss)
-		camera_group.add(bigboss)	
-		bosshp = Hp_Bar(bigboss)
-		camera_group.add(bosshp)		
+	if len(player_group) == 0:
+		restart()
+		main_menu()
+	if game_pause == False:
+		difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
+		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
+			j+=1
+			if j >= 120:
+					spawnbell = True 
+					spawnsax = True
+					spawnenemies = True
+					spawndrum = True
+		if framenum %12 == 0 and spawnbell == True: #makes it spawn every 12 frames
+			spawn("bell", floor(level_data[levelnum]["num_bell"]/level_data[levelnum]["num_wave"]), numbell)
+		if framenum %12 == 0 and spawnsax == True: #makes it spawn every 12 frames
+			spawn("sax", floor(level_data[levelnum]["num_sax"]/level_data[levelnum]["num_wave"]), numsax)
+		if framenum %12 == 0 and spawndrum == True: #makes it spawn every 12 frames
+			spawn("drum", floor(level_data[levelnum]["num_drum"]/level_data[levelnum]["num_wave"]), numdrum)
+		if numbell <= 0:
+				numbell = 0
+				spawnbell = False
+		if numsax <=0:
+				numsax = 0
+				spawnsax = False
+		if numdrum <=0:
+				numdrum = 0
+				spawndrum = False
+		if numbell <= 0 and numsax <=0 and numdrum <= 0 and spawnsax == False and spawnbell == False and spawndrum == False and spawnenemies == True and framenum%12 == 0:		
+				spawnenemies = False
+				wave +=1
+
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
@@ -1441,7 +1438,15 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True:
+			if  len(enemy_group)==0 and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
+				bosspresent=True
+				bigboss = Boss((640, 300))
+				enemy_group.add(bigboss)
+				collision_group.add(bigboss)
+				camera_group.add(bigboss)	
+				bosshp = Hp_Bar(bigboss)
+				camera_group.add(bosshp)		
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True and game_pause == False:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
