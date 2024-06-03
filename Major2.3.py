@@ -15,7 +15,6 @@ import ast
 import re
 import os
 pygame.init()
-global bosspresent, wave
 wave = 1
 levelnum = 1
 bosspresent=False
@@ -355,7 +354,7 @@ class Boss(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			enemy_group.remove(self)
-			bosspresent = False
+			#bosspresent = False
 			collision_group.remove(self)
 		if self.hp <=0  and self.isdead == True:
 			if self.flipped == False:
@@ -1063,7 +1062,7 @@ player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
-shopping = False
+
 def save():
 	savecoinamount = player.coin_amount
 	savehp = player.hp
@@ -1072,7 +1071,9 @@ def save():
 		s.write("%s\n"%(levelnum))
 		s.write("%s\n"%(savehp))
 		s.write("%s\n"%(savecoinamount))
+		s.write("%s\n"%(shopping))
 		s.write("%s\n"%(weapon_data["Basic"]))
+		
 		for item in weapon_data:
 			try:
 				if weapon_data[item]["purchased"]==True:
@@ -1082,11 +1083,12 @@ def save():
 		enemy_group.empty()
 		collision_group.empty()
 def load_save():#If you save, quit the game, then load save, then try to create new save, it does not work. Also loading a save with minigun it did not carry over
-	global levelnum
+	global levelnum, shopping
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
 		player.hp = int(s.readline())
 		player.coin_amount = int(s.readline())
+		shop1 = s.readline()
 		i = str(s.readline())
 		i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
 		j = ast.literal_eval(i_sanitized)
@@ -1102,8 +1104,9 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 				weapon_data[str(line)]["purchased"] = True
 			except:
 				pass
-	if shopping == True:
+	if shop1 == "True\n":
 		shop(0)
+		shopping = True
 	else:
 		new_level(levelnum)
 def restart():
@@ -1164,7 +1167,9 @@ def spawn(name, x, numspawn):
 		if name == "drum":
 			numdrum = -100000
 def main_menu():
+	global game_pause
 	meep = True
+	game_pause = False
 	while meep:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
 
@@ -1269,7 +1274,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 				if Option_button.checkForInput(MOUSE_POS):
 					pass	
 				if Save_button.checkForInput(MOUSE_POS):
-					save()
+					#save()
 					main_menu()
 				if Quit_button.checkForInput(MOUSE_POS):
 					game_pause = False
@@ -1314,6 +1319,7 @@ def new_level(num):
 def shop(num):
 	global shopping, wavebar
 	shopping = True
+	save()
 	wavebar = False
 	camera_group.empty()
 	wares_group.empty()
@@ -1327,9 +1333,6 @@ def shop(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	if event.key == pygame.K_r:
-			player.coin_amount -= 5
-			shop(0)
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1369,7 +1372,7 @@ while meep:
 	if len(player_group) == 0:
 		restart()
 		main_menu()
-	if game_pause == False:
+	if game_pause == False and shopping == False:
 		difficulty_mult = float(1.2**(levelnum-1))*1.5**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
 			j+=1
