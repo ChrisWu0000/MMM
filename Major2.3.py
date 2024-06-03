@@ -15,7 +15,6 @@ import ast
 import re
 import os
 pygame.init()
-global bosspresent, wave
 wave = 1
 levelnum = 1
 bosspresent=False
@@ -351,7 +350,7 @@ class Boss(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			enemy_group.remove(self)
-			bosspresent = False
+			#bosspresent = False
 			collision_group.remove(self)
 		if self.hp <=0  and self.isdead == True:
 			if self.flipped == False:
@@ -1104,13 +1103,18 @@ camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
 shopkeep = Shop_Item("refresh",(650,575))
+
 def save():
-	global savehp, savecoinamount
+	savecoinamount = player.coin_amount
+	savehp = player.hp
+	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
 		s.write("%s\n"%(savehp))
 		s.write("%s\n"%(savecoinamount))
+		s.write("%s\n"%(shopping))
 		s.write("%s\n"%(weapon_data["Basic"]))
+		
 		for item in weapon_data:
 			try:
 				if weapon_data[item]["purchased"]==True:
@@ -1120,11 +1124,12 @@ def save():
 		enemy_group.empty()
 		collision_group.empty()
 def load_save():#If you save, quit the game, then load save, then try to create new save, it does not work. Also loading a save with minigun it did not carry over
-	global levelnum
+	global levelnum, shopping
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
 		player.hp = int(s.readline())
 		player.coin_amount = int(s.readline())
+		shop1 = s.readline()
 		i = str(s.readline())
 		i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
 		j = ast.literal_eval(i_sanitized)
@@ -1140,7 +1145,11 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 				weapon_data[str(line)]["purchased"] = True
 			except:
 				pass
-	new_level(levelnum)
+	if shop1 == "True\n":
+		shop(0)
+		shopping = True
+	else:
+		new_level(levelnum)
 def restart():
 	global levelnum
 	camera_group.empty()
@@ -1199,7 +1208,9 @@ def spawn(name, x, numspawn):
 		if name == "drum":
 			numdrum = -100000
 def main_menu():
+	global game_pause
 	meep = True
+	game_pause = False
 	while meep:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
 
@@ -1255,7 +1266,7 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(levelnum)
+						new_level(1)
 					if Continue_button.checkForInput(MENU_MOUSE_POS):
 						load_save()
 						meep2 = False
@@ -1304,7 +1315,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 				if Option_button.checkForInput(MOUSE_POS):
 					pass	
 				if Save_button.checkForInput(MOUSE_POS):
-					save()
+					#save()
 					main_menu()
 				if Quit_button.checkForInput(MOUSE_POS):
 					game_pause = False
@@ -1315,8 +1326,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
-	savecoinamount = player.coin_amount
-	savehp = player.hp
+	save()
 	wave = 1
 	camera_group.empty()
 	wares_group.empty()
@@ -1350,6 +1360,7 @@ def new_level(num):
 def shop(num):
 	global shopping, wavebar
 	shopping = True
+	save()
 	wavebar = False
 	camera_group.empty()
 	wares_group.empty()
@@ -1464,6 +1475,7 @@ while meep:
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False:
 				shopping = True
 				shop(0)
+				save()
 			if (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == False:
 				game_pause = True
 				goose = 1
