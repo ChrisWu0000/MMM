@@ -264,7 +264,6 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
-	global bosspresent
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -346,6 +345,7 @@ class Boss(pygame.sprite.Sprite):
 		self.i = 0
 
 	def check_alive(self): # checks if enemy dies
+		global bosspresent
 		if self.hp <=0  and self.isdead == False:
 			self.i = 0
 			self.k = self.k*1.5
@@ -1077,6 +1077,8 @@ def save():
 					s.write("%s\n"%(item))
 			except:
 				pass
+		enemy_group.empty()
+		collision_group.empty()
 def load_save():
 	global levelnum
 	with open("save_data.txt", "r") as s:
@@ -1258,6 +1260,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				if Continue_button.checkForInput(MOUSE_POS):
 					game_pause = False
+					player.shoot_cooldown += 1
 				if Option_button.checkForInput(MOUSE_POS):
 					pass	
 				if Save_button.checkForInput(MOUSE_POS):
@@ -1423,6 +1426,7 @@ while meep:
 				goose = 1
 			elif (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == True:
 				game_pause = False
+				player.shoot_cooldown +=1
 			if event.key == pygame.K_BACKQUOTE and displayfps == False:
 				displayfps = True
 			elif event.key == pygame.K_BACKQUOTE and displayfps == True:
@@ -1433,7 +1437,6 @@ while meep:
 		camera_group.update(enemy_group,player)
 	if game_pause == True:
 		draw_pause()
-		player.shoot_cooldown += 1
 		goose = 0
 	pygame.display.update()
 	clock.tick(120)
