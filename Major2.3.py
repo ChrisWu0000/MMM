@@ -837,6 +837,7 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.image = self.item["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
+		self.cost_display = my_font.render(str(self.item["cost"]), True, (0,0,0))
 	def purchase(self,player):
 		if player.coin_amount >= floor((self.item["cost"]*difficulty_mult)/2)*2:
 			player.coin_amount -=floor((self.item["cost"]*difficulty_mult)/2)*2
@@ -1066,6 +1067,8 @@ class CameraGroup(pygame.sprite.Group):
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
+			if wares_group.has(sprite):
+				self.surface.blit(sprite.cost_display,offset_pos+(0,10))
 		if bosspresent == True:
 			self.add(bosshp)
 		hp.update(enemy_group, player)
@@ -1377,6 +1380,7 @@ def shop(num):
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 	camera_group.add(wares_group.sprites()[0:5])
+	
 levelnum = 1
 global framenum, numbell, numsax, numdrum
 framenum = 0
