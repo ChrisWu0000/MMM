@@ -1067,7 +1067,8 @@ class CameraGroup(pygame.sprite.Group):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 			if wares_group.has(sprite):
-				self.surface.blit(sprite.cost_display,offset_pos+(0,sprite.rect.height))
+				self.surface.blit(prop_data["Coin"]["image"], offset_pos+(0,sprite.rect.height))
+				self.surface.blit(sprite.cost_display,offset_pos+(30,sprite.rect.height))
 		if bosspresent == True:
 			self.add(bosshp)
 		hp.update(enemy_group, player)
