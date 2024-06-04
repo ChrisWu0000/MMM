@@ -1320,7 +1320,8 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 				if Quit_button.checkForInput(MOUSE_POS):
 					game_pause = False
 					player.hp = 0
-
+def option_menu(): #volume, maybe screensize, controls
+	pass
 
 
 
