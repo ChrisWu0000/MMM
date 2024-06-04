@@ -1067,7 +1067,7 @@ class CameraGroup(pygame.sprite.Group):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 			if wares_group.has(sprite):
-				self.surface.blit(sprite.cost_display,offset_pos+(0,0))
+				self.surface.blit(sprite.cost_display,offset_pos+(0,sprite.rect.height))
 		if bosspresent == True:
 			self.add(bosshp)
 		hp.update(enemy_group, player)
@@ -1172,6 +1172,12 @@ def restart():
 	physics_group.add(player)
 	camera_group.add(player)
 	all_sprite_group.add(player)
+	for item in weapon_data:
+		if weapon_data[item]["availible"]==True:
+			if weapon_data[item]["type"] == "weapon":
+				weapons_group.add(Shop_Item(item,(125,900)))
+			else:
+				item_group.add(Shop_Item(item,(125,900)))
 	open('save_data.txt', 'w').close()
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
