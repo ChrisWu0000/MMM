@@ -481,6 +481,22 @@ class Boss(pygame.sprite.Sprite):
 		else:
 			self.speed = 0
 
+class Gun_Sprite(pygame.sprite.Sprite):
+	def __init__(self,name):
+		super().__init__()
+		self.name = name
+		self.weapon = weapon_data["name"]
+	def update(self):
+		self.mouse_coords = pygame.mouse.get_pos()
+		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.angle = atan2(self.lasty, self.lastx)
+		self.gun_image = self.weapon["playerimage"]
+		if(self.flipped == True):
+			self.gun_image = pygame.transform.rotate(self.gun_image, self.angle)
+		elif(self.flipped == False):
+			self.gun_image = pygame.transform.flip(pygame.transform.rotate(self.gun_image, self.angle), True, False)
+
 class Player(pygame.sprite.Sprite):
 	def __init__(self,pos):
 		super().__init__()
@@ -509,6 +525,7 @@ class Player(pygame.sprite.Sprite):
 		self.lastcollision = 200
 		self.iframes = 200 #iframes are measured in miliseconds
 		self.weapon = weapon_data["Basic"]
+		self.gun_image = self.weapon["playerimage"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
 		self.is_hit = False
@@ -813,12 +830,6 @@ class Hp_Bar(pygame.sprite.Sprite):
 			pygame.draw.rect(camera_group.surface, "green", self.rect2)
 		else:
 			self.kill()
-class Gun_Sprite(pygame.sprite.Sprite):
-	def __init__(self, name, direction):
-		self.name = name
-		self.item = weapon_data[self.name]
-		self.image = self.item["playerimage"].convert_alpha()
-		self.direction = direction
 
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
