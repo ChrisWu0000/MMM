@@ -819,12 +819,27 @@ class Hp_Bar(pygame.sprite.Sprite):
 		else:
 			self.kill()
 class Gun_Sprite(pygame.sprite.Sprite):
-	def __init__(self, name, direction):
-		self.name = name
-		self.item = weapon_data[self.name]
-		self.image = self.item["playerimage"].convert_alpha()
-		self.direction = direction
-
+	def __init__(self, player):
+		super().__init__()
+		self.player = player
+		self.weapon  = self.player.weapon
+		self.image = self.weapon["image"]
+		self.rect = self.image.get_rect(center = player.rect.center)
+		self.angle = 0
+		self.lasty = 0
+		self.lastx = 0
+		self.mouse_coords = pygame.mouse.get_pos()
+	def update(self, enemy_group, player):
+		self.mouse_coords = pygame.mouse.get_pos()
+		#self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
+		#self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.angle = atan2(self.lasty, self.lastx)
+		self.weapon = self.player.weapon
+		if(self.player.flipped == True):
+			self.image = pygame.transform.rotate(self.image, self.angle)
+		elif(self.player.flipped == False):
+			self.image = pygame.transform.flip(pygame.transform.rotate(self.image, self.angle), True, False)
+		self.rect.center = self.player.rect.center
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -1062,6 +1077,7 @@ class CameraGroup(pygame.sprite.Group):
 		if bosspresent == True:
 			self.add(bosshp)
 		hp.update(enemy_group, player)
+		gun.update(enemy_group, player)
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
@@ -1086,8 +1102,11 @@ wares_group = pygame.sprite.Group()
 weapons_group = pygame.sprite.Group()
 player = Player((640,360))
 hp = Hp_Bar(player)
+gun = Gun_Sprite(player)
 player_group.add(hp)
 camera_group.add(hp)
+player_group.add(gun)
+camera_group.add(gun)
 player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
