@@ -1166,6 +1166,19 @@ def restart():
 	levelnum = 1
 	player.hp = player.maxhp
 	player.coin_amount = 10
+	open('save_data.txt', 'w').close()
+	with open("save_data.txt", "w") as s:
+		s.write("%s\n"%(levelnum))
+		s.write("%s\n"%(player.hp))
+		s.write("%s\n"%(player.coin_amount))
+		s.write("%s\n"%(False))
+		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":25,"ranged":False,"damage":50,"cooldown":50,"projectiles":1,"speed":9,"duration":55,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
+		for item in weapon_data:
+			try:
+				if weapon_data[item]["purchased"]==True:
+					s.write("%s\n"%(item))
+			except:
+				pass
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
@@ -1179,7 +1192,7 @@ def restart():
 				weapons_group.add(Shop_Item(item,(125,900)))
 			else:
 				item_group.add(Shop_Item(item,(125,900)))
-	open('save_data.txt', 'w').close()
+	load_save()
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
