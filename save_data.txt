@@ -1,6 +1,0 @@
-3
-411
-20
-False
-{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 25, 'ranged': False, 'damage': 50, 'cooldown': 32, 'projectiles': 3, 'speed': 11, 'duration': 55, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(64x80x32 SW)>}
-Basic
