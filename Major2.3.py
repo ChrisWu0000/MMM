@@ -266,6 +266,7 @@ class Boss(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.weapon1 = weapon_data['top_brass1']
 		self.weapon2 = weapon_data['top_brass2']
+		self.weapon3 = weapon_data['top_brass3']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
 		self.maxhp = enemy_info["health"]*difficulty_mult*difficulty_mult
@@ -284,8 +285,11 @@ class Boss(pygame.sprite.Sprite):
 		self.current_index = 0
 		self.isattacking1 = False
 		self.isattacking2 = False
+		self.isattacking3 = False
+		self.totalattacks = 0
 		self.shoot_cooldown1 =self.weapon1["cooldown"]
 		self.shoot_cooldown2 =self.weapon2["cooldown"]
+		self.shoot_cooldown3 =self.weapon3["cooldown"]
 		self.i1 = 0
 		self.i2 = 0
 		self.rect = self.image.get_rect()
@@ -371,14 +375,21 @@ class Boss(pygame.sprite.Sprite):
 				self.ishit = False			
 
 	def attack(self,player): #checks if enemy should attack
-		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking1 == False and self.isdead == False:
+		if self.shoot_cooldown3 == 0 and self.isattacking3 == False and self.isattacking2 == False and self.isattacking1 == False and self.isdead == False:
+			self.i2 = 0
+			self.isattacking3 = True
+			if self.flipped == False:
+				self.image = self.attack1[floor(self.i2)]
+			else:
+				self.image = self.flippedattack1[floor(self.i2)]
+		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking3 == False and self.isattacking1 == False and self.isdead == False:
 			self.i2 = 0
 			self.isattacking2 = True
 			if self.flipped == False:
 				self.image = self.attack2[floor(self.i2)]
 			else:
 				self.image = self.flippedattack2[floor(self.i2)]
-		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking2 == False and self.isdead == False:
+		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking3 == False and self.isattacking2 == False and self.isdead == False:
 			self.i1 = 0
 			self.isattacking1 = True
 			if self.flipped == False:
@@ -403,6 +414,19 @@ class Boss(pygame.sprite.Sprite):
 				self.isattacking2 = False
 				self.aim = (player.rect.center)
 				self.shoot2()
+		if self.isattacking3 == True:
+			if self.flipped == False:
+				self.image = self.attack1[floor(self.i1)]
+			else:
+				self.image = self.flippedattack1[floor(self.i1)]
+		if self.isattacking3 == True:
+				self.totalattacks +=1
+				if self.totalattacks >= 100:
+					self.shoot_cooldown3 = self.weapon3["cooldown"]
+					self.totalattacks = 0
+					self.isattacking3 = False
+				self.aim = (player.rect.center)
+				self.shoot3()
 	def shoot1(self):
 		projectiles = self.weapon1["projectiles"]
 		self.lastx = (self.aim[0] - self.rect.centerx)
@@ -426,6 +450,17 @@ class Boss(pygame.sprite.Sprite):
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
+	def shoot3(self):
+		projectiles = self.weapon3["projectiles"]
+		self.lastx = (self.aim[0] - self.rect.centerx)
+		self.lasty = (self.aim[1] - self.rect.centery)
+		self.angle = atan2(self.lasty, self.lastx)
+		if self.shoot_cooldown3 == 0 and self.hp > 0:
+			spawn_bullet_pos = self.rect.center
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle+randint(-self.weapon3["spread"],self.weapon3["spread"])/100,self.weapon3)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 
@@ -480,6 +515,8 @@ class Boss(pygame.sprite.Sprite):
 			self.shoot_cooldown1-=1
 		if self.shoot_cooldown2>0:
 			self.shoot_cooldown2-=1
+		if self.shoot_cooldown3>0:
+			self.shoot_cooldown3-=1
 		self.i+=self.k
 		self.i1 +=self.k
 		self.i2 +=self.k
@@ -852,6 +889,7 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor((wares_group.sprites()[x+1].item["cost"]*difficulty_mult)/2)*2), True, (0,0,0))
 				else:
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -859,6 +897,8 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor((wares_group.sprites()[x+1].item["cost"]*difficulty_mult)/2)*2), True, (0,0,0))
+				wares_group.sprites()[0].cost_display = my_font.render(str(floor((wares_group.sprites()[0].item["cost"]*difficulty_mult)/2)*2), True, (0,0,0))
 				camera_group.add(wares_group.sprites()[0:5])
 			elif self.item["type"] == "weapon":
 				wares_group.remove(self)
@@ -921,7 +961,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.rect.center = (x, y)
 		self.x = x
 		self.y = y
-		self.speed = self.weapon["speed"]
+		self.speed = self.weapon["speed"]#+randint(-3,0)
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
@@ -1075,7 +1115,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
-		screen.blit(self.levelnum_surface, (1200,10))
+		screen.blit(self.levelnum_surface, (1190,10))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
@@ -1382,6 +1422,7 @@ def shop(num):
 	global shopping, wavebar
 	shopping = True
 	save()
+			
 	wavebar = False
 	camera_group.empty()
 	wares_group.empty()
@@ -1404,6 +1445,7 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor((wares_group.sprites()[x+1].item["cost"]*difficulty_mult)/2)*2), True, (0,0,0))
 	else:
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1411,6 +1453,8 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor((wares_group.sprites()[x+1].item["cost"]*difficulty_mult)/2)*2), True, (0,0,0))
+	wares_group.sprites()[0].cost_display = my_font.render(str(floor((wares_group.sprites()[0].item["cost"]*difficulty_mult)/2)*2), True, (0,0,0))
 	camera_group.add(wares_group.sprites()[0:5])
 	
 levelnum = 1
