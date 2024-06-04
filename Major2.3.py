@@ -832,7 +832,6 @@ class Shop_Item(pygame.sprite.Sprite):
 		if player.coin_amount >= floor((self.item["cost"]*difficulty_mult)/2)*2:
 			player.coin_amount -=floor((self.item["cost"]*difficulty_mult)/2)*2
 			if self.item["type"] == "refresh":
-				print("shop refreshed")
 				camera_group.remove(wares_group)
 				wares_group.empty()
 				wares_group.add(shopkeep)
@@ -860,9 +859,7 @@ class Shop_Item(pygame.sprite.Sprite):
 				wares_group.remove(self)
 				camera_group.remove(self)
 				player.hp += self.item["value"]
-				print("healed")
 				if player.hp >= player.maxhp:
-					print("overhealed")
 					player.hp = 500
 			elif self.item["type"]== "upgrade":
 				wares_group.remove(self)
@@ -873,8 +870,7 @@ class Shop_Item(pygame.sprite.Sprite):
 							weapon_data[item][self.item["change"]] = max(int(weapon_data[item][self.item["change"]]*self.item["value"]), 5)
 						else:
 							weapon_data[item][self.item["change"]]+=self.item["value"]
-		elif player.coin_amount <self.item["cost"]:
-			print("Not enough coins")
+
 class Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -1471,8 +1467,6 @@ while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
-		if event.type == sparetimer1:
-			print(player.rect.center)
 		if event.type == pygame.KEYDOWN:
 
 
