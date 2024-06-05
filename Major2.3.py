@@ -1443,7 +1443,34 @@ def new_level(num):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 def win_screen():
-	pass
+		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
+
+		if goose == 1:
+			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])		
+	
+		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(35), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
+		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
+		screen.blit(surface, (0, 0))
+		MOUSE_POS = pygame.mouse.get_pos()
+
+		for button in [Quit_button, Save_button]:
+				button.changeColor(MOUSE_POS)
+				button.update(screen)
+
+		screen.blit(my_font.render('YOU WIN!', True, (0, 0, 0, 200)), (600, 125))
+		for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if Save_button.checkForInput(MOUSE_POS):
+						quit()
+					elif Quit_button.checkForInput(MOUSE_POS):
+						restart()
+						main_menu()
+		pygame.display.update()
 		
 def shop(num):
 	global shopping, wavebar
@@ -1559,7 +1586,7 @@ while meep:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
-			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False:
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
 				shopping = True
 				shop(0)
 				save()
