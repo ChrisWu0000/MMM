@@ -833,7 +833,7 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		super().__init__()
 		self.player = player
 		self.weapon = weapon
-		self.image_original = self.weapon["image"]
+		self.image_original = self.weapon["playerimage"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
 		self.image = self.image_original  # Initialize the gun image

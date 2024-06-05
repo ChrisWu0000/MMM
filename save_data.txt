@@ -2,5 +2,5 @@
 500
 10
 False
-{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 25, 'ranged': False, 'damage': 50, 'cooldown': 50, 'projectiles': 1, 'speed': 9, 'duration': 55, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>}
+{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 25, 'ranged': False, 'damage': 50, 'cooldown': 50, 'projectiles': 1, 'speed': 9, 'duration': 55, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(90x36x32 SW)>}
 Basic
