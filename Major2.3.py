@@ -839,8 +839,14 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		self.image = self.image_original  # Initialize the gun image
 		self.rect = self.image.get_rect()
 		self.precompute_images() 
+	def rot_center(self, image, angle, x, y):
+	
+		rotated_image = pygame.transform.rotate(image, angle)
+		new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
+
+		return rotated_image, new_rect
 	def precompute_images(self):
-		self.rotated_image = pygame.transform.rotate(self.image_original, self.angle)
+		self.rotated_image, self.rect = self.rot_center(self.image_original, self.angle, self.rect.centerx, self.rect.centery)
 		self.flipped_image = pygame.transform.flip(self.rotated_image, True, False)
 	def update_image(self, new_angle, flipped):
 			self.angle = new_angle
@@ -852,7 +858,8 @@ class Gun_Sprite(pygame.sprite.Sprite):
 			else:
 				self.image = self.rotated_image
 			self.precompute_images()
-			self.rect.midleft = player.rect.center
+			self.rect.center = player.rect.center
+	
 	def update(self, enemy_group, p):
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
@@ -860,14 +867,13 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		self.angle = (180/pi)*-atan2(self.lasty, self.lastx) #converts from deg to rad
 		if self.mouse_coords[0] < player.screen_coord[0]:
 			self.flipped = True
-			player.flipped = True
+			
 		else:
 			self.flipped = False
-			player.flipped = False
 
 		self.update_image(self.angle, self.flipped)
 		self.rect.center = player.rect.center
-		self.rect.centery += 1
+		self.rect.centery += 10
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
