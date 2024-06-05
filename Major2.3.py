@@ -645,10 +645,10 @@ class Player(pygame.sprite.Sprite):
 
 			if self.direction.x !=0:
 				self.walklastx = self.direction.x
-			if(self.walklastx>0):
+			if self.walklastx>0 or self.flipped == True:
 				self.image=self.flippedwalking[floor(self.i)]
 				self.flipped = True
-			elif(self.walklastx<0):
+			if self.walklastx<0 or self.flipped == False:
 				self.image=self.walking[floor(self.i)]
 				self.flipped = False
 			if self.direction.y ==0 and self.direction.x == 0:
@@ -860,11 +860,14 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		self.angle = (180/pi)*-atan2(self.lasty, self.lastx) #converts from deg to rad
 		if self.mouse_coords[0] < player.screen_coord[0]:
 			self.flipped = True
+			player.flipped = True
 		else:
 			self.flipped = False
+			player.flipped = False
 
 		self.update_image(self.angle, self.flipped)
 		self.rect.center = player.rect.center
+		self.rect.centery += 1
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -1105,7 +1108,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.surface.blit(self.background_image,ground_offset)
 		if bosspresent == True:
 			self.remove(bosshp)
-		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
+		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 			if wares_group.has(sprite):
