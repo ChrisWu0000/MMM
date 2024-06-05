@@ -488,6 +488,7 @@ class Boss(pygame.sprite.Sprite):
 			self.speed = 0
 
 class Player(pygame.sprite.Sprite):
+	global camera_group
 	def __init__(self,pos):
 		super().__init__()
 		self.sprite_sheet_image = pygame.image.load('Player/Trent Sprite Sheet.png').convert_alpha()
@@ -512,9 +513,16 @@ class Player(pygame.sprite.Sprite):
 		self.coin_amount = 10
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
+		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastcollision = 200
 		self.iframes = 200 #iframes are measured in miliseconds
 		self.weapon = weapon_data["Basic"]
+		self.gun_image_original = self.weapon["image"]
+		self.angle = 0  # Initial angle
+		self.flipped = False  # Initial flipped state
+		self.gun_image = self.gun_image_original  # Initialize the gun image
+		self.precompute_images() 
+		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
 		self.is_hit = False
@@ -641,8 +649,10 @@ class Player(pygame.sprite.Sprite):
 				self.walklastx = self.direction.x
 			if(self.walklastx>0):
 				self.image=self.flippedwalking[floor(self.i)]
+				self.flipped = True
 			elif(self.walklastx<0):
 				self.image=self.walking[floor(self.i)]
+				self.flipped = False
 			if self.direction.y ==0 and self.direction.x == 0:
 				if(self.walklastx>0):
 					self.image=self.flippedidle[floor(self.i)]
@@ -688,9 +698,8 @@ class Player(pygame.sprite.Sprite):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
 			self.image=self.flippedattacking[2] #floor(self.i)
-		self.mouse_coords = pygame.mouse.get_pos() 
-		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
-		self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
+		self.lastx = (self.mouse_coords[0] - player.screen_coord[0])
+		self.lasty = (self.mouse_coords[1] - player.screen_coord[1])
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
 			self.shoot_cooldown = self.weapon["cooldown"]
@@ -707,7 +716,29 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
 				self.image=self.attacking[floor(self.i)]
+	def precompute_images(self):
+		self.rotated_gun_image = pygame.transform.rotate(self.gun_image_original, self.angle)
+		self.flipped_gun_image = pygame.transform.flip(self.rotated_gun_image, True, False)
+	def update_gun_image(self, new_angle, flipped):
+		if self.angle != new_angle or self.flipped != flipped:
+			self.angle = new_angle
+			self.flipped = flipped
+			self.precompute_images()
+			if self.flipped:
+				self.gun_image = self.flipped_gun_image
+			else:
+				self.gun_image = self.rotated_gun_image
 
+	def update_gun(self):
+		self.mouse_coords = pygame.mouse.get_pos()
+		self.offset = pygame.math.Vector2(self.mouse_coords[0] - self.screen_coord[0], self.mouse_coords[1] - self.screen_coord[1])
+		self.angle = (180 / pi) * -atan2(self.offset[1], self.offset[0])
+		if self.mouse_coords[0] < self.screen_coord[0]:
+			self.flipped = True
+		else:
+			self.flipped = False
+
+		self.update_gun_image(self.angle, self.flipped)
 	def space_shooting(self):
 		projectiles = self.weapon["projectiles"]
 		self.angle = atan2(self.lasty, self.lastx)
@@ -776,6 +807,8 @@ class Player(pygame.sprite.Sprite):
 			self.dash_duration -=1
 	def update(self,enemy_group,player):
 		self.input()
+		self.update_gun()
+		#self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
 		if self.dash_cooldown > 0:
@@ -818,28 +851,25 @@ class Hp_Bar(pygame.sprite.Sprite):
 			pygame.draw.rect(camera_group.surface, "green", self.rect2)
 		else:
 			self.kill()
-class Gun_Sprite(pygame.sprite.Sprite):
+"""class Gun_Sprite(pygame.sprite.Sprite):
 	def __init__(self, player):
 		super().__init__()
 		self.player = player
 		self.weapon  = self.player.weapon
 		self.image = self.weapon["image"]
 		self.rect = self.image.get_rect(center = player.rect.center)
-		self.angle = 0
-		self.lasty = 0
-		self.lastx = 0
-		self.mouse_coords = pygame.mouse.get_pos()
 	def update(self, enemy_group, player):
+
 		self.mouse_coords = pygame.mouse.get_pos()
-		#self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
-		#self.lasty = (self.mouse_coords[1] - self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
-		self.angle = atan2(self.lasty, self.lastx)
+		#self.lastx = (self.mouse_coords[0] - player.screen_coord[0])
+		#self.lasty = (self.mouse_coords[1] - player.screen_coord[1])
+		self.angle = 0
 		self.weapon = self.player.weapon
 		if(self.player.flipped == True):
 			self.image = pygame.transform.rotate(self.image, self.angle)
 		elif(self.player.flipped == False):
 			self.image = pygame.transform.flip(pygame.transform.rotate(self.image, self.angle), True, False)
-		self.rect.center = self.player.rect.center
+		self.rect.center = self.player.rect.center"""
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -1020,6 +1050,8 @@ class CameraGroup(pygame.sprite.Group):
 		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
 		h = self.surface.get_size()[1]  - (self.camera_borders['top'] + self.camera_borders['bottom'])
 		self.camera_rect = pygame.Rect(l,t,w,h)
+		self.last_left = self.camera_rect.left
+		self.last_top = self.camera_rect.top
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 	def draw_wavebar(self):
 			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
@@ -1057,9 +1089,18 @@ class CameraGroup(pygame.sprite.Group):
 			self.camera_rect.bottom = min(target.rect.bottom, self.bg_rect.bottom-self.camera_borders['bottom'])
 			if self.bg_rect.bottom < target.rect.bottom:
 				target.rect.bottom = self.camera_rect.bottom + self.camera_borders['bottom']
-				
-		self.offset.x = self.camera_rect.left - self.camera_borders['left']
-		self.offset.y = self.camera_rect.top - self.camera_borders['top']
+		if self.camera_rect.left != self.last_left:
+			self.offset.x  = self.camera_rect.left - self.camera_borders["left"]
+			self.last_left = self.camera_rect.left
+			new_screen_coord = (player.rect.centerx - self.offset.x, player.screen_coord[1])
+			player.screen_coord = new_screen_coord
+
+		if self.camera_rect.top != self.last_top:
+			self.offset.y = self.camera_rect.top - self.camera_borders["top"]
+			self.last_top = self.camera_rect.top		
+			new_screen_coord = (player.screen_coord[0], player.rect.centery - self.offset.y)
+			player.screen_coord = new_screen_coord
+
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
@@ -1077,7 +1118,7 @@ class CameraGroup(pygame.sprite.Group):
 		if bosspresent == True:
 			self.add(bosshp)
 		hp.update(enemy_group, player)
-		gun.update(enemy_group, player)
+		#gun.update(enemy_group, player)
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
@@ -1102,11 +1143,11 @@ wares_group = pygame.sprite.Group()
 weapons_group = pygame.sprite.Group()
 player = Player((640,360))
 hp = Hp_Bar(player)
-gun = Gun_Sprite(player)
+#gun = Gun_Sprite(player)
 player_group.add(hp)
 camera_group.add(hp)
-player_group.add(gun)
-camera_group.add(gun)
+#player_group.add(gun)
+#camera_group.add(gun)
 player_group.add(player)
 physics_group.add(player)
 camera_group.add(player)
