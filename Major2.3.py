@@ -1014,7 +1014,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.speed = self.weapon["speed"]
 		self.bullet_lifetime = self.weapon["duration"]
 		if self.weapon["ranged"] == True:
-			self.speed = min(self.weapon["speed"]*(sqrt(difficulty_mult)), self.weapon["base_speed"]*2.5)
+			self.speed = min(self.weapon["speed"]+(difficulty_mult-1), self.weapon["max_speed"])
 			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), 3500) 
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
