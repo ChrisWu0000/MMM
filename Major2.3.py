@@ -573,10 +573,8 @@ class Player(pygame.sprite.Sprite):
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
-
 		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.collision_check = False #all of these are used to detect which animation to use
-		self.flipped = False
 		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
@@ -730,7 +728,7 @@ class Player(pygame.sprite.Sprite):
 			elif (keys[pygame.K_LSHIFT] or keys[pygame.K_f])and self.dash_cooldown == 0:
 				self.notmouse = True
 				self.dash = True
-			elif pygame.mouse.get_pressed() == (1, 0, 0):
+			elif pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_m]:
 				self.shoot = 1
 			elif keys[pygame.K_SPACE]:
 				self.shoot = 2
