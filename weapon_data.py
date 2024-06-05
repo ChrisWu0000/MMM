@@ -9,7 +9,7 @@ weapon_data = {
   "top_brass3":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":1700,"projectiles":1,"speed":4,"base_speed":4, "duration":1000,"spread":20,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.5},
   #--------WEAPONS-------
   "Basic":{"type":"weapon","purchased":True,"availible":False,"cost":25,"ranged":False,"damage":50,"cooldown":50,"mincooldown":5,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")},
-  "Shotgun":{"type":"weapon","purchased":False,"availible":True,"cost":50,"ranged":False,"damage":75,"cooldown":100,"mincooldown":5,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")},
+  "Shotgun":{"type":"weapon","purchased":False,"availible":True,"cost":10,"ranged":False,"damage":75,"cooldown":100,"mincooldown":5,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")},
   "Minigun":{"type":"weapon","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")},
   "Lag_Maker":{"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":400,"cooldown":5,"mincooldown":5,"projectiles":20,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")},
   #--------MULTI-PURCHASE-ITEMS------
