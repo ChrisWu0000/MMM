@@ -22,9 +22,9 @@ weapon_data = {
   "Upgrade4.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Duration Upgrade.png"),"change":"duration","value":5},
   "Upgrade5":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Projectiles Upgrade.png"),"change":"projectiles","value":1},
   "Upgrade5.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Projectiles Upgrade.png"),"change":"projectiles","value":1},
-  "Upgrade6":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Coin3.png"),"value":150},
-  "Upgrade6.1":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Coin3.png"),"value":150},
+  "Upgrade6":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Healing Item.png"),"value":150},
+  "Upgrade6.1":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Healing Item.png"),"value":150},
   
   
-  "refresh":{"type":"refresh","purchased":False,"availible":False,"cost":25,"ranged":False,"image": pygame.image.load("Props/Shopkeep.png")},
+  "refresh":{"type":"refresh","purchased":False,"availible":False,"cost":25,"ranged":False,"image": pygame.image.load("Props/Shopkeeper Sprite.png")},
 }
