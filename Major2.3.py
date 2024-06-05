@@ -576,10 +576,8 @@ class Player(pygame.sprite.Sprite):
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
-
 		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.collision_check = False #all of these are used to detect which animation to use
-		self.flipped = False
 		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
@@ -733,7 +731,7 @@ class Player(pygame.sprite.Sprite):
 			elif (keys[pygame.K_LSHIFT] or keys[pygame.K_f])and self.dash_cooldown == 0:
 				self.notmouse = True
 				self.dash = True
-			elif pygame.mouse.get_pressed() == (1, 0, 0):
+			elif pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_m]:
 				self.shoot = 1
 			elif keys[pygame.K_SPACE]:
 				self.shoot = 2
@@ -1019,7 +1017,7 @@ class Bullet(pygame.sprite.Sprite):
 		self.speed = self.weapon["speed"]
 		self.bullet_lifetime = self.weapon["duration"]
 		if self.weapon["ranged"] == True:
-			self.speed = min(self.weapon["speed"]*(sqrt(difficulty_mult)), self.weapon["base_speed"]*2.5)
+			self.speed = min(self.weapon["speed"]+(difficulty_mult-1), self.weapon["max_speed"])
 			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), 3500) 
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
@@ -1227,13 +1225,9 @@ def save():
 		s.write("%s\n"%(savecoinamount))
 		s.write("%s\n"%(shopping))
 		s.write("%s\n"%(weapon_data["Basic"]))
-		
-		for item in weapon_data:
-			try:
-				if weapon_data[item]["purchased"]==True:
-					s.write("%s\n"%(item))
-			except:
-				pass
+		s.write("%s\n"%(weapon_data["Shotgun"]))
+		s.write("%s\n"%(weapon_data["Minigun"]))
+		s.write("%s\n"%(weapon_data["Lag_Maker"]))
 		enemy_group.empty()
 		collision_group.empty()
 def load_save():#If you save, quit the game, then load save, then try to create new save, it does not work. Also loading a save with minigun it did not carry over
@@ -1243,28 +1237,31 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 		player.hp = int(s.readline())
 		player.coin_amount = int(s.readline())
 		shop1 = s.readline()
-		i = str(s.readline())
-		i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
-		j = ast.literal_eval(i_sanitized)
 		for item in [weapon_data["Basic"],weapon_data["Shotgun"], weapon_data["Minigun"], weapon_data["Lag_Maker"] ]:
-			item["damage"] += int(j["damage"])-weapon_data["Basic"]["damage"]
-			item["cooldown"] = int(item["cooldown"]*(j["cooldown"]/weapon_data["Basic"]["cooldown"]))
-			item["projectiles"] += int(j["projectiles"])-weapon_data["Basic"]["projectiles"]
-			item["speed"] += int(j["speed"])-weapon_data["Basic"]["speed"]
-			item["duration"] += int(j["duration"])-weapon_data["Basic"]["duration"]
-
-		for line in s.readlines():
-			try:
-				weapon_data[str(line)]["purchased"] = True
-			except:
-				pass
+			i = str(s.readline())
+			i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
+			j = ast.literal_eval(i_sanitized)
+			item["damage"] += int(j["damage"])-item["damage"]
+			item["cooldown"] = int(item["cooldown"]*(j["cooldown"]/item["cooldown"]))
+			item["projectiles"] += int(j["projectiles"])-item["projectiles"]
+			item["speed"] += int(j["speed"])-item["speed"]
+			item["duration"] += int(j["duration"])-item["duration"]
+			item["purchased"] = j["purchased"]
+		weapons_group.empty()
+		for item in weapon_data:
+			if weapon_data[item]["availible"]==True and weapon_data[item]["purchased"] == False:
+				if weapon_data[item]["type"] == "weapon":
+					weapons_group.add(Shop_Item(item,(125,900)))
+				else:
+					item_group.add(Shop_Item(item,(125,900)))
 	if shop1 == "True\n":
 		shop(0)
 		shopping = True
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum
+	global levelnum,shopping
+	shopping = False
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1285,12 +1282,9 @@ def restart():
 		s.write("%s\n"%(player.coin_amount))
 		s.write("%s\n"%(False))
 		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":25,"ranged":False,"damage":50,"cooldown":50,"projectiles":1,"speed":9,"duration":55,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
-		for item in weapon_data:
-			try:
-				if weapon_data[item]["purchased"]==True:
-					s.write("%s\n"%(item))
-			except:
-				pass
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":50,"ranged":False,"damage":75,"cooldown":100,"mincooldown":5,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":400,"cooldown":5,"mincooldown":5,"projectiles":20,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
@@ -1590,7 +1584,7 @@ while meep:
 		main_menu()
 	if game_pause == False:
 		difficulty_mult = float(1.2**(levelnum-1))*1.4**(max(0, levelnum-10))
-		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
+		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
 			j+=1
 			if j >= 120:
 					spawnbell = True 
@@ -1628,7 +1622,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
+			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0 and shopping == False:
 				bosspresent=True
 				boss_spawned = True
 				bigboss = Boss((640, 300))
