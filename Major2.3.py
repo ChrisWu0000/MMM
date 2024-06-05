@@ -2,7 +2,6 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
-from Difficulties import *
 import pygame.freetype
 from monster_data import *
 from level_data import *
@@ -1443,7 +1442,9 @@ def new_level(num):
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
-
+def win_screen():
+	pass
+		
 def shop(num):
 	global shopping, wavebar
 	shopping = True
