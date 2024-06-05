@@ -1411,9 +1411,6 @@ def option_menu():
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
 		
-
-
-
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
