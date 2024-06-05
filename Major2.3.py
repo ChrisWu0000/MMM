@@ -274,6 +274,7 @@ class Boss(pygame.sprite.Sprite):
 		self.speed = enemy_info["speed"]*difficulty_mult
 		if levelnum == 15:
 			self.speed = enemy_info["speed"]*difficulty_mult*4
+		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
@@ -422,7 +423,7 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.flippedattack1[floor(self.i1)]
 		if self.isattacking3 == True:
 				self.totalattacks +=1
-				if self.totalattacks >= 200*(1+self.healed):
+				if self.totalattacks >= 200+self.healed*50:
 					self.shoot_cooldown3 = self.weapon3["cooldown"]-self.healed*200
 					self.totalattacks = 0
 					self.isattacking3 = False
@@ -539,8 +540,8 @@ class Boss(pygame.sprite.Sprite):
 			self.i1=0
 		if (self.i2 >=8):
 			self.i2=0
-		if self.hp >0 and self.healing == False:
-			self.speed = monster_data[self.name]["speed"]
+		if self.hp >0 and self.healing == False and self.isattacking2==False and self.isattacking3 == False:
+			self.speed = self.defaultspeed
 		else:
 			self.speed = 0
 
@@ -1017,8 +1018,8 @@ class Bullet(pygame.sprite.Sprite):
 		self.speed = self.weapon["speed"]
 		self.bullet_lifetime = self.weapon["duration"]
 		if self.weapon["ranged"] == True:
-			self.speed = min(self.weapon["speed"]+(difficulty_mult-1), self.weapon["max_speed"])
-			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), 3500) 
+			self.speed = min(self.weapon["speed"]+(sqrt(difficulty_mult)-1), self.weapon["max_speed"])
+			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), self.weapon["max_duration"]) 
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
