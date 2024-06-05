@@ -271,9 +271,9 @@ class Boss(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.healing = False
 		self.healed = 0
-		self.speed = enemy_info["speed"]*difficulty_mult
+		self.speed = enemy_info["speed"]*(difficulty_mult*0.8)
 		if levelnum == 15:
-			self.speed = enemy_info["speed"]*difficulty_mult*4
+			self.speed = enemy_info["speed"]*(difficulty_mult*0.8)*2
 		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
@@ -443,7 +443,7 @@ class Boss(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def shoot2(self):
 		projectiles = self.weapon2["projectiles"]
-		base_angle = 0.08*(projectiles-1)-0.04
+		base_angle = 0.07*(projectiles-1)-0.035
 		self.lastx = (self.aim[0] - self.rect.centerx)
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
@@ -451,7 +451,7 @@ class Boss(pygame.sprite.Sprite):
 			self.shoot_cooldown2 = self.weapon2["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.14,self.weapon2)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def shoot3(self):
@@ -517,7 +517,7 @@ class Boss(pygame.sprite.Sprite):
 				self.healing = False
 				self.healed += 1
 			if framenum%10==0 and self.hp >0:
-				self.hp+=self.maxhp/75
+				self.hp+=self.maxhp/(65+self.healed*5)
 		else:
 			self.attack(player)
 		self.check_alive()
