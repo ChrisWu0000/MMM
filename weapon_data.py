@@ -2,11 +2,11 @@ import pygame
 weapon_data = {
   #--------ENEMY-WEAPONS------
   "bell":{"type":"enemy_weapon","availible":False,"ranged":False},
-  "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":3,"max_speed":6, "duration":170,"spread":10,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.6},
-  "drum":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":8,"cooldown":400,"projectiles":10,"speed":2,"max_speed":4, "duration":70,"spread":300,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.8},
-  "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":25,"cooldown":40,"projectiles":1,"speed":5,"max_speed":10, "duration":300,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.6},
-  "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":450,"projectiles":8,"speed":6,"max_speed":12, "duration":200,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.1},
-  "top_brass3":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":1700,"projectiles":1,"speed":4,"max_speed":8, "duration":1000,"spread":20,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.5},
+  "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":3,"max_speed":5, "duration":170,"spread":10,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.6},
+  "drum":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":8,"cooldown":400,"projectiles":10,"speed":2,"max_speed":3, "duration":60,"spread":300,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.8},
+  "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":25,"cooldown":40,"projectiles":1,"speed":4,"max_speed":9, "duration":300,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.5},
+  "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":450,"projectiles":8,"speed":5,"max_speed":10, "duration":200,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.0},
+  "top_brass3":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":1700,"projectiles":1,"speed":3,"max_speed":7, "duration":1000,"spread":20,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.5},
   #--------WEAPONS-------
   "Basic":{"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":5,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")},
   "Shotgun":{"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":5,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")},

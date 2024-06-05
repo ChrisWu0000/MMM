@@ -419,8 +419,8 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.flippedattack1[floor(self.i1)]
 		if self.isattacking3 == True:
 				self.totalattacks +=1
-				if self.totalattacks >= 200:
-					self.shoot_cooldown3 = self.weapon3["cooldown"]
+				if self.totalattacks >= 200*(1+self.healed):
+					self.shoot_cooldown3 = self.weapon3["cooldown"]-self.healed*200
 					self.totalattacks = 0
 					self.isattacking3 = False
 				self.aim = (player.rect.center)
@@ -511,14 +511,14 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.flippeddeath[floor(6)]
 			if self.hp <= 0 or self.hp >=self.maxhp/(1+self.healed/2):
 				self.healing = False
+				self.healed += 1
 			if framenum%10==0 and self.hp >0:
-				self.hp+=self.maxhp/80
+				self.hp+=self.maxhp/70
 		else:
 			self.attack(player)
 		self.check_alive()
-		if self.hp < self.maxhp/(4+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
+		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
 			self.healing = True
-			self.healed += 1
 		self.ratio = self.hp/self.maxhp
 		if self.shoot_cooldown1>0:
 			self.shoot_cooldown1-=1
