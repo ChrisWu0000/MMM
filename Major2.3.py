@@ -255,6 +255,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
+	global levelnum
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -271,6 +272,8 @@ class Boss(pygame.sprite.Sprite):
 		self.healing = False
 		self.healed = 0
 		self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult
+		if levelnum == 15:
+			self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult*4
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
@@ -1086,7 +1089,7 @@ class Button():
 			self.text = self.font.render(self.text_input, True, self.base_color)
 	
 class CameraGroup(pygame.sprite.Group):
-	global wave
+	global wave, levelnum
 	def __init__(self):
 		super().__init__()
 		self.surface=pygame.display.get_surface()	
@@ -1163,6 +1166,8 @@ class CameraGroup(pygame.sprite.Group):
 		self.surface.blit(self.background_image,ground_offset)
 		if bosspresent == True:
 			self.remove(bosshp)
+			#if levelnum == 15:
+				#self.remove(bosshp2)
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
@@ -1171,6 +1176,8 @@ class CameraGroup(pygame.sprite.Group):
 				self.surface.blit(sprite.cost_display,offset_pos+(30,sprite.rect.height))
 		if bosspresent == True:
 			self.add(bosshp)
+			#if levelnum == 15:
+				#self.add(bosshp2)
 		hp.update(enemy_group, player)
 		#gun.update()
 		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
