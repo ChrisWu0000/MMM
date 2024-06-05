@@ -1240,13 +1240,21 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 			item["speed"] += int(j["speed"])-item["speed"]
 			item["duration"] += int(j["duration"])-item["duration"]
 			item["purchased"] = j["purchased"]
+		weapons_group.empty()
+		for item in weapon_data:
+			if weapon_data[item]["availible"]==True and weapon_data[item]["purchased"] == False:
+				if weapon_data[item]["type"] == "weapon":
+					weapons_group.add(Shop_Item(item,(125,900)))
+				else:
+					item_group.add(Shop_Item(item,(125,900)))
 	if shop1 == "True\n":
 		shop(0)
 		shopping = True
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum
+	global levelnum,shopping
+	shopping = False
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
