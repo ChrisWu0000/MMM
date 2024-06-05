@@ -517,7 +517,7 @@ class Boss(pygame.sprite.Sprite):
 				self.healing = False
 				self.healed += 1
 			if framenum%10==0 and self.hp >0:
-				self.hp+=self.maxhp/70
+				self.hp+=self.maxhp/75
 		else:
 			self.attack(player)
 		self.check_alive()
@@ -745,9 +745,9 @@ class Player(pygame.sprite.Sprite):
 		if self.weapon["spread"]==0:
 			fox = 1
 			if projectiles % 2 == 1:
-				base_angle = 0.05*(projectiles-1)
+				base_angle = 0.04*(projectiles-1)
 			elif projectiles % 2 == 0:
-				base_angle = 0.05*(projectiles-1)-0.025
+				base_angle = 0.04*(projectiles-1)-0.02
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -764,7 +764,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.08*fox,self.weapon)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 			if(self.lastx==1):
@@ -780,9 +780,9 @@ class Player(pygame.sprite.Sprite):
 		if self.weapon["spread"]==0:
 			fox = 1
 			if projectiles % 2 == 1:
-				base_angle = 0.05*(projectiles-1)
+				base_angle = 0.04*(projectiles-1)
 			elif projectiles % 2 == 0:
-				base_angle = 0.05*(projectiles-1)-0.025
+				base_angle = 0.04*(projectiles-1)-0.02
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -796,7 +796,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.08*fox,self.weapon)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def dash_func(self):
