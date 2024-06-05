@@ -271,13 +271,13 @@ class Boss(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.healing = False
 		self.healed = 0
-		self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult
+		self.speed = enemy_info["speed"]*difficulty_mult
 		if levelnum == 15:
-			self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult*4
+			self.speed = enemy_info["speed"]*difficulty_mult*4
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*difficulty_mult*difficulty_mult
+		self.damage = enemy_info["attack_damage"]*difficulty_mult
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
