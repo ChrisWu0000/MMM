@@ -1315,13 +1315,6 @@ def restart():
 	test = 0
 	goose = 0
 	jellyfish = 0
-	with open('save_data.txt', 'w') as s:
-		s.write("1\n")
-		s.write("500\n")
-		s.write("10\n")
-		s.write("False\n")
-		s.write("{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 25, 'ranged': False, 'damage': 50, 'cooldown': 50, 'projectiles': 1, 'speed': 9, 'duration': 55, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(60x30x32 SW)>}\n")
-		s.write("Basic\n")
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":

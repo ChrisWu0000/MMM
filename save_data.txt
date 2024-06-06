@@ -1,8 +1,8 @@
-1
-500
-10
+2
+497.0
+4
 False
-{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 20, 'ranged': False, 'damage': 50, 'cooldown': 50, 'mincooldown': 10, 'projectiles': 1, 'speed': 9, 'duration': 55, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>}
-{'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 40, 'ranged': False, 'damage': 75, 'cooldown': 100, 'mincooldown': 15, 'projectiles': 9, 'speed': 15, 'duration': 25, 'spread': 40, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>}
-{'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 60, 'ranged': False, 'damage': 15, 'cooldown': 15, 'mincooldown': 5, 'projectiles': 2, 'speed': 10, 'duration': 20, 'spread': 25, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>}
-{'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 200, 'ranged': False, 'damage': 400, 'cooldown': 5, 'mincooldown': 1, 'projectiles': 20, 'speed': 15, 'duration': 25, 'spread': 300, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x120x32 SW)>}
+{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 25, 'ranged': False, 'damage': 50, 'cooldown': 50, 'projectiles': 1, 'speed': 11, 'duration': 60, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(60x66x32 SW)>}
+{'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 25, 'ranged': False, 'damage': 75, 'cooldown': 100, 'projectiles': 9, 'speed': 17, 'duration': 30, 'spread': 55, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(66x66x32 SW)>}
+{'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 10, 'ranged': False, 'damage': 15, 'cooldown': 15, 'projectiles': 2, 'speed': 12, 'duration': 25, 'spread': 30, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(114x66x32 SW)>}
+{'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 250, 'ranged': False, 'damage': 400, 'cooldown': 5, 'projectiles': 20, 'speed': 17, 'duration': 30, 'spread': 300, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x120x32 SW)>}
