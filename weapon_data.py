@@ -9,15 +9,15 @@ weapon_data = {
   "top_brass3":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":1700,"projectiles":1,"speed":3,"max_speed":7, "duration":800,"max_duration":1600,"spread":40,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.5},
   #--------WEAPONS-------
   "Basic":{"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":10,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")},
-  "Shotgun":{"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":15,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")},
+  "Shotgun":{"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":20,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")},
   "Minigun":{"type":"weapon","purchased":False,"availible":True,"cost":60,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")},
   "Lag_Maker":{"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")},
   #--------MULTI-PURCHASE-ITEMS------
   "Upgrade1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Damage Upgrade.png"),"change":"damage","value":5},
   "Upgrade1.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Damage Upgrade.png"),"change":"damage","value":5},
   "Upgrade1.2":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Damage Upgrade.png"),"change":"damage","value":5},
-  "Upgrade2":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Rate Upgrade.png"),"change":"cooldown","value":0.85},
-  "Upgrade2.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Rate Upgrade.png"),"change":"cooldown","value":0.85},
+  "Upgrade2":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Rate Upgrade.png"),"change":"cooldown","value":0.9},
+  "Upgrade2.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Rate Upgrade.png"),"change":"cooldown","value":0.9},
   "Upgrade3":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Speed Upgrade.png"),"change":"speed","value":1},
   "Upgrade3.1":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Speed Upgrade.png"),"change":"speed","value":1},
   "Upgrade4":{"type":"upgrade","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Duration Upgrade.png"),"change":"duration","value":4},
