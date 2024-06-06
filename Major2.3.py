@@ -31,12 +31,13 @@ class Enemy(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.hp = int(enemy_info["health"]*difficulty_mult)
-		self.speed = int(enemy_info["speed"]*difficulty_mult)
+		self.hp = enemy_info["health"]*difficulty_mult
+		self.speed = enemy_info["speed"]#*difficulty_mult
+		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = int(enemy_info["attack_damage"]*difficulty_mult)
+		self.damage = enemy_info["attack_damage"]*(difficulty_mult/2)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -248,13 +249,13 @@ class Enemy(pygame.sprite.Sprite):
 		if self.i2>=self.attackframes:
 			self.i2=0
 		if self.hp >0:
-			self.speed = monster_data[self.name]["speed"]
+			self.speed = self.defaultspeed
 		else:
 			self.speed = 0
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
-	global main_counter
+	global main_counter, levelnum
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -262,16 +263,20 @@ class Boss(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.weapon1 = weapon_data['top_brass1']
 		self.weapon2 = weapon_data['top_brass2']
+		self.weapon3 = weapon_data['top_brass3']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
 		self.maxhp = enemy_info["health"]*difficulty_mult*difficulty_mult
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
-		self.speed = enemy_info["speed"]*difficulty_mult*difficulty_mult
+		self.healing = False
+		self.healed = 0
+		self.speed = min(enemy_info["speed"]*(difficulty_mult*0.6),1.2)
+		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*difficulty_mult*difficulty_mult
+		self.damage = enemy_info["attack_damage"]*difficulty_mult
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -280,8 +285,11 @@ class Boss(pygame.sprite.Sprite):
 		self.current_index = 0
 		self.isattacking1 = False
 		self.isattacking2 = False
+		self.isattacking3 = False
+		self.totalattacks = 0
 		self.shoot_cooldown1 =self.weapon1["cooldown"]
 		self.shoot_cooldown2 =self.weapon2["cooldown"]
+		self.shoot_cooldown3 =self.weapon3["cooldown"]
 		self.i1 = 0
 		self.i2 = 0
 		self.rect = self.image.get_rect()
@@ -369,14 +377,21 @@ class Boss(pygame.sprite.Sprite):
 				self.ishit = False			
 
 	def attack(self,player): #checks if enemy should attack
-		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking1 == False and self.isdead == False:
+		if self.shoot_cooldown3 == 0 and self.isattacking3 == False and self.isattacking2 == False and self.isattacking1 == False and self.isdead == False:
+			self.i2 = 0
+			self.isattacking3 = True
+			if self.flipped == False:
+				self.image = self.attack1[floor(self.i2)]
+			else:
+				self.image = self.flippedattack1[floor(self.i2)]
+		if self.shoot_cooldown2 == 0 and self.isattacking2 == False and self.isattacking3 == False and self.isattacking1 == False and self.isdead == False:
 			self.i2 = 0
 			self.isattacking2 = True
 			if self.flipped == False:
 				self.image = self.attack2[floor(self.i2)]
 			else:
 				self.image = self.flippedattack2[floor(self.i2)]
-		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking2 == False and self.isdead == False:
+		elif self.shoot_cooldown1 == 0 and self.isattacking1 == False and self.isattacking3 == False and self.isattacking2 == False and self.isdead == False:
 			self.i1 = 0
 			self.isattacking1 = True
 			if self.flipped == False:
@@ -401,6 +416,19 @@ class Boss(pygame.sprite.Sprite):
 				self.isattacking2 = False
 				self.aim = (player.rect.center)
 				self.shoot2()
+		if self.isattacking3 == True:
+			if self.flipped == False:
+				self.image = self.attack1[floor(self.i1)]
+			else:
+				self.image = self.flippedattack1[floor(self.i1)]
+		if self.isattacking3 == True:
+				self.totalattacks +=1
+				if self.totalattacks >= 200+self.healed*50:
+					self.shoot_cooldown3 = self.weapon3["cooldown"]-self.healed*200
+					self.totalattacks = 0
+					self.isattacking3 = False
+				self.aim = (player.rect.center)
+				self.shoot3()
 	def shoot1(self):
 		projectiles = self.weapon1["projectiles"]
 		self.lastx = (self.aim[0] - self.rect.centerx)
@@ -415,7 +443,7 @@ class Boss(pygame.sprite.Sprite):
 				all_sprite_group.add(self.bullet)
 	def shoot2(self):
 		projectiles = self.weapon2["projectiles"]
-		base_angle = 0.08*(projectiles-1)-0.04
+		base_angle = 0.07*(projectiles-1)-0.035
 		self.lastx = (self.aim[0] - self.rect.centerx)
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
@@ -423,7 +451,18 @@ class Boss(pygame.sprite.Sprite):
 			self.shoot_cooldown2 = self.weapon2["cooldown"]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.16,self.weapon2)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + base_angle-x*0.14,self.weapon2)
+				camera_group.add(self.bullet)
+				all_sprite_group.add(self.bullet)
+	def shoot3(self):
+		projectiles = self.weapon3["projectiles"]
+		self.lastx = (self.aim[0] - self.rect.centerx)
+		self.lasty = (self.aim[1] - self.rect.centery)
+		self.angle = atan2(self.lasty, self.lastx)
+		if self.shoot_cooldown3 == 0 and self.hp > 0 and self.totalattacks%2==0:
+			spawn_bullet_pos = self.rect.center
+			for x in range(projectiles):
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle+randint(-self.weapon3["spread"],self.weapon3["spread"])/100,self.weapon3)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 
@@ -465,17 +504,34 @@ class Boss(pygame.sprite.Sprite):
 				self.flipped = False
 				self.image = self.walking[floor(self.i1)]			
 	def update(self,enemy_group,player):
+		global framenum,levelnum
 		self.update_direction()
 		self.check_collision(player)
 		self.take_damage()
-		self.attack(player)
+		if self.healing == True:
+			if self.flipped == False:
+				self.image = self.death[floor(6)]
+			else:
+				self.image = self.flippeddeath[floor(6)]
+			if self.hp <= 0 or self.hp >=self.maxhp/(1+self.healed/2):
+				self.healing = False
+				self.healed += 1
+			if framenum%10==0 and self.hp >0:
+				self.hp+=self.maxhp/(65+self.healed*5)
+		else:
+			self.attack(player)
 		self.check_alive()
+		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
+			self.healing = True
 		self.ratio = self.hp/self.maxhp
 		if self.shoot_cooldown1>0:
 			self.shoot_cooldown1-=1
 		if self.shoot_cooldown2>0:
 			self.shoot_cooldown2-=1
-		self.i+=self.k
+		if self.shoot_cooldown3>0:
+			self.shoot_cooldown3-=1
+		if self.healing == False:
+			self.i+=self.k
 		self.i1 +=self.k
 		self.i2 +=self.k
 		if(self.i>=12):
@@ -484,8 +540,8 @@ class Boss(pygame.sprite.Sprite):
 			self.i1=0
 		if (self.i2 >=8):
 			self.i2=0
-		if self.hp >0:
-			self.speed = monster_data[self.name]["speed"]
+		if self.hp >0 and self.healing == False and self.isattacking2==False and self.isattacking3 == False:
+			self.speed = self.defaultspeed
 		else:
 			self.speed = 0
 
@@ -520,10 +576,8 @@ class Player(pygame.sprite.Sprite):
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
-
 		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		self.collision_check = False #all of these are used to detect which animation to use
-		self.flipped = False
 		self.is_hit = False
 		self.isdead = False
 		self.isattacking = False
@@ -677,7 +731,7 @@ class Player(pygame.sprite.Sprite):
 			elif (keys[pygame.K_LSHIFT] or keys[pygame.K_f])and self.dash_cooldown == 0:
 				self.notmouse = True
 				self.dash = True
-			elif pygame.mouse.get_pressed() == (1, 0, 0):
+			elif pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_m]:
 				self.shoot = 1
 			elif keys[pygame.K_SPACE]:
 				self.shoot = 2
@@ -690,9 +744,9 @@ class Player(pygame.sprite.Sprite):
 		if self.weapon["spread"]==0:
 			fox = 1
 			if projectiles % 2 == 1:
-				base_angle = 0.05*(projectiles-1)
+				base_angle = 0.04*(projectiles-1)
 			elif projectiles % 2 == 0:
-				base_angle = 0.05*(projectiles-1)-0.025
+				base_angle = 0.04*(projectiles-1)-0.02
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -709,7 +763,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = gun.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.08*fox,self.weapon)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 			if(self.lastx==1):
@@ -725,9 +779,9 @@ class Player(pygame.sprite.Sprite):
 		if self.weapon["spread"]==0:
 			fox = 1
 			if projectiles % 2 == 1:
-				base_angle = 0.05*(projectiles-1)
+				base_angle = 0.04*(projectiles-1)
 			elif projectiles % 2 == 0:
-				base_angle = 0.05*(projectiles-1)-0.025
+				base_angle = 0.04*(projectiles-1)-0.02
 		if (self.direction.x==0 and self.direction.y==0 and self.lastx<0):
 			self.image=self.attacking[2] #floor(self.i)
 		elif (self.direction.x==0 and self.direction.y==0 and self.lastx>0):
@@ -741,7 +795,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.attacking[floor(self.i)]
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
-				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
+				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.08*fox,self.weapon)
 				camera_group.add(self.bullet)
 				all_sprite_group.add(self.bullet)
 	def dash_func(self):
@@ -768,7 +822,7 @@ class Player(pygame.sprite.Sprite):
 			self.image.set_colorkey((0,0,0))
 		self.vely = sin(self.angle)*20
 		self.dash_duration = 12
-		self.dash_cooldown = 100
+		self.dash_cooldown = 80
 		if(self.lastx==1):
 			self.image=self.flippedattacking[floor(self.i)]
 		elif(self.lastx==-1):
@@ -890,8 +944,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.rect.center = position
 		self.cost_display = my_font.render(str(self.item["cost"]), True, (0,0,0))
 	def purchase(self,player):
-		if player.coin_amount >= floor((self.item["cost"]*difficulty_mult)/2)*2:
-			player.coin_amount -=floor((self.item["cost"]*difficulty_mult)/2)*2
+		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult):
+			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)
 			if self.item["type"] == "refresh":
 				camera_group.remove(wares_group)
 				wares_group.empty()
@@ -903,6 +957,7 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 				else:
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -910,6 +965,8 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
+				wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)), True, (0,0,0))
 				camera_group.add(wares_group.sprites()[0:5])
 			elif self.item["type"] == "weapon":
 				wares_group.remove(self)
@@ -928,7 +985,8 @@ class Shop_Item(pygame.sprite.Sprite):
 				for item in weapon_data:
 					if weapon_data[item]["type"] == "weapon":
 						if self.item["change"] == "cooldown":
-							weapon_data[item][self.item["change"]] = max(int(weapon_data[item][self.item["change"]]*self.item["value"]), 5)
+							if weapon_data[item]["cooldown"] > weapon_data[item]["mincooldown"]:
+								weapon_data[item]["cooldown"] = max(int(weapon_data[item]["cooldown"]*self.item["value"]), weapon_data[item]["mincooldown"])
 						else:
 							weapon_data[item][self.item["change"]]+=self.item["value"]
 
@@ -970,15 +1028,17 @@ class Bullet(pygame.sprite.Sprite):
 		self.x = x
 		self.y = y
 		self.speed = self.weapon["speed"]
+		self.bullet_lifetime = self.weapon["duration"]
+		if self.weapon["ranged"] == True:
+			self.speed = min(self.weapon["speed"]+(sqrt(difficulty_mult)-1), self.weapon["max_speed"])
+			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), self.weapon["max_duration"]) 
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
-		self.bullet_lifetime = self.weapon["duration"]
 		self.spawn_time = 0
  
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
-			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), 5000) 
 			if self.collisionrect.colliderect(player.collisionrect):
 					if player.dashing == False:
 						player.hp -= self.damage
@@ -996,8 +1056,6 @@ class Bullet(pygame.sprite.Sprite):
 						x.i = 0
 					self.kill()
 	def update(self,enemy_group,player):
-		if self.weapon["ranged"] == True:
-			self.speed = self.weapon["speed"]*difficulty_mult
 		self.x +=self.velx
 		self.y +=self.vely
 		self.rect.centerx = int(self.x)
@@ -1039,7 +1097,7 @@ class Button():
 			self.text = self.font.render(self.text_input, True, self.base_color)
 	
 class CameraGroup(pygame.sprite.Group):
-	global wave
+	global wave, levelnum
 	def __init__(self):
 		super().__init__()
 		self.surface=pygame.display.get_surface()	
@@ -1117,19 +1175,24 @@ class CameraGroup(pygame.sprite.Group):
 		self.surface.blit(self.background_image,ground_offset)
 		if bosspresent == True:
 			self.remove(bosshp)
+			#if levelnum == 15:
+				#self.remove(bosshp2)
 		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 			if wares_group.has(sprite):
-				self.surface.blit(sprite.cost_display,offset_pos+(0,0))
+				self.surface.blit(prop_data["Coin"]["image"], offset_pos+(0,sprite.rect.height))
+				self.surface.blit(sprite.cost_display,offset_pos+(30,sprite.rect.height))
 		if bosspresent == True:
 			self.add(bosshp)
+			#if levelnum == 15:
+				#self.add(bosshp2)
 		hp.update(enemy_group, player)
 		#gun.update()
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
-		screen.blit(self.levelnum_surface, (1200,10))
+		screen.blit(self.levelnum_surface, (1190,10))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
@@ -1173,13 +1236,9 @@ def save():
 		s.write("%s\n"%(savecoinamount))
 		s.write("%s\n"%(shopping))
 		s.write("%s\n"%(weapon_data["Basic"]))
-		
-		for item in weapon_data:
-			try:
-				if weapon_data[item]["purchased"]==True:
-					s.write("%s\n"%(item))
-			except:
-				pass
+		s.write("%s\n"%(weapon_data["Shotgun"]))
+		s.write("%s\n"%(weapon_data["Minigun"]))
+		s.write("%s\n"%(weapon_data["Lag_Maker"]))
 		enemy_group.empty()
 		collision_group.empty()
 def load_save():#If you save, quit the game, then load save, then try to create new save, it does not work. Also loading a save with minigun it did not carry over
@@ -1189,21 +1248,23 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 		player.hp = int(s.readline())
 		player.coin_amount = int(s.readline())
 		shop1 = s.readline()
-		i = str(s.readline())
-		i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
-		j = ast.literal_eval(i_sanitized)
 		for item in [weapon_data["Basic"],weapon_data["Shotgun"], weapon_data["Minigun"], weapon_data["Lag_Maker"] ]:
-			item["damage"] += int(j["damage"])-weapon_data["Basic"]["damage"]
-			item["cooldown"] = int(item["cooldown"]*(j["cooldown"]/weapon_data["Basic"]["cooldown"]))
-			item["projectiles"] += int(j["projectiles"])-weapon_data["Basic"]["projectiles"]
-			item["speed"] += int(j["speed"])-weapon_data["Basic"]["speed"]
-			item["duration"] += int(j["duration"])-weapon_data["Basic"]["duration"]
-
-		for line in s.readlines():
-			try:
-				weapon_data[str(line)]["purchased"] = True
-			except:
-				pass
+			i = str(s.readline())
+			i_sanitized = re.sub(r'<Surface\([^)]+\)>', '"Surface"', i)
+			j = ast.literal_eval(i_sanitized)
+			item["damage"] += int(j["damage"])-item["damage"]
+			item["cooldown"] = int(item["cooldown"]*(j["cooldown"]/item["cooldown"]))
+			item["projectiles"] += int(j["projectiles"])-item["projectiles"]
+			item["speed"] += int(j["speed"])-item["speed"]
+			item["duration"] += int(j["duration"])-item["duration"]
+			item["purchased"] = j["purchased"]
+		weapons_group.empty()
+		for item in weapon_data:
+			if weapon_data[item]["availible"]==True and weapon_data[item]["purchased"] == False:
+				if weapon_data[item]["type"] == "weapon":
+					weapons_group.add(Shop_Item(item,(125,900)))
+				else:
+					item_group.add(Shop_Item(item,(125,900)))
 	if shop1 == "True\n":
 		shop(0)
 		shopping = True
@@ -1225,6 +1286,16 @@ def restart():
 	player.maxhp = 500
 	player.hp = player.maxhp
 	player.coin_amount = 10
+	open('save_data.txt', 'w').close()
+	with open("save_data.txt", "w") as s:
+		s.write("%s\n"%(levelnum))
+		s.write("%s\n"%(player.hp))
+		s.write("%s\n"%(player.coin_amount))
+		s.write("%s\n"%(False))
+		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":25,"ranged":False,"damage":50,"cooldown":50,"projectiles":1,"speed":9,"duration":55,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":50,"ranged":False,"damage":75,"cooldown":100,"mincooldown":5,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":400,"cooldown":5,"mincooldown":5,"projectiles":20,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
@@ -1506,6 +1577,7 @@ def shop(num):
 	global shopping, wavebar
 	shopping = True
 	save()
+			
 	wavebar = False
 	camera_group.empty()
 	wares_group.empty()
@@ -1528,6 +1600,7 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	else:
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1535,6 +1608,8 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
+	wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)), True, (0,0,0))
 	camera_group.add(wares_group.sprites()[0:5])
 	
 levelnum = 1
@@ -1566,8 +1641,8 @@ while meep:
 		restart()
 		main_menu()
 	if game_pause == False:
-		difficulty_mult = float(1.2**(levelnum-1))*1.4**(max(0, levelnum-10))
-		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"]:
+		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
+		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
 			j+=1
 			if j >= 120:
 					spawnbell = True 
