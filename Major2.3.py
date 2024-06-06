@@ -1232,8 +1232,8 @@ def save():
 	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
-		s.write("%s\n"%(savehp))
-		s.write("%s\n"%(savecoinamount))
+		s.write("%s\n"%(int(savehp)))
+		s.write("%s\n"%(int(savecoinamount)))
 		s.write("%s\n"%(shopping))
 		s.write("%s\n"%(weapon_data["Basic"]))
 		s.write("%s\n"%(weapon_data["Shotgun"]))
