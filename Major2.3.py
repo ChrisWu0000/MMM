@@ -18,7 +18,7 @@ pygame.init()
 wave = 1
 levelnum = 1
 bosspresent=False
-
+refreshes=0
 def get_font(size):
 	return pygame.font.SysFont('Perpetua', size)
 my_font = get_font(30)
@@ -929,11 +929,13 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.image = self.item["image"].convert_alpha()
 		self.rect = self.image.get_rect()
 		self.rect.center = position
-		self.cost_display = my_font.render(str(self.item["cost"]), True, (0,0,0))
+		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
-		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult):
-			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)
+		global refreshes
+		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
+			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
 			if self.item["type"] == "refresh":
+				refreshes+=1
 				camera_group.remove(wares_group)
 				wares_group.empty()
 				wares_group.add(shopkeep)
@@ -944,7 +946,7 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
-						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
+						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				else:
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -952,8 +954,8 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
-						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
-				wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)), True, (0,0,0))
+						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
+				wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				camera_group.add(wares_group.sprites()[0:5])
 			elif self.item["type"] == "weapon":
 				wares_group.remove(self)
@@ -1217,7 +1219,7 @@ shopkeep = Shop_Item("refresh",(650,575))
 
 def save():
 	savecoinamount = player.coin_amount
-	savehp = player.hp
+	savehp = int(player.hp+1)
 	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
@@ -1230,7 +1232,7 @@ def save():
 		s.write("%s\n"%(weapon_data["Lag_Maker"]))
 		enemy_group.empty()
 		collision_group.empty()
-def load_save():#If you save, quit the game, then load save, then try to create new save, it does not work. Also loading a save with minigun it did not carry over
+def load_save():
 	global levelnum, shopping
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
@@ -1281,10 +1283,10 @@ def restart():
 		s.write("%s\n"%(player.hp))
 		s.write("%s\n"%(player.coin_amount))
 		s.write("%s\n"%(False))
-		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":25,"ranged":False,"damage":50,"cooldown":50,"projectiles":1,"speed":9,"duration":55,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":50,"ranged":False,"damage":75,"cooldown":100,"mincooldown":5,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":400,"cooldown":5,"mincooldown":5,"projectiles":20,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":10,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":20,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":60,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
@@ -1518,8 +1520,9 @@ def new_level(num):
 		camera_group.add(pillar)
 
 def shop(num):
-	global shopping, wavebar
+	global shopping, wavebar, refreshes
 	shopping = True
+	refreshes = 0
 	save()
 			
 	wavebar = False
