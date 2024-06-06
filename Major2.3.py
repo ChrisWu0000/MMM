@@ -32,12 +32,13 @@ class Enemy(pygame.sprite.Sprite):
 		enemy_info = monster_data[self.name]
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.hp = int(enemy_info["health"]*difficulty_mult)
-		self.speed = int(enemy_info["speed"]*difficulty_mult)
+		self.hp = enemy_info["health"]*difficulty_mult
+		self.speed = enemy_info["speed"]#*difficulty_mult
+		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = int(enemy_info["attack_damage"]*difficulty_mult)
+		self.damage = enemy_info["attack_damage"]*(difficulty_mult/2)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -249,7 +250,7 @@ class Enemy(pygame.sprite.Sprite):
 		if self.i2>=self.attackframes:
 			self.i2=0
 		if self.hp >0:
-			self.speed = monster_data[self.name]["speed"]
+			self.speed = self.defaultspeed
 		else:
 			self.speed = 0
 		self.enemylist = []
@@ -271,9 +272,7 @@ class Boss(pygame.sprite.Sprite):
 		self.ratio = self.hp/self.maxhp
 		self.healing = False
 		self.healed = 0
-		self.speed = enemy_info["speed"]*(difficulty_mult*0.8)
-		if levelnum == 15:
-			self.speed = enemy_info["speed"]*(difficulty_mult*0.8)*2
+		self.speed = min(enemy_info["speed"]*(difficulty_mult*0.6),1.2)
 		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
@@ -1584,7 +1583,7 @@ while meep:
 		restart()
 		main_menu()
 	if game_pause == False:
-		difficulty_mult = float(1.2**(levelnum-1))*1.4**(max(0, levelnum-10))
+		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
 			j+=1
 			if j >= 120:
