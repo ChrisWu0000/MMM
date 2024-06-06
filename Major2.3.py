@@ -822,7 +822,7 @@ class Player(pygame.sprite.Sprite):
 			self.image.set_colorkey((0,0,0))
 		self.vely = sin(self.angle)*20
 		self.dash_duration = 12
-		self.dash_cooldown = 100
+		self.dash_cooldown = 80
 		if(self.lastx==1):
 			self.image=self.flippedattacking[floor(self.i)]
 		elif(self.lastx==-1):
