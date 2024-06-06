@@ -17,7 +17,7 @@ pygame.init()
 wave = 1
 levelnum = 1
 bosspresent=False
-
+pygame.mixer.music.load("VVVVVV.mp3")
 def get_font(size):
 	return pygame.font.SysFont('Perpetua', size)
 my_font = get_font(30)
@@ -254,6 +254,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
+	global main_counter
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -355,6 +356,7 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 12-self.k:
 				self.kill()
+				main_counter = 0
 				bosspresent = False
 				player.hp = player.maxhp		
 	def take_damage(self): #checks if enemy is hit
@@ -705,7 +707,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
 				self.image=self.attacking[floor(self.i)]
-			spawn_bullet_pos = self.rect.center
+			spawn_bullet_pos = gun.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.1*fox,self.weapon)
 				camera_group.add(self.bullet)
@@ -848,6 +850,10 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		self.rotated_image, self.rect = self.rot_center(self.image_original, self.angle, self.rect.centerx, self.rect.centery)
 		self.flipped_image = pygame.transform.flip(self.rotated_image, True, False)
 	def update_image(self, new_angle, flipped):
+			self.weapon = player.weapon
+			self.image_original = self.weapon["playerimage"]
+			self.image = self.image_original 
+			self.rect = self.image.get_rect()
 			self.angle = new_angle
 			self.flipped = flipped
 
@@ -1052,8 +1058,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.camera_rect = pygame.Rect(l,t,w,h)
 		self.last_left = self.camera_rect.left
 		self.last_top = self.camera_rect.top
-		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
+		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 	def draw_wavebar(self):
+			self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
 			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
 			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
@@ -1110,7 +1117,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.surface.blit(self.background_image,ground_offset)
 		if bosspresent == True:
 			self.remove(bosshp)
-		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
+		for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.bottom):
 			offset_pos = sprite.rect.topleft - self.offset
 			self.surface.blit(sprite.image,offset_pos)
 			if wares_group.has(sprite):
@@ -1119,7 +1126,7 @@ class CameraGroup(pygame.sprite.Group):
 			self.add(bosshp)
 		hp.update(enemy_group, player)
 		#gun.update()
-		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
+		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
 		screen.blit(self.levelnum_surface, (1200,10))
@@ -1279,6 +1286,10 @@ def spawn(name, x, numspawn):
 		if name == "drum":
 			numdrum = -100000
 def main_menu():
+	global main_counter
+	if main_counter == 0:
+		pygame.mixer.music.play(-1)
+		main_counter += 1
 	global game_pause
 	meep = True
 	game_pause = False
@@ -1535,6 +1546,7 @@ wavebar = False
 numdrum = 0
 savecoinamount = player.coin_amount
 savehp = player.hp
+main_counter = 0
 main_menu()
 meep = True
 game_pause = False
@@ -1548,6 +1560,7 @@ displayfps = False
 boss_spawned = False
 options = False
 test = 0
+
 while meep:
 	if len(player_group) == 0:
 		restart()
@@ -1593,6 +1606,10 @@ while meep:
 						item.purchase(player)
 
 			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
+				if levelnum == 15:
+					pygame.mixer.music.unload()
+					pygame.mixer.music.load("Tuba.mp3")
+					pygame.mixer.music.play(-1)
 				bosspresent=True
 				boss_spawned = True
 				bigboss = Boss((640, 300))
