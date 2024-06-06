@@ -1661,6 +1661,8 @@ while meep:
 				spawnenemies = False
 				wave +=1
 				boss_spawned = False
+		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
+			wave += 1
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
