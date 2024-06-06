@@ -295,6 +295,7 @@ class Boss(pygame.sprite.Sprite):
 		self.speed_buildupx=0
 		self.frogx =0
 		self.frogy =0
+		self.direction = pygame.Vector2(1, 0)
 
 		self.i=0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
@@ -487,7 +488,6 @@ class Boss(pygame.sprite.Sprite):
 			self.speed = 0
 
 class Player(pygame.sprite.Sprite):
-	global camera_group
 	def __init__(self,pos):
 		super().__init__()
 		self.sprite_sheet_image = pygame.image.load('Player/Trent Sprite Sheet.png').convert_alpha()
@@ -983,10 +983,7 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					if self.spawn_time < self.bullet_lifetime/5:
-						x.hp -= self.damage*3
-					else:
-						x.hp -= self.damage
+					x.hp -= self.damage
 					x.ishit = True
 					x.j = framenum
 					if x.collision_check == False:
@@ -1206,7 +1203,7 @@ def load_save():#If you save, quit the game, then load save, then try to create 
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1218,6 +1215,7 @@ def restart():
 	wares_group.empty() 
 	weapons_group.empty()
 	levelnum = 1
+	player.maxhp = 500
 	player.hp = player.maxhp
 	player.coin_amount = 10
 	hp = Hp_Bar(player)
@@ -1227,7 +1225,25 @@ def restart():
 	physics_group.add(player)
 	camera_group.add(player)
 	all_sprite_group.add(player)
-	open('save_data.txt', 'w').close()
+	game_pause = False
+	j = 0
+	spawnbell = False
+	spawnsax = False
+	spawndrum = False
+	spawnenemies = False
+	displayfps = False
+	boss_spawned = False
+	options = False
+	test = 0
+	goose = 0
+	jellyfish = 0
+	with open('save_data.txt', 'w') as s:
+		s.write("1\n")
+		s.write("500\n")
+		s.write("10\n")
+		s.write("False\n")
+		s.write("{'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 25, 'ranged': False, 'damage': 50, 'cooldown': 50, 'projectiles': 1, 'speed': 9, 'duration': 55, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(60x30x32 SW)>}\n")
+		s.write("Basic\n")
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1316,7 +1332,8 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(1)
+						restart()
+						load_save()
 					if Continue_button.checkForInput(MENU_MOUSE_POS):
 						load_save()
 						meep2 = False
@@ -1335,7 +1352,7 @@ def main_menu2():
 						new_level(levelnum)
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
-	global game_pause, options, test
+	global game_pause, options, test, goose
 	if options == False:
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
 
@@ -1443,10 +1460,12 @@ def new_level(num):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
 def win_screen():
+		global jellyfish
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
 
-		if goose == 1:
-			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])		
+		if jellyfish == 1:
+			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
+			jellyfish += 1		
 	
 		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(35), base_color="black", hovering_color="White")
 		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
@@ -1459,7 +1478,7 @@ def win_screen():
 				button.changeColor(MOUSE_POS)
 				button.update(screen)
 
-		screen.blit(my_font.render('YOU WIN!', True, (0, 0, 0, 200)), (600, 125))
+		screen.blit(my_font.render('YOU WIN!', True, (0, 0, 0, 200)), (580, 125))
 		for event in pygame.event.get():
 				if event.type == pygame.QUIT:
 					pygame.quit()
@@ -1581,12 +1600,13 @@ while meep:
 				collision_group.add(bigboss)
 				camera_group.add(bigboss)	
 				bosshp = Hp_Bar(bigboss)
-				camera_group.add(bosshp)		
+				camera_group.add(bosshp)
+	
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True and game_pause == False:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
-			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
 				shopping = True
 				shop(0)
 				save()
@@ -1606,7 +1626,11 @@ while meep:
 		camera_group.custom_draw(player)
 		framenum +=1			
 		camera_group.update(enemy_group,player)
-	if game_pause == True:
+	if levelnum == 15 and boss_spawned == True and len(enemy_group) == 0:
+		jellyfish = 1
+		win_screen()
+		game_pause = True	
+	elif game_pause == True:
 		draw_pause()
 		goose = 0
 	pygame.display.update()
