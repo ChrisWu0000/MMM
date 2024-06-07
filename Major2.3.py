@@ -19,7 +19,7 @@ levelnum = 1
 bosspresent=False
 refreshes=0
 pygame.mixer.music.load("Level.mp3")
-pygame.mixer.music.load("PP.mp3")
+pygame.mixer.music.load("Main.mp3")
 def get_font(size):
 	return pygame.font.SysFont('Perpetua', size)
 my_font = get_font(30)
@@ -242,8 +242,6 @@ class Enemy(pygame.sprite.Sprite):
 		self.check_alive()
 		self.i+=self.k
 		self.i2+=self.k
-		if player.lastcollision < player.iframes:
-			player.lastcollision +=1
 		if self.shoot_cooldown >0:
 			self.shoot_cooldown -= 1
 		if self.i>=4:
@@ -257,7 +255,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
-	global main_counter, levelnum
+	global levelnum
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -298,8 +296,8 @@ class Boss(pygame.sprite.Sprite):
 		self.rect.center = position
 		
 		self.collisionrect = self.rect
-		self.collisionrect.width = int(0.8*self.collisionrect.width)
-		self.collisionrect.height = int(0.9*self.collisionrect.height)
+		self.collisionrect.width = int(0.6*self.collisionrect.width)
+		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
 		self.speed_buildupy=0
@@ -357,7 +355,6 @@ class Boss(pygame.sprite.Sprite):
 			else:
 				self.image = self.flippeddeath[floor(self.i)]
 			enemy_group.remove(self)
-			#bosspresent = False
 			collision_group.remove(self)
 		if self.hp <=0  and self.isdead == True:
 			if self.flipped == False:
@@ -574,7 +571,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastcollision = 200
-		self.iframes = 200 #iframes are measured in miliseconds
+		self.iframes = 60
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
@@ -859,6 +856,8 @@ class Player(pygame.sprite.Sprite):
 			self.check_collision(enemy_group)
 		self.check_alive()
 		self.i+=self.k
+		if self.lastcollision < self.iframes:
+			self.lastcollision +=1
 		if(self.i>=4):
 			self.i=0
 		self.vector = pygame.Vector2(self.rect.center)
@@ -1046,7 +1045,7 @@ class Bullet(pygame.sprite.Sprite):
 			if self.collisionrect.colliderect(player.collisionrect):
 					if player.dashing == False:
 						player.hp -= self.damage
-						if framenum - player.j > 24: #Iframes
+						if framenum - player.j > 60: #Iframes
 							player.is_hit = True
 							player.j = framenum
 					self.kill() 
@@ -1358,7 +1357,7 @@ def spawn(name, x, numspawn):
 			numdrum = -100000
 def main_menu():
 	global main_counter
-	pygame.mixer.music.load("PP.mp3")
+	pygame.mixer.music.load("Main.mp3")
 	pygame.mixer.music.play(-1)
 	global game_pause
 	meep = True
