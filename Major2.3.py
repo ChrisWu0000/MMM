@@ -1414,6 +1414,7 @@ def main_menu2():
 						pygame.mixer.music.play(-1)
 						restart()
 						load_save()
+					if Continue_button.checkForInput(MENU_MOUSE_POS):
 						pygame.mixer.music.load("VVVVVV.mp3")
 						pygame.mixer.music.play(-1)
 						load_save()
