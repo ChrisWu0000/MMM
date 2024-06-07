@@ -1280,7 +1280,8 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish,shopping,bosspresent
+	shopping = False
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1319,11 +1320,21 @@ def restart():
 	spawndrum = False
 	spawnenemies = False
 	displayfps = False
+	if bosspresent == True:
+		bosshp.kill()
+	bosspresent=False
 	boss_spawned = False
 	options = False
 	test = 0
 	goose = 0
 	jellyfish = 0
+	for item in weapon_data:
+		if weapon_data[item]["availible"]==True:
+			if weapon_data[item]["type"] == "weapon":
+				weapons_group.add(Shop_Item(item,(125,900)))
+			else:
+				item_group.add(Shop_Item(item,(125,900)))
+	load_save()
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1694,6 +1705,8 @@ while meep:
 						item.purchase(player)
 
 			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %1 ==0:
+				bosspresent=True
+				boss_spawned = True
 				if levelnum == 1:
 					pygame.mixer.music.unload()
 					pygame.mixer.music.load("Tuba.mp3")
@@ -1701,8 +1714,6 @@ while meep:
 					bigboss = Boss((600, 200))
 				else: 
 					bigboss = Boss((640, 300))
-				bosspresent=True
-				boss_spawned = True
 				enemy_group.add(bigboss)
 				collision_group.add(bigboss)
 				camera_group.add(bigboss)	
