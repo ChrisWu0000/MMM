@@ -2,7 +2,6 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
-from Difficulties import *
 import pygame.freetype
 from monster_data import *
 from level_data import *
@@ -19,6 +18,8 @@ wave = 1
 levelnum = 1
 bosspresent=False
 refreshes=0
+pygame.mixer.music.load("Level.mp3")
+pygame.mixer.music.load("PP.mp3")
 def get_font(size):
 	return pygame.font.SysFont('Perpetua', size)
 my_font = get_font(30)
@@ -38,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*(difficulty_mult/2)
+		self.damage = enemy_info["attack_damage"]+2*levelnum
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -256,7 +257,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.enemylist = []
 
 class Boss(pygame.sprite.Sprite):
-	global levelnum
+	global main_counter, levelnum
 	def __init__(self, position):
 		super().__init__()
 		self.position = pygame.math.Vector2(position) 
@@ -277,7 +278,7 @@ class Boss(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*difficulty_mult
+		self.damage = enemy_info["attack_damage"]*(1+levelnum)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -305,6 +306,7 @@ class Boss(pygame.sprite.Sprite):
 		self.speed_buildupx=0
 		self.frogx =0
 		self.frogy =0
+		self.direction = pygame.Vector2(1, 0)
 
 		self.i=0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
@@ -364,6 +366,7 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.flippeddeath[floor(self.i)]
 			if self.i >= 12-self.k:
 				self.kill()
+				main_counter = 0
 				bosspresent = False
 				player.hp = player.maxhp		
 	def take_damage(self): #checks if enemy is hit
@@ -547,7 +550,6 @@ class Boss(pygame.sprite.Sprite):
 			self.speed = 0
 
 class Player(pygame.sprite.Sprite):
-	global camera_group
 	def __init__(self,pos):
 		super().__init__()
 		self.sprite_sheet_image = pygame.image.load('Player/Trent Sprite Sheet.png').convert_alpha()
@@ -702,10 +704,10 @@ class Player(pygame.sprite.Sprite):
 
 			if self.direction.x !=0:
 				self.walklastx = self.direction.x
-			if(self.walklastx>0):
+			if self.walklastx>0 or self.flipped == True:
 				self.image=self.flippedwalking[floor(self.i)]
 				self.flipped = True
-			elif(self.walklastx<0):
+			if self.walklastx<0 or self.flipped == False:
 				self.image=self.walking[floor(self.i)]
 				self.flipped = False
 			if self.direction.y ==0 and self.direction.x == 0:
@@ -763,7 +765,7 @@ class Player(pygame.sprite.Sprite):
 				self.image=self.flippedattacking[floor(self.i)]
 			elif(self.lastx==-1):
 				self.image=self.attacking[floor(self.i)]
-			spawn_bullet_pos = self.rect.center
+			spawn_bullet_pos = gun.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100+base_angle-x*0.08*fox,self.weapon)
 				camera_group.add(self.bullet)
@@ -890,16 +892,26 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		super().__init__()
 		self.player = player
 		self.weapon = weapon
-		self.image_original = self.weapon["image"]
+		self.image_original = self.weapon["playerimage"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
 		self.image = self.image_original  # Initialize the gun image
 		self.rect = self.image.get_rect()
 		self.precompute_images() 
+	def rot_center(self, image, angle, x, y):
+	
+		rotated_image = pygame.transform.rotate(image, angle)
+		new_rect = rotated_image.get_rect(center = image.get_rect(center = (x, y)).center)
+
+		return rotated_image, new_rect
 	def precompute_images(self):
-		self.rotated_image = pygame.transform.rotate(self.image_original, self.angle)
+		self.rotated_image, self.rect = self.rot_center(self.image_original, self.angle, self.rect.centerx, self.rect.centery)
 		self.flipped_image = pygame.transform.flip(self.rotated_image, True, False)
 	def update_image(self, new_angle, flipped):
+			self.weapon = player.weapon
+			self.image_original = self.weapon["playerimage"]
+			self.image = self.image_original 
+			self.rect = self.image.get_rect()
 			self.angle = new_angle
 			self.flipped = flipped
 
@@ -909,7 +921,8 @@ class Gun_Sprite(pygame.sprite.Sprite):
 			else:
 				self.image = self.rotated_image
 			self.precompute_images()
-			self.rect.midleft = player.rect.center
+			self.rect.center = player.rect.center
+	
 	def update(self, enemy_group, p):
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastx = (self.mouse_coords[0] - self.rect.centerx + camera_group.camera_rect.left-camera_group.camera_borders["left"])
@@ -917,11 +930,13 @@ class Gun_Sprite(pygame.sprite.Sprite):
 		self.angle = (180/pi)*-atan2(self.lasty, self.lastx) #converts from deg to rad
 		if self.mouse_coords[0] < player.screen_coord[0]:
 			self.flipped = True
+			
 		else:
 			self.flipped = False
 
 		self.update_image(self.angle, self.flipped)
 		self.rect.center = player.rect.center
+		self.rect.centery += 10
 class Shop_Item(pygame.sprite.Sprite):
 	def __init__(self, name, position):
 		super().__init__()
@@ -1040,10 +1055,7 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					if self.spawn_time < self.bullet_lifetime/5:
-						x.hp -= self.damage*3
-					else:
-						x.hp -= self.damage
+					x.hp -= self.damage
 					x.ishit = True
 					x.j = framenum
 					if x.collision_check == False:
@@ -1110,8 +1122,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.camera_rect = pygame.Rect(l,t,w,h)
 		self.last_left = self.camera_rect.left
 		self.last_top = self.camera_rect.top
-		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
+		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 	def draw_wavebar(self):
+			self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
 			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
 			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
@@ -1161,6 +1174,7 @@ class CameraGroup(pygame.sprite.Group):
 
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
+		self.open_door = get_font(40).render("Press E to open door", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
@@ -1182,7 +1196,7 @@ class CameraGroup(pygame.sprite.Group):
 				#self.add(bosshp2)
 		hp.update(enemy_group, player)
 		#gun.update()
-		self.ratio = (wave-1)/level_data[levelnum]["num_wave"]
+		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 		screen.blit(prop_data["Coin"]["image"], (0,0))
 		screen.blit(self.text_surface, (30,2))
 		screen.blit(self.levelnum_surface, (1190,10))
@@ -1190,6 +1204,8 @@ class CameraGroup(pygame.sprite.Group):
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
 			self.draw_wavebar()
+		if interact == True:
+			screen.blit(self.open_door, (400, 600))
 
 
 screen = pygame.display.set_mode((1280,720))
@@ -1225,8 +1241,8 @@ def save():
 	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
-		s.write("%s\n"%(savehp))
-		s.write("%s\n"%(savecoinamount))
+		s.write("%s\n"%(int(savehp)))
+		s.write("%s\n"%(int(savecoinamount)))
 		s.write("%s\n"%(shopping))
 		s.write("%s\n"%(weapon_data["Basic"]))
 		s.write("%s\n"%(weapon_data["Shotgun"]))
@@ -1264,8 +1280,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum,shopping
-	shopping = False
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1277,6 +1292,7 @@ def restart():
 	wares_group.empty() 
 	weapons_group.empty()
 	levelnum = 1
+	player.maxhp = 500
 	player.hp = player.maxhp
 	player.coin_amount = 10
 	open('save_data.txt', 'w').close()
@@ -1296,13 +1312,18 @@ def restart():
 	physics_group.add(player)
 	camera_group.add(player)
 	all_sprite_group.add(player)
-	for item in weapon_data:
-		if weapon_data[item]["availible"]==True:
-			if weapon_data[item]["type"] == "weapon":
-				weapons_group.add(Shop_Item(item,(125,900)))
-			else:
-				item_group.add(Shop_Item(item,(125,900)))
-	load_save()
+	game_pause = False
+	j = 0
+	spawnbell = False
+	spawnsax = False
+	spawndrum = False
+	spawnenemies = False
+	displayfps = False
+	boss_spawned = False
+	options = False
+	test = 0
+	goose = 0
+	jellyfish = 0
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1338,6 +1359,9 @@ def spawn(name, x, numspawn):
 		if name == "drum":
 			numdrum = -100000
 def main_menu():
+	global main_counter
+	pygame.mixer.music.load("PP.mp3")
+	pygame.mixer.music.play(-1)
 	global game_pause
 	meep = True
 	game_pause = False
@@ -1391,8 +1415,13 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(1)
+						pygame.mixer.music.load("Level.mp3")
+						pygame.mixer.music.play(-1)
+						restart()
+						load_save()
 					if Continue_button.checkForInput(MENU_MOUSE_POS):
+						pygame.mixer.music.load("Level.mp3")
+						pygame.mixer.music.play(-1)
 						load_save()
 						meep2 = False
 		else:
@@ -1410,7 +1439,8 @@ def main_menu2():
 						new_level(levelnum)
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
-	global game_pause, options, test
+	pygame.mixer.music.set_volume(0.2)
+	global game_pause, options, test, goose
 	if options == False:
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
 
@@ -1437,6 +1467,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if Continue_button.checkForInput(MOUSE_POS):
 						game_pause = False
+						pygame.mixer.music.set_volume(1)
 						player.shoot_cooldown += 1
 					elif Option_button.checkForInput(MOUSE_POS):
 						option_menu()
@@ -1485,9 +1516,6 @@ def option_menu():
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
 		
-
-
-
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
@@ -1520,7 +1548,38 @@ def new_level(num):
 	for i in range(level_data[num]["num_pillar"]):
 		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
 		camera_group.add(pillar)
+def win_screen():
+		global jellyfish
+		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
 
+		if jellyfish == 1:
+			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
+			jellyfish += 1		
+	
+		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(35), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
+		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
+		screen.blit(surface, (0, 0))
+		MOUSE_POS = pygame.mouse.get_pos()
+
+		for button in [Quit_button, Save_button]:
+				button.changeColor(MOUSE_POS)
+				button.update(screen)
+
+		screen.blit(my_font.render('YOU WIN!', True, (0, 0, 0, 200)), (580, 125))
+		for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if Save_button.checkForInput(MOUSE_POS):
+						quit()
+					elif Quit_button.checkForInput(MOUSE_POS):
+						restart()
+						main_menu()
+		pygame.display.update()
+		
 def shop(num):
 	global shopping, wavebar, refreshes
 	shopping = True
@@ -1570,6 +1629,7 @@ wavebar = False
 numdrum = 0
 savecoinamount = player.coin_amount
 savehp = player.hp
+main_counter = 0
 main_menu()
 meep = True
 game_pause = False
@@ -1583,6 +1643,7 @@ displayfps = False
 boss_spawned = False
 options = False
 test = 0
+
 while meep:
 	if len(player_group) == 0:
 		restart()
@@ -1615,6 +1676,11 @@ while meep:
 				spawnenemies = False
 				wave +=1
 				boss_spawned = False
+		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
+			wave += 1
+		if (len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
+			interact = True
+		else: interact = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -1627,20 +1693,27 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0 and shopping == False:
+			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %1 ==0:
+				if levelnum == 1:
+					pygame.mixer.music.unload()
+					pygame.mixer.music.load("Tuba.mp3")
+					pygame.mixer.music.play(-1)
+					bigboss = Boss((600, 200))
+				else: 
+					bigboss = Boss((640, 300))
 				bosspresent=True
 				boss_spawned = True
-				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
 				collision_group.add(bigboss)
 				camera_group.add(bigboss)	
 				bosshp = Hp_Bar(bigboss)
-				camera_group.add(bosshp)		
+				camera_group.add(bosshp)
+	
 			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True and game_pause == False:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
-			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False:
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
 				shopping = True
 				shop(0)
 				save()
@@ -1649,6 +1722,7 @@ while meep:
 				goose = 1
 			elif (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == True:
 				game_pause = False
+				pygame.mixer.music.set_volume(1)
 				options = False
 				test = 0
 				player.shoot_cooldown +=1
@@ -1660,7 +1734,11 @@ while meep:
 		camera_group.custom_draw(player)
 		framenum +=1			
 		camera_group.update(enemy_group,player)
-	if game_pause == True:
+	if levelnum == 15 and boss_spawned == True and len(enemy_group) == 0:
+		jellyfish = 1
+		win_screen()
+		game_pause = True	
+	elif game_pause == True:
 		draw_pause()
 		goose = 0
 	pygame.display.update()
