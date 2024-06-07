@@ -18,7 +18,7 @@ wave = 1
 levelnum = 1
 bosspresent=False
 refreshes=0
-pygame.mixer.music.load("VVVVVV.mp3")
+pygame.mixer.music.load("Level.mp3")
 pygame.mixer.music.load("PP.mp3")
 def get_font(size):
 	return pygame.font.SysFont('Perpetua', size)
@@ -1413,12 +1413,12 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						pygame.mixer.music.load("VVVVVV.mp3")
+						pygame.mixer.music.load("Level.mp3")
 						pygame.mixer.music.play(-1)
 						restart()
 						load_save()
 					if Continue_button.checkForInput(MENU_MOUSE_POS):
-						pygame.mixer.music.load("VVVVVV.mp3")
+						pygame.mixer.music.load("Level.mp3")
 						pygame.mixer.music.play(-1)
 						load_save()
 						meep2 = False
@@ -1691,14 +1691,16 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
-				if levelnum == 15:
+			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %1 ==0:
+				if levelnum == 1:
 					pygame.mixer.music.unload()
 					pygame.mixer.music.load("Tuba.mp3")
 					pygame.mixer.music.play(-1)
+					bigboss = Boss((600, 200))
+				else: 
+					bigboss = Boss((640, 300))
 				bosspresent=True
 				boss_spawned = True
-				bigboss = Boss((640, 300))
 				enemy_group.add(bigboss)
 				collision_group.add(bigboss)
 				camera_group.add(bigboss)	

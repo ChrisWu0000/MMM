@@ -4,8 +4,8 @@ weapon_data = {
   "bell":{"type":"enemy_weapon","availible":False,"ranged":False},
   "sax":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":100,"projectiles":1,"speed":3,"max_speed":5, "duration":170,"max_duration":400,"spread":10,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.6},
   "drum":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":400,"projectiles":8,"speed":2,"max_speed":3, "duration":40,"max_duration":100,"spread":280,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.8},
-  "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":25,"cooldown":35,"projectiles":1,"speed":4,"max_speed":9, "duration":300,"max_duration":600,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.5},
-  "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":15,"cooldown":450,"projectiles":8,"speed":5,"max_speed":10, "duration":200,"max_duration":400,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.0},
+  "top_brass1":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":20,"cooldown":35,"projectiles":1,"speed":4,"max_speed":9, "duration":300,"max_duration":600,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.5},
+  "top_brass2":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":13,"cooldown":450,"projectiles":8,"speed":5,"max_speed":10, "duration":200,"max_duration":400,"spread":0,"sprite":"Weapons/Enemy_Bullet.png","scaling":1.0},
   "top_brass3":{"type":"enemy_weapon","availible":False,"ranged":True,"damage":5,"cooldown":1700,"projectiles":1,"speed":3,"max_speed":7, "duration":800,"max_duration":1600,"spread":40,"sprite":"Weapons/Enemy_Bullet.png","scaling":0.5},
 
   #--------WEAPONS-------
