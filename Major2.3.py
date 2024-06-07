@@ -180,7 +180,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.lasty = (self.aim[1] - self.rect.centery)
 		self.angle = atan2(self.lasty, self.lastx)
 		if self.shoot_cooldown == 0:
-			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,100)
+			self.shoot_cooldown = self.weapon["cooldown"] + randint(0,150)
 			spawn_bullet_pos = self.rect.center
 			for x in range(projectiles):
 				self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle + randint(-self.weapon["spread"],self.weapon["spread"])/100,self.weapon)
@@ -267,7 +267,7 @@ class Boss(pygame.sprite.Sprite):
 		self.weapon3 = weapon_data['top_brass3']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.maxhp = enemy_info["health"]*difficulty_mult*difficulty_mult
+		self.maxhp = enemy_info["health"]*(difficulty_mult**1.5)
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
 		self.healing = False
@@ -517,6 +517,8 @@ class Boss(pygame.sprite.Sprite):
 				self.healed += 1
 			if framenum%10==0 and self.hp >0:
 				self.hp+=self.maxhp/(65+self.healed*5)
+			if framenum%50==0 and self.hp >0:
+				spawn("bell2", 2, 1)
 		else:
 			self.attack(player)
 		self.check_alive()
