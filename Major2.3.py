@@ -1172,6 +1172,7 @@ class CameraGroup(pygame.sprite.Group):
 
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
+		self.open_door = get_font(40).render("Press E to open door", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
@@ -1201,6 +1202,8 @@ class CameraGroup(pygame.sprite.Group):
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
 			self.draw_wavebar()
+		if interact == True:
+			screen.blit(self.open_door, (400, 600))
 
 
 screen = pygame.display.set_mode((1280,720))
@@ -1673,6 +1676,9 @@ while meep:
 				boss_spawned = False
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
+		if (len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
+			interact = True
+		else: interact = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
