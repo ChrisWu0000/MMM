@@ -18,6 +18,8 @@ wave = 1
 levelnum = 1
 bosspresent=False
 refreshes=0
+pygame.mixer.music.load("VVVVVV.mp3")
+pygame.mixer.music.load("PP.mp3")
 def get_font(size):
 	return pygame.font.SysFont('Perpetua', size)
 my_font = get_font(30)
@@ -37,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*(difficulty_mult/2)
+		self.damage = enemy_info["attack_damage"]+2*levelnum
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -276,7 +278,7 @@ class Boss(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*difficulty_mult
+		self.damage = enemy_info["attack_damage"]*(1+levelnum)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -1353,9 +1355,8 @@ def spawn(name, x, numspawn):
 			numdrum = -100000
 def main_menu():
 	global main_counter
-	if main_counter == 0:
-		pygame.mixer.music.play(-1)
-		main_counter += 1
+	pygame.mixer.music.load("PP.mp3")
+	pygame.mixer.music.play(-1)
 	global game_pause
 	meep = True
 	game_pause = False
@@ -1409,9 +1410,12 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
+						pygame.mixer.music.load("VVVVVV.mp3")
+						pygame.mixer.music.play(-1)
 						restart()
 						load_save()
-					if Continue_button.checkForInput(MENU_MOUSE_POS):
+						pygame.mixer.music.load("VVVVVV.mp3")
+						pygame.mixer.music.play(-1)
 						load_save()
 						meep2 = False
 		else:
@@ -1429,6 +1433,7 @@ def main_menu2():
 						new_level(levelnum)
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
+	pygame.mixer.music.set_volume(0.2)
 	global game_pause, options, test, goose
 	if options == False:
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1456,6 +1461,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if Continue_button.checkForInput(MOUSE_POS):
 						game_pause = False
+						pygame.mixer.music.set_volume(1)
 						player.shoot_cooldown += 1
 					elif Option_button.checkForInput(MOUSE_POS):
 						option_menu()
@@ -1705,6 +1711,7 @@ while meep:
 				goose = 1
 			elif (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == True:
 				game_pause = False
+				pygame.mixer.music.set_volume(1)
 				options = False
 				test = 0
 				player.shoot_cooldown +=1
