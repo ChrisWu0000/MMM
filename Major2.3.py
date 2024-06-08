@@ -155,6 +155,10 @@ class Enemy(pygame.sprite.Sprite):
 				if self.i2 >=self.attackframes-self.k and self.isattacking == True:
 						self.isattacking = False
 						self.collision_check = False
+						if self.rect.colliderect(player.rect) and player.lastcollision >= player.iframes and player.dashing == False:
+							player.hp -= self.damage
+							player.lastcollision = 0
+
 
 			elif self.weapon["ranged"]==True:
 				if self.shoot_cooldown == 0 and self.isattacking == False:
@@ -231,9 +235,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.level["top wall"], self.rect.top)
 			self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)	
-		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
-			player.hp -= self.damage
-			player.lastcollision = 0
+		
 	def update(self,enemy_group,player):
 		self.update_direction()
 		self.check_collision(player)
@@ -482,9 +484,7 @@ class Boss(pygame.sprite.Sprite):
 			self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
 
 
-		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
-			player.hp -= self.damage
-			player.lastcollision = 0
+
 		if self.collisionrect.colliderect(player.rect) and player.dashing == False:
 			self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
 			self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
@@ -1277,7 +1277,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1321,6 +1321,11 @@ def restart():
 	test = 0
 	goose = 0
 	jellyfish = 0
+	deathcounter = 0
+	game_mute = False
+	interact = False
+	pygame.mixer.music.set_volume(1)
+	pygame.mixer.music.rewind()
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1436,8 +1441,9 @@ def main_menu2():
 						new_level(levelnum)
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
-	pygame.mixer.music.set_volume(0.2)
-	global game_pause, options, test, goose
+	global game_pause, options, test, goose, game_mute
+	if game_mute == False:
+		pygame.mixer.music.set_volume(0.2)
 	if options == False:
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
 
@@ -1445,6 +1451,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])		
 		Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(35), base_color="black", hovering_color="White")
 		Option_button = Button(image=None, pos=(640, 325), text_input="Controls", font=get_font(35), base_color="black", hovering_color="White")
+		Mute_button = Button(image=None, pos=(640, 375), text_input="Mute/Unmute", font=get_font(35), base_color="black", hovering_color="White")
 		Quit_button = Button(image=None, pos=(640, 425), text_input="Give Up", font=get_font(35), base_color="black", hovering_color="White")
 		Save_button = Button(image=None, pos=(640, 475), text_input="Save and Quit", font=get_font(35), base_color="black", hovering_color="White")
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
@@ -1452,7 +1459,7 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 		screen.blit(surface, (0, 0))
 		MOUSE_POS = pygame.mouse.get_pos()
 
-		for button in [Quit_button, Save_button, Continue_button, Option_button]:
+		for button in [Quit_button, Save_button, Continue_button, Option_button, Mute_button]:
 				button.changeColor(MOUSE_POS)
 				button.update(screen)
 
@@ -1474,7 +1481,14 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 					elif Quit_button.checkForInput(MOUSE_POS):
 						game_pause = False
 						player.hp = 0
+					elif Mute_button.checkForInput(MOUSE_POS):
+						if game_mute == True:
+							game_mute = False
+						else:
+							game_mute = True
+						
 		pygame.display.update()
+		
 	else:
 		option_menu()
 def option_menu():
@@ -1512,7 +1526,35 @@ def option_menu():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
-		
+def death_screen():
+	pygame.mixer.music.set_volume(0)
+	global deathcounter
+	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
+
+	if deathcounter == 1:
+			pygame.draw.rect(surface, (255, 32, 32, 150), [0, 0, 1280, 720])
+			deathcounter += 1		
+	Quit_button = Button(image=None, pos=(640, 325), text_input="Restart", font=get_font(35), base_color="black", hovering_color="White")
+	Save_button = Button(image=None, pos=(640, 375), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+	pygame.draw.rect(surface, (255, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
+	pygame.draw.rect(surface, (255, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
+	screen.blit(surface, (0, 0))
+	MOUSE_POS = pygame.mouse.get_pos()
+	for button in [Quit_button, Save_button]:
+				button.changeColor(MOUSE_POS)
+				button.update(screen)
+	screen.blit(my_font.render('You Died', True, (0, 0, 0, 200)), (580, 125))
+	for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					pygame.quit()
+					sys.exit()
+				if event.type == pygame.MOUSEBUTTONDOWN:
+					if Save_button.checkForInput(MOUSE_POS):
+						restart()
+						main_menu()
+					elif Quit_button.checkForInput(MOUSE_POS):
+						restart()
+						new_level(levelnum)
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
@@ -1640,12 +1682,19 @@ displayfps = False
 boss_spawned = False
 options = False
 test = 0
+deathcounter = 0
+game_mute = False
+interact = False
 
 while meep:
 	if len(player_group) == 0:
-		restart()
-		main_menu()
-	if game_pause == False:
+		deathcounter +=1
+		death_screen()
+	elif game_mute == True:
+		pygame.mixer.music.set_volume(0)
+	elif game_mute == False:
+		pygame.mixer.music.set_volume(1)
+	elif game_pause == False:
 		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
 			j+=1
@@ -1677,7 +1726,8 @@ while meep:
 			wave += 1
 		if (len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
-		else: interact = False
+		else:
+			interact = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -1727,16 +1777,17 @@ while meep:
 				displayfps = True
 			elif event.key == pygame.K_BACKQUOTE and displayfps == True:
 				displayfps = False
-	if game_pause == False:
-		camera_group.custom_draw(player)
-		framenum +=1			
-		camera_group.update(enemy_group,player)
-	if levelnum == 15 and boss_spawned == True and len(enemy_group) == 0:
-		jellyfish = 1
-		win_screen()
-		game_pause = True	
-	elif game_pause == True:
-		draw_pause()
-		goose = 0
+	if len(player_group) > 0:
+		if game_pause == False:
+			camera_group.custom_draw(player)
+			framenum +=1			
+			camera_group.update(enemy_group,player)
+		if levelnum == 15 and boss_spawned == True and len(enemy_group) == 0:
+			jellyfish = 1
+			win_screen()
+			game_pause = True	
+		elif game_pause == True:
+			draw_pause()
+			goose = 0
 	pygame.display.update()
 	clock.tick(120)
