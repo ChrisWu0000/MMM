@@ -634,6 +634,7 @@ class Player(pygame.sprite.Sprite):
 			if self.i >= 4-self.k:
 				self.kill()
 				player_group.empty()
+				gun.kill()
 				self.isdead = False
 	def check_collision(self,enemy_group):
 		self.rect.x += self.direction.x * self.speed
@@ -1111,7 +1112,7 @@ class CameraGroup(pygame.sprite.Group):
 		self.level = level_data[1]
 		self.background_image = self.level["room"].convert_alpha()
 		self.bg_rect = self.background_image.get_rect(topleft = (0,0))
-		self.camera_borders = {'left': 500, 'right': 500, 'top': 400, 'bottom': 400}
+		self.camera_borders = {'left': 500, 'right': 500, 'top': 500, 'bottom': 280}
 		l = self.camera_borders['left']
 		t = self.camera_borders['top']
 		w = self.surface.get_size()[0]  - (self.camera_borders['left'] + self.camera_borders['right'])
@@ -1204,6 +1205,10 @@ class CameraGroup(pygame.sprite.Group):
 		if interact == True:
 			screen.blit(self.open_door, (400, 600))
 
+class Rect(pygame.sprite.Sprite):
+	def __init__(self, rect):
+		super().__init__()
+		self.collisionrect = rect
 
 screen = pygame.display.set_mode((1280,720))
 clock = pygame.time.Clock()
@@ -1234,7 +1239,7 @@ shopkeep = Shop_Item("refresh",(650,575))
 
 def save():
 	savecoinamount = player.coin_amount
-	savehp = int(player.hp+1)
+	savehp = int(player.hp+1) # WHY IS THIS +1 HERE????
 	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
@@ -1584,9 +1589,20 @@ def new_level(num):
 	numsax = 0
 	numdrum = 0
 	wave +=1
-	for i in range(level_data[num]["num_pillar"]):
-		pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
-		camera_group.add(pillar)
+	try:
+		for i in range(level_data[num]["num_pillar"]):
+			pillar= Item("Pillar", (level_data[num]["pillar_posx1"]+level_data[num]["pillar_posxjump"]*i, level_data[num]["pillar_posy1"]+level_data[num]["pillar_posyjump"]*i))
+			camera_group.add(pillar)
+	except:
+			pass
+	try:
+		for rect in level_data[num]["collision rects"]:
+			bg_rect = Rect(rect)
+			collision_group.add(bg_rect)
+	except: 
+		pass
+			
+
 def win_screen():
 		global jellyfish
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
