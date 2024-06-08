@@ -1706,10 +1706,6 @@ while meep:
 	if len(player_group) == 0:
 		deathcounter +=1
 		death_screen()
-	elif game_mute == True:
-		pygame.mixer.music.set_volume(0)
-	elif game_mute == False:
-		pygame.mixer.music.set_volume(1)
 	elif game_pause == False:
 		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
@@ -1757,11 +1753,11 @@ while meep:
 						item.purchase(player)
 
 			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %1 ==0:
-				if levelnum == 1:
+				if levelnum == 15:
 					pygame.mixer.music.unload()
 					pygame.mixer.music.load("Tuba.mp3")
 					pygame.mixer.music.play(-1)
-					bigboss = Boss((600, 200))
+					bigboss = Boss((640, 185))
 				else: 
 					bigboss = Boss((640, 300))
 				bosspresent=True
@@ -1793,6 +1789,10 @@ while meep:
 				displayfps = True
 			elif event.key == pygame.K_BACKQUOTE and displayfps == True:
 				displayfps = False
+	if game_mute == True:
+		pygame.mixer.music.set_volume(0)
+	elif game_mute == False:
+		pygame.mixer.music.set_volume(1)
 	if len(player_group) > 0:
 		if game_pause == False:
 			camera_group.custom_draw(player)
