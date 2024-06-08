@@ -1752,7 +1752,7 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %1 ==0:
+			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
 				if levelnum == 15:
 					pygame.mixer.music.unload()
 					pygame.mixer.music.load("Tuba.mp3")
