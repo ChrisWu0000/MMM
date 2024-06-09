@@ -947,8 +947,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
 		global refreshes
-		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
-			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
+		if player.coin_amount >= floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2:
+			player.coin_amount -=floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2
 			if self.item["type"] == "refresh":
 				refreshes+=1
 				camera_group.remove(wares_group)
@@ -1297,6 +1297,7 @@ def restart():
 	player.maxhp = 500
 	player.hp = player.maxhp
 	player.coin_amount = 10
+	player.weapon = weapon_data["Basic"]
 	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
@@ -1789,9 +1790,9 @@ while meep:
 				displayfps = True
 			elif event.key == pygame.K_BACKQUOTE and displayfps == True:
 				displayfps = False
-	if game_mute == True:
+	if game_mute == True and player.hp > 0:
 		pygame.mixer.music.set_volume(0)
-	elif game_mute == False:
+	elif game_mute == False and player.hp > 0:
 		pygame.mixer.music.set_volume(1)
 	if len(player_group) > 0:
 		if game_pause == False:
