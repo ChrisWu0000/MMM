@@ -39,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = int(enemy_info["attack_damage"]+2*levelnum)
+		self.damage = int(enemy_info["attack_damage"]+2*levelnum-2)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -235,7 +235,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.level["top wall"], self.rect.top)
 			self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)	
-		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=2:
 			player.hp -= self.damage
 			self.collision_check == False
 			player.lastcollision = 0
@@ -581,7 +581,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastcollision = 200
-		self.iframes = 60
+		self.iframes = 120
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
