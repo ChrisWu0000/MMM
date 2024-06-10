@@ -647,16 +647,28 @@ class Player(pygame.sprite.Sprite):
 				gun.kill()
 				self.isdead = False
 	def check_collision(self,collision_group):
-		self.rect.x += self.direction.x * self.speed
+		if self.dashing == True:
+					self.rect.x += self.velx
+		else:
+					self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.x -= self.direction.x * self.speed
+				if self.dashing == True:
+					self.rect.x -= self.velx
+				else:
+					self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-		self.rect.y += self.direction.y * self.speed
+		if self.dashing == True:
+					self.rect.y += self.vely
+		else:
+					self.rect.y += self.direction.y * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.y -= self.direction.y * self.speed
+				if self.dashing == True:
+					self.rect.y -= self.vely
+				else:
+					self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
 		if self.is_hit == True:
@@ -838,8 +850,8 @@ class Player(pygame.sprite.Sprite):
 		elif(self.lastx==-1):
 			self.image=self.attacking[floor(self.i)]
 	def dash_movement(self):
-		self.rect.x +=self.velx
-		self.rect.y +=self.vely
+		#self.rect.x +=self.velx
+		#self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
 		if self.dash_duration <=0:
@@ -862,20 +874,19 @@ class Player(pygame.sprite.Sprite):
 			self.space_shooting()
 		if self.dashing == True:
 			self.dash_movement()
-			self.check_collision(collision_group)
+			self.check_collision(self.prop)
 		elif self.dashing == False:
 			self.check_collision(collision_group)
 		self.check_alive()
 		if self.lastcollision < self.iframes:
 			self.lastcollision +=1
 		self.i+=self.k
-		if self.lastcollision < self.iframes:
-			self.lastcollision +=1
 		if(self.i>=4):
 			self.i=0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 4
 		self.ratio = self.hp/self.maxhp
+		self.prop = [x for x in collision_group if x not in enemy_group]
 
 class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
@@ -1235,7 +1246,6 @@ all_sprite_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 wares_group = pygame.sprite.Group()
 weapons_group = pygame.sprite.Group()
-
 player = Player((640,360))
 hp = Hp_Bar(player)
 gun = Gun_Sprite(player, player.weapon)
