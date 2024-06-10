@@ -1713,7 +1713,7 @@ main_menu()
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1, 1000)
+#pygame.time.set_timer(sparetimer1, 1000)
 j = 0
 spawnbell = False
 spawnsax = False
