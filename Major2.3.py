@@ -39,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]+2*levelnum
+		self.damage = int(enemy_info["attack_damage"]+2*levelnum)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -278,7 +278,7 @@ class Boss(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"], enemy_info["sprite_width"])
 		self.image = self.currentimage
-		self.damage = enemy_info["attack_damage"]*(1+levelnum)
+		self.damage = int(enemy_info["attack_damage"]*(1+levelnum))
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -1239,7 +1239,7 @@ shopkeep = Shop_Item("refresh",(650,575))
 
 def save():
 	savecoinamount = player.coin_amount
-	savehp = int(player.hp+1) # WHY IS THIS +1 HERE????
+	savehp = int(player.hp)
 	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(levelnum))
