@@ -517,7 +517,7 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.death[floor(6)]
 			else:
 				self.image = self.flippeddeath[floor(6)]
-			if self.hp <= 0 or self.hp >=self.maxhp/(1+self.healed/2):
+			if self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2):
 				self.healing = False
 				self.healed += 1
 			if framenum%10==0 and self.hp >0:
