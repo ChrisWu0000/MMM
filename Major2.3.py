@@ -1295,7 +1295,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
