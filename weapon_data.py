@@ -30,5 +30,5 @@ weapon_data = {
   "Upgrade6":{"type":"healing","purchased":False,"availible":True,"cost":10,"ranged":False,"image": pygame.image.load("Props/Healing Item.png"),"value":450},
   
   
-  "refresh":{"type":"refresh","purchased":False,"availible":False,"cost":1,"ranged":False,"image": pygame.image.load("Props/Shopkeeper Sprite.png")},
+  "refresh":{"type":"refresh","purchased":False,"availible":False,"cost":10,"ranged":False,"image": pygame.image.load("Props/Shopkeeper Sprite.png")},
 }
