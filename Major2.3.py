@@ -1713,6 +1713,7 @@ main_menu()
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
+pygame.time.set_timer(sparetimer1, 1000)
 j = 0
 spawnbell = False
 spawnsax = False
@@ -1760,7 +1761,7 @@ while meep:
 				boss_spawned = False
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
-		if (len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
+		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
 			interact = False
@@ -1768,6 +1769,8 @@ while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
+		if event.type == sparetimer1:
+			print(player.rect)
 		if event.type == pygame.KEYDOWN:
 
 
