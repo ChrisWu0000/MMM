@@ -520,7 +520,7 @@ class Boss(pygame.sprite.Sprite):
 				self.image = self.death[floor(6)]
 			else:
 				self.image = self.flippeddeath[floor(6)]
-			if self.hp <= 0 or self.hp >=self.maxhp/(1+self.healed/2):
+			if self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2):
 				self.healing = False
 				self.healed += 1
 			if framenum%10==0 and self.hp >0:
@@ -959,8 +959,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
 		global refreshes
-		if player.coin_amount >= floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2:
-			player.coin_amount -=floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2
+		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
+			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
 			if self.item["type"] == "refresh":
 				refreshes+=1
 				camera_group.remove(wares_group)
@@ -1296,7 +1296,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish, deathcounter, game_mute, interact, bosspresent
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1714,6 +1714,7 @@ main_menu()
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
+#pygame.time.set_timer(sparetimer1, 1000)
 j = 0
 spawnbell = False
 spawnsax = False
@@ -1769,6 +1770,8 @@ while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
+		if event.type == sparetimer1:
+			print(player.rect)
 		if event.type == pygame.KEYDOWN:
 
 
