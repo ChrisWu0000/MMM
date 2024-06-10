@@ -959,8 +959,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
 		global refreshes
-		if player.coin_amount >= floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2:
-			player.coin_amount -=floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2
+		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
+			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
 			if self.item["type"] == "refresh":
 				refreshes+=1
 				camera_group.remove(wares_group)
