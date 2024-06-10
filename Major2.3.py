@@ -646,7 +646,7 @@ class Player(pygame.sprite.Sprite):
 				player_group.empty()
 				gun.kill()
 				self.isdead = False
-	def check_collision(self,enemy_group):
+	def check_collision(self,collision_group):
 		self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
@@ -849,7 +849,6 @@ class Player(pygame.sprite.Sprite):
 			self.dash_duration -=1
 	def update(self,enemy_group,player):
 		self.input()
-		#self.update_gun()
 		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
@@ -863,8 +862,9 @@ class Player(pygame.sprite.Sprite):
 			self.space_shooting()
 		if self.dashing == True:
 			self.dash_movement()
+			self.check_collision(collision_group)
 		elif self.dashing == False:
-			self.check_collision(enemy_group)
+			self.check_collision(collision_group)
 		self.check_alive()
 		if self.lastcollision < self.iframes:
 			self.lastcollision +=1
@@ -1235,6 +1235,7 @@ all_sprite_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 wares_group = pygame.sprite.Group()
 weapons_group = pygame.sprite.Group()
+
 player = Player((640,360))
 hp = Hp_Bar(player)
 gun = Gun_Sprite(player, player.weapon)
@@ -1295,7 +1296,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish, deathcounter, game_mute, interact, bosspresent
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1760,7 +1761,7 @@ while meep:
 				boss_spawned = False
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
-		if (len(enemy_group)==0 and player.rect.x <= 1750 and player.rect.x >= 1500 and player.rect.y <= 200 and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
+		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
 			interact = False
