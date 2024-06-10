@@ -233,6 +233,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)	
 		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
 			player.hp -= self.damage
+			self.collision_check == False
 			player.lastcollision = 0
 	def update(self,enemy_group,player):
 		self.update_direction()
@@ -242,8 +243,6 @@ class Enemy(pygame.sprite.Sprite):
 		self.check_alive()
 		self.i+=self.k
 		self.i2+=self.k
-		if player.lastcollision < player.iframes:
-			player.lastcollision +=1
 		if self.shoot_cooldown >0:
 			self.shoot_cooldown -= 1
 		if self.i>=4:
@@ -297,9 +296,9 @@ class Boss(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		
-		self.collisionrect = self.rect
-		self.collisionrect.width = int(0.8*self.collisionrect.width)
-		self.collisionrect.height = int(0.9*self.collisionrect.height)
+		self.collisionrect = pygame.Rect(self.rect)
+		self.collisionrect.width = int(0.7*self.collisionrect.width)
+		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
 
 		self.speed_buildupy=0
@@ -479,22 +478,24 @@ class Boss(pygame.sprite.Sprite):
 			self.rect.x = self.rect.x + self.direction.x * int(self.speed) + self.frogx
 			self.rect.y = self.rect.y + self.direction.y * int(self.speed) + self.frogy
 			self.collisionrect.midbottom = self.rect.midbottom
+			
+
+
+			if self.collisionrect.colliderect(player.rect) and player.dashing == False:
+				self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
+				self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
+				self.collisionrect.midbottom = self.rect.midbottom
+				self.speed -= 0.8
+				self.check_collision(player)
+				self.collision_check = True
 			self.rect.left = max(camera_group.bg_rect.x, self.rect.left)
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.bg_rect.y, self.rect.top)
 			self.rect.bottom = min(camera_group.bg_rect.bottom, self.rect.bottom)
-
-
-		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+		if self.collision_check == True and player.lastcollision >= player.iframes and player.dashing == False:
 			player.hp -= self.damage
+			self.collision_check = False
 			player.lastcollision = 0
-		if self.collisionrect.colliderect(player.rect) and player.dashing == False:
-			self.rect.x = self.rect.x - self.direction.x * int(self.speed) + self.frogx
-			self.rect.y = self.rect.y - self.direction.y * int(self.speed) + self.frogy
-			self.collisionrect.midbottom = self.rect.midbottom
-			self.speed -= 0.8
-			self.collision_check = True
-			self.check_collision(player)
 	def update_direction(self):
 		self.vector = pygame.Vector2(self.rect.center)
 		if 0 != pygame.Vector2.length(player.vector - self.vector):
@@ -510,6 +511,7 @@ class Boss(pygame.sprite.Sprite):
 		self.update_direction()
 		self.check_collision(player)
 		self.take_damage()
+		self.collision_check = False
 		if self.healing == True:
 			if self.flipped == False:
 				self.image = self.death[floor(6)]
@@ -860,6 +862,8 @@ class Player(pygame.sprite.Sprite):
 		elif self.dashing == False:
 			self.check_collision(enemy_group)
 		self.check_alive()
+		if self.lastcollision < self.iframes:
+			self.lastcollision +=1
 		self.i+=self.k
 		if(self.i>=4):
 			self.i=0
@@ -1046,8 +1050,9 @@ class Bullet(pygame.sprite.Sprite):
 	def check_collision(self,player):
 		if self.weapon["ranged"] == True:
 			if self.collisionrect.colliderect(player.collisionrect):
-					if player.dashing == False:
+					if player.dashing == False and player.lastcollision >= player.iframes:
 						player.hp -= self.damage
+						player.lastcollision = 0
 						if framenum - player.j > 24: #Iframes
 							player.is_hit = True
 							player.j = framenum
@@ -1280,7 +1285,8 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, options, test, j, goose, jellyfish,shopping,bosspresent
+	shopping = False
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1304,7 +1310,7 @@ def restart():
 		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":10,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
 		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":20,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
 		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":60,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":False,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
@@ -1319,11 +1325,21 @@ def restart():
 	spawndrum = False
 	spawnenemies = False
 	displayfps = False
+	if bosspresent == True:
+		bosshp.kill()
+	bosspresent=False
 	boss_spawned = False
 	options = False
 	test = 0
 	goose = 0
 	jellyfish = 0
+	for item in weapon_data:
+		if weapon_data[item]["availible"]==True:
+			if weapon_data[item]["type"] == "weapon":
+				weapons_group.add(Shop_Item(item,(125,900)))
+			else:
+				item_group.add(Shop_Item(item,(125,900)))
+	load_save()
 for item in weapon_data:
 	if weapon_data[item]["availible"]==True:
 		if weapon_data[item]["type"] == "weapon":
@@ -1693,7 +1709,9 @@ while meep:
 					if player.rect.colliderect(item.rect):
 						item.purchase(player)
 
-			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %1 ==0:
+			if len(enemy_group)==0 and boss_spawned==False and bosspresent==False and wave > level_data[levelnum]["num_wave"] and levelnum %3 ==0:
+				bosspresent=True
+				boss_spawned = True
 				if levelnum == 1:
 					pygame.mixer.music.unload()
 					pygame.mixer.music.load("Tuba.mp3")
@@ -1701,8 +1719,6 @@ while meep:
 					bigboss = Boss((600, 200))
 				else: 
 					bigboss = Boss((640, 300))
-				bosspresent=True
-				boss_spawned = True
 				enemy_group.add(bigboss)
 				collision_group.add(bigboss)
 				camera_group.add(bigboss)	
