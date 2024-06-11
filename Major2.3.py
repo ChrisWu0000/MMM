@@ -21,8 +21,8 @@ refreshes=0
 pygame.mixer.music.load("Level.mp3")
 pygame.mixer.music.load("Main.mp3")
 def get_font(size):
-	return pygame.font.SysFont('Berlin Sans', size)
-my_font = get_font(30)
+	return pygame.font.SysFont('Verdana', size)
+my_font = get_font(24)
 difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
@@ -1196,7 +1196,7 @@ class CameraGroup(pygame.sprite.Group):
 
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
-		self.open_door = get_font(40).render("Press E to open door", True, (0,0,0))
+		self.open_door = get_font(32).render("Press E to open door", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
@@ -1413,9 +1413,9 @@ def main_menu():
 		MENU_MOUSE_POS = pygame.mouse.get_pos()
 
 		Play_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
-							text_input="PLAY", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="PLAY", font=get_font(28), base_color="black", hovering_color="White")
 		Quit_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
-							text_input="QUIT", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="QUIT", font=get_font(28), base_color="black", hovering_color="White")
 
 		for button in [Play_button, Quit_button]:
 			button.changeColor(MENU_MOUSE_POS)
@@ -1442,10 +1442,10 @@ def main_menu2():
 		MENU_MOUSE_POS = pygame.mouse.get_pos()
 
 		New_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
-							text_input="NEW GAME", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="NEW GAME", font=get_font(28), base_color="black", hovering_color="White")
 		if os.stat("save_data.txt").st_size != 0:
 			Continue_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
-							text_input="CONTINUE", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="CONTINUE", font=get_font(28), base_color="black", hovering_color="White")
 			for button in [New_button,Continue_button]:
 				button.changeColor(MENU_MOUSE_POS)
 				button.update(screen)
@@ -1489,11 +1489,11 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 
 		if goose == 1:
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])		
-		Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(35), base_color="black", hovering_color="White")
-		Option_button = Button(image=None, pos=(640, 325), text_input="Controls", font=get_font(35), base_color="black", hovering_color="White")
-		Mute_button = Button(image=None, pos=(640, 375), text_input="Mute/Unmute", font=get_font(35), base_color="black", hovering_color="White")
-		Quit_button = Button(image=None, pos=(640, 425), text_input="Give Up", font=get_font(35), base_color="black", hovering_color="White")
-		Save_button = Button(image=None, pos=(640, 475), text_input="Save and Quit", font=get_font(35), base_color="black", hovering_color="White")
+		Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(28), base_color="black", hovering_color="White")
+		Option_button = Button(image=None, pos=(640, 325), text_input="Controls", font=get_font(28), base_color="black", hovering_color="White")
+		Mute_button = Button(image=None, pos=(640, 375), text_input="Mute/Unmute", font=get_font(28), base_color="black", hovering_color="White")
+		Quit_button = Button(image=None, pos=(640, 425), text_input="Give Up", font=get_font(28), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Save and Quit", font=get_font(28), base_color="black", hovering_color="White")
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
 		screen.blit(surface, (0, 0))
@@ -1539,7 +1539,7 @@ def option_menu():
 		if test == 1:
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450])
-		font = get_font(30)  
+		font = get_font(24)  
 		instructions = [
 			'WASD to move',
 			'Space/Left Click to shoot',
@@ -1556,7 +1556,7 @@ def option_menu():
 			surface.blit(text_surface, text_rect)
 			y_offset += line_height 
 		screen.blit(surface, (0, 0))
-		Save_button = Button(image=None, pos=(640, 475), text_input="Back", font=get_font(35), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Back", font=get_font(28), base_color="black", hovering_color="White")
 		Save_button.changeColor(pygame.mouse.get_pos())
 		Save_button.update(screen)
 		for event in pygame.event.get():
@@ -1574,8 +1574,8 @@ def death_screen():
 	if deathcounter == 1:
 			pygame.draw.rect(surface, (255, 32, 32, 150), [0, 0, 1280, 720])
 			deathcounter += 1		
-	Quit_button = Button(image=None, pos=(640, 325), text_input="Restart", font=get_font(35), base_color="black", hovering_color="White")
-	Save_button = Button(image=None, pos=(640, 375), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+	Quit_button = Button(image=None, pos=(640, 325), text_input="Restart", font=get_font(28), base_color="black", hovering_color="White")
+	Save_button = Button(image=None, pos=(640, 375), text_input="Quit", font=get_font(28), base_color="black", hovering_color="White")
 	pygame.draw.rect(surface, (255, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 	pygame.draw.rect(surface, (255, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
 	screen.blit(surface, (0, 0))
@@ -1646,8 +1646,8 @@ def win_screen():
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
 			jellyfish += 1		
 	
-		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(35), base_color="black", hovering_color="White")
-		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(28), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(28), base_color="black", hovering_color="White")
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
 		screen.blit(surface, (0, 0))
