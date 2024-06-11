@@ -581,6 +581,7 @@ class Player(pygame.sprite.Sprite):
 		self.mass = 10
 		self.shoot = 0
 		self.coin_amount = 10
+		self.coin_magnet = 100
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.mouse_coords = pygame.mouse.get_pos() 
@@ -1034,7 +1035,7 @@ class Item(pygame.sprite.Sprite):
 		self.coin_amount = self.prop["coin_num"]
 	def update(self, enemy_group, player):
 		if self.prop["collectable"] == True:
-			if dist(self.rect.center, player.rect.center)<100:
+			if dist(self.rect.center, player.rect.center)<player.coin_magnet:
 				self.vector = pygame.Vector2(self.rect.center)
 				if 0 != pygame.Vector2.length(player.vector - self.vector):
 					self.direction = (player.vector - self.vector).normalize()
@@ -1606,6 +1607,7 @@ def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
 	wave = 1
+	player.coin_magnet = 100
 	camera_group.empty()
 	wares_group.empty()
 	camera_group.add(player)
@@ -1779,6 +1781,7 @@ while meep:
 				boss_spawned = False
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
+			player.coin_magnet = 10000
 		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
