@@ -39,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = int(enemy_info["attack_damage"]+2*levelnum)
+		self.damage = int(enemy_info["attack_damage"]+2*levelnum-2)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -235,7 +235,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.level["top wall"], self.rect.top)
 			self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)	
-		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=2:
 			player.hp -= self.damage
 			self.collision_check == False
 			player.lastcollision = 0
@@ -581,7 +581,7 @@ class Player(pygame.sprite.Sprite):
 		self.vector = pygame.Vector2(self.rect.center)
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastcollision = 200
-		self.iframes = 60
+		self.iframes = 120
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
@@ -646,17 +646,29 @@ class Player(pygame.sprite.Sprite):
 				player_group.empty()
 				gun.kill()
 				self.isdead = False
-	def check_collision(self,enemy_group):
-		self.rect.x += self.direction.x * self.speed
+	def check_collision(self,collision_group):
+		if self.dashing == True:
+					self.rect.x += self.velx
+		else:
+					self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.x -= self.direction.x * self.speed
+				if self.dashing == True:
+					self.rect.x -= self.velx
+				else:
+					self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-		self.rect.y += self.direction.y * self.speed
+		if self.dashing == True:
+					self.rect.y += self.vely
+		else:
+					self.rect.y += self.direction.y * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.y -= self.direction.y * self.speed
+				if self.dashing == True:
+					self.rect.y -= self.vely
+				else:
+					self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
 		if self.is_hit == True:
@@ -838,8 +850,8 @@ class Player(pygame.sprite.Sprite):
 		elif(self.lastx==-1):
 			self.image=self.attacking[floor(self.i)]
 	def dash_movement(self):
-		self.rect.x +=self.velx
-		self.rect.y +=self.vely
+		#self.rect.x +=self.velx
+		#self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
 		if self.dash_duration <=0:
@@ -849,7 +861,6 @@ class Player(pygame.sprite.Sprite):
 			self.dash_duration -=1
 	def update(self,enemy_group,player):
 		self.input()
-		#self.update_gun()
 		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
@@ -863,19 +874,19 @@ class Player(pygame.sprite.Sprite):
 			self.space_shooting()
 		if self.dashing == True:
 			self.dash_movement()
+			self.check_collision(self.prop)
 		elif self.dashing == False:
-			self.check_collision(enemy_group)
+			self.check_collision(collision_group)
 		self.check_alive()
 		if self.lastcollision < self.iframes:
 			self.lastcollision +=1
 		self.i+=self.k
-		if self.lastcollision < self.iframes:
-			self.lastcollision +=1
 		if(self.i>=4):
 			self.i=0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 4
 		self.ratio = self.hp/self.maxhp
+		self.prop = [x for x in collision_group if x not in enemy_group]
 
 class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
@@ -959,8 +970,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
 		global refreshes
-		if player.coin_amount >= floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2:
-			player.coin_amount -=floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2
+		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
+			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
 			if self.item["type"] == "refresh":
 				refreshes+=1
 				camera_group.remove(wares_group)
@@ -1713,7 +1724,7 @@ main_menu()
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1, 1000)
+#pygame.time.set_timer(sparetimer1, 1000)
 j = 0
 spawnbell = False
 spawnsax = False
