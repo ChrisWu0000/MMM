@@ -21,7 +21,7 @@ refreshes=0
 pygame.mixer.music.load("Level.mp3")
 pygame.mixer.music.load("Main.mp3")
 def get_font(size):
-	return pygame.font.SysFont('Perpetua', size)
+	return pygame.font.SysFont('Berlin Sans', size)
 my_font = get_font(30)
 difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
