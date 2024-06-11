@@ -377,6 +377,9 @@ class Boss(pygame.sprite.Sprite):
 					self.image = self.takedamage[floor(self.i1)]
 				else:
 					self.image = self.flippedtakedamage[floor(self.i1)]
+				mask = pygame.mask.from_surface(self.image)
+				self.image = mask.to_surface()
+				self.image.set_colorkey((0,0,0))
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 
@@ -513,7 +516,7 @@ class Boss(pygame.sprite.Sprite):
 		global framenum,levelnum
 		self.update_direction()
 		self.check_collision(player)
-		self.take_damage()
+		
 		self.collision_check = False
 		if self.healing == True:
 			if self.flipped == False:
@@ -529,6 +532,7 @@ class Boss(pygame.sprite.Sprite):
 				spawn("bell2", 2, 1)
 		else:
 			self.attack(player)
+		self.take_damage()
 		self.check_alive()
 		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
 			self.healing = True
@@ -1025,7 +1029,7 @@ class Item(pygame.sprite.Sprite):
 		self.prop = prop_data[self.name]
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
-		self.rect.center = position
+		self.rect.midleft = position
 		camera_group.add(self)
 		self.coin_amount = self.prop["coin_num"]
 	def update(self, enemy_group, player):
@@ -1077,9 +1081,12 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					x.hp -= self.damage
-					x.ishit = True
-					x.j = framenum
+					if self.spawn_time < self.bullet_lifetime/5:
+						x.hp -= self.damage*2
+					else:
+						x.hp -= self.damage
+						x.ishit = True
+						x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
 					self.kill()
@@ -1147,9 +1154,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 	def draw_wavebar(self):
 			self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
-			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
-			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
-			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
+			self.rect1 = pygame.Rect(90, 20, 2*self.half_w - 200, 14)
+			self.rect2 = pygame.Rect(90, 20, (2*self.half_w - 200)*self.ratio, 14)
+			self.rect3 = pygame.Rect(88, 18, 2*self.half_w - 196, 18)
 			pygame.draw.rect(camera_group.surface, "black", self.rect3)
 			pygame.draw.rect(camera_group.surface, "white", self.rect1)
 			pygame.draw.rect(camera_group.surface, "blue", self.rect2)
@@ -1219,9 +1226,9 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		#gun.update()
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
-		screen.blit(prop_data["Coin"]["image"], (0,0))
-		screen.blit(self.text_surface, (30,2))
-		screen.blit(self.levelnum_surface, (1190,10))
+		screen.blit(prop_data["Coin"]["image"], (0,10))
+		screen.blit(self.text_surface, (30,10))
+		screen.blit(self.levelnum_surface, (1180,10))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
