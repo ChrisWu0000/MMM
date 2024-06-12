@@ -984,17 +984,14 @@ class Shop_Item(pygame.sprite.Sprite):
 				wares_group.add(shopkeep)
 				if len(weapons_group)>0:
 					wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					while len(wares_group.sprites())<=4:
+						wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				else:
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					while len(wares_group.sprites())<=4:
+						wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
@@ -1716,17 +1713,14 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		while len(wares_group.sprites())<=4:
+			wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	else:
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		while len(wares_group.sprites())<=4:
+			wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
