@@ -984,17 +984,14 @@ class Shop_Item(pygame.sprite.Sprite):
 				wares_group.add(shopkeep)
 				if len(weapons_group)>0:
 					wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					while len(wares_group.sprites())<=4:
+						wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				else:
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					while len(wares_group.sprites())<=4:
+						wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
 						wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
@@ -1136,6 +1133,8 @@ class CameraGroup(pygame.sprite.Group):
 	global wave, levelnum
 	def __init__(self):
 		super().__init__()
+		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
+		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
 		self.surface=pygame.display.get_surface()	
 		self.offset = pygame.math.Vector2()
 		self.half_w = self.surface.get_size()[0] // 2
@@ -1205,8 +1204,6 @@ class CameraGroup(pygame.sprite.Group):
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.open_door = get_font(32).render("Press E to open door", True, (0,0,0))
-		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
-		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
@@ -1718,17 +1715,14 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		while len(wares_group.sprites())<=4:
+			wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center = (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	else:
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		while len(wares_group.sprites())<=4:
+			wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
 			wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
