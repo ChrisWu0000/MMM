@@ -1133,6 +1133,8 @@ class CameraGroup(pygame.sprite.Group):
 	global wave, levelnum
 	def __init__(self):
 		super().__init__()
+		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
+		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
 		self.surface=pygame.display.get_surface()	
 		self.offset = pygame.math.Vector2()
 		self.half_w = self.surface.get_size()[0] // 2
@@ -1202,8 +1204,6 @@ class CameraGroup(pygame.sprite.Group):
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.open_door = get_font(32).render("Press E to open door", True, (0,0,0))
-		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
-		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
