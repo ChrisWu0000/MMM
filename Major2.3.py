@@ -873,9 +873,9 @@ class Player(pygame.sprite.Sprite):
 			self.dash_cooldown -= 1
 		if self.dash == True and self.dash_cooldown == 0:
 			self.dash_func()
-		elif self.shoot == 1:
+		elif self.shoot == 1 and shopping == False:
 			self.is_shooting()
-		elif self.shoot == 2:
+		elif self.shoot == 2 and shopping == False:
 			self.space_shooting()
 		if self.dashing == True:
 			self.dash_movement()
@@ -988,7 +988,7 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
-						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				else:
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -996,7 +996,7 @@ class Shop_Item(pygame.sprite.Sprite):
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
-						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				camera_group.add(wares_group.sprites()[0:5])
@@ -1273,7 +1273,7 @@ physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
-shopkeep = Shop_Item("refresh",(650,575))
+shopkeep = Shop_Item("refresh",(846,240))
 
 def save():
 	global levelnum, shopping
@@ -1456,6 +1456,8 @@ def main_menu():
 def main_menu2():
 	global levelnum, shopping
 	meep2 = True
+	with open("save_data.txt", "r") as s:
+		levelnum = s.readline()
 	while meep2:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
 
@@ -1720,7 +1722,7 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
-			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].rect.center = (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	else:
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
@@ -1728,10 +1730,16 @@ def shop(num):
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
-			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)), True, (0,0,0))
 	camera_group.add(wares_group.sprites()[0:5])
+	try:
+		for rect in level_data[0]["collision rects"]:
+			bg_rect = HourRect(rect)
+			collision_group.add(bg_rect)
+	except: 
+		pass
 	
 levelnum = 1
 global framenum, numbell, numsax, numdrum
@@ -1799,7 +1807,7 @@ while meep:
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
 			player.coin_magnet = 10000
-		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
+		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.colliderect(level_data[0]["exit rect"]) and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
 			interact = False
@@ -1847,7 +1855,7 @@ while meep:
 				bosshp = Hp_Bar(bigboss)
 				camera_group.add(bosshp)
 	
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True and game_pause == False:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[0]["exit rect"]) and shopping == True and game_pause == False:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
