@@ -300,7 +300,7 @@ class Boss(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		
-		self.collisionrect = self.rect
+		self.collisionrect = pygame.Rect(self.rect)
 		self.collisionrect.width = int(0.6*self.collisionrect.width)
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
@@ -377,6 +377,9 @@ class Boss(pygame.sprite.Sprite):
 					self.image = self.takedamage[floor(self.i1)]
 				else:
 					self.image = self.flippedtakedamage[floor(self.i1)]
+				mask = pygame.mask.from_surface(self.image)
+				self.image = mask.to_surface()
+				self.image.set_colorkey((0,0,0))
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 
@@ -513,7 +516,7 @@ class Boss(pygame.sprite.Sprite):
 		global framenum,levelnum
 		self.update_direction()
 		self.check_collision(player)
-		self.take_damage()
+		
 		self.collision_check = False
 		if self.healing == True:
 			if self.flipped == False:
@@ -529,6 +532,7 @@ class Boss(pygame.sprite.Sprite):
 				spawn("bell2", 2, 1)
 		else:
 			self.attack(player)
+		self.take_damage()
 		self.check_alive()
 		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
 			self.healing = True
@@ -577,6 +581,7 @@ class Player(pygame.sprite.Sprite):
 		self.mass = 10
 		self.shoot = 0
 		self.coin_amount = 10
+		self.coin_magnet = 100
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.mouse_coords = pygame.mouse.get_pos() 
@@ -1025,12 +1030,12 @@ class Item(pygame.sprite.Sprite):
 		self.prop = prop_data[self.name]
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
-		self.rect.center = position
+		self.rect.midleft = position
 		camera_group.add(self)
 		self.coin_amount = self.prop["coin_num"]
 	def update(self, enemy_group, player):
 		if self.prop["collectable"] == True:
-			if dist(self.rect.center, player.rect.center)<100:
+			if dist(self.rect.center, player.rect.center)<player.coin_magnet:
 				self.vector = pygame.Vector2(self.rect.center)
 				if 0 != pygame.Vector2.length(player.vector - self.vector):
 					self.direction = (player.vector - self.vector).normalize()
@@ -1077,9 +1082,12 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					x.hp -= self.damage
-					x.ishit = True
-					x.j = framenum
+					if self.spawn_time < self.bullet_lifetime/5:
+						x.hp -= self.damage*2
+					else:
+						x.hp -= self.damage
+						x.ishit = True
+						x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
 					self.kill()
@@ -1147,9 +1155,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 	def draw_wavebar(self):
 			self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
-			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
-			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
-			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
+			self.rect1 = pygame.Rect(90, 20, 2*self.half_w - 200, 14)
+			self.rect2 = pygame.Rect(90, 20, (2*self.half_w - 200)*self.ratio, 14)
+			self.rect3 = pygame.Rect(88, 18, 2*self.half_w - 196, 18)
 			pygame.draw.rect(camera_group.surface, "black", self.rect3)
 			pygame.draw.rect(camera_group.surface, "white", self.rect1)
 			pygame.draw.rect(camera_group.surface, "blue", self.rect2)
@@ -1219,9 +1227,9 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		#gun.update()
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
-		screen.blit(prop_data["Coin"]["image"], (0,0))
-		screen.blit(self.text_surface, (30,2))
-		screen.blit(self.levelnum_surface, (1190,10))
+		screen.blit(prop_data["Coin"]["image"], (0,10))
+		screen.blit(self.text_surface, (30,10))
+		screen.blit(self.levelnum_surface, (1180,10))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
@@ -1262,20 +1270,23 @@ shopping = False
 shopkeep = Shop_Item("refresh",(650,575))
 
 def save():
+	global levelnum, shopping
 	savecoinamount = player.coin_amount
 	savehp = int(player.hp)
-	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
-		s.write("%s\n"%(levelnum))
-		s.write("%s\n"%(int(savehp)))
-		s.write("%s\n"%(int(savecoinamount)))
-		s.write("%s\n"%(shopping))
-		s.write("%s\n"%(weapon_data["Basic"]))
-		s.write("%s\n"%(weapon_data["Shotgun"]))
-		s.write("%s\n"%(weapon_data["Minigun"]))
-		s.write("%s\n"%(weapon_data["Lag_Maker"]))
-		enemy_group.empty()
-		collision_group.empty()
+		try:
+			s.write("%s\n"%(levelnum))
+			s.write("%s\n"%(int(savehp)))
+			s.write("%s\n"%(int(savecoinamount)))
+			s.write("%s\n"%(shopping))
+			s.write("%s\n"%(weapon_data["Basic"]))
+			s.write("%s\n"%(weapon_data["Shotgun"]))
+			s.write("%s\n"%(weapon_data["Minigun"]))
+			s.write("%s\n"%(weapon_data["Lag_Maker"]))
+			enemy_group.empty()
+			collision_group.empty()
+		except:
+			open('save_data.txt', 'w').close()
 def load_save():
 	global levelnum, shopping
 	with open("save_data.txt", "r") as s:
@@ -1375,7 +1386,7 @@ for item in weapon_data:
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y+200,camera_group.background_image.get_size()[1]-50)
-	if dist(player.rect.center, (random_x, random_y)) < 340: #can be changed
+	if dist(player.rect.center, (random_x, random_y)) < 300: #can be changed
 			return checkdistance()
 	else:
 		return (random_x, random_y)
@@ -1435,6 +1446,7 @@ def main_menu():
 
 		pygame.display.update()
 def main_menu2():
+	global levelnum
 	meep2 = True
 	while meep2:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
@@ -1443,7 +1455,7 @@ def main_menu2():
 
 		New_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
 							text_input="NEW GAME", font=get_font(28), base_color="black", hovering_color="White")
-		if os.stat("save_data.txt").st_size != 0:
+		if levelnum != 1 and os.stat("save_data.txt").st_size != 0:
 			Continue_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
 							text_input="CONTINUE", font=get_font(28), base_color="black", hovering_color="White")
 			for button in [New_button,Continue_button]:
@@ -1478,7 +1490,10 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(levelnum)
+						pygame.mixer.music.load("Level.mp3")
+						pygame.mixer.music.play(-1)
+						restart()
+						load_save()
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 	global game_pause, options, test, goose, game_mute
@@ -1599,6 +1614,7 @@ def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
 	wave = 1
+	player.coin_magnet = 100
 	camera_group.empty()
 	wares_group.empty()
 	camera_group.add(player)
@@ -1636,8 +1652,7 @@ def new_level(num):
 			collision_group.add(bg_rect)
 	except: 
 		pass
-			
-
+	
 def win_screen():
 		global jellyfish
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1772,6 +1787,7 @@ while meep:
 				boss_spawned = False
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
+			player.coin_magnet = 10000
 		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
