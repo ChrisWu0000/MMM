@@ -300,7 +300,7 @@ class Boss(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		
-		self.collisionrect = self.rect
+		self.collisionrect = pygame.Rect(self.rect)
 		self.collisionrect.width = int(0.6*self.collisionrect.width)
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
