@@ -1386,7 +1386,7 @@ for item in weapon_data:
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y+200,camera_group.background_image.get_size()[1]-50)
-	if dist(player.rect.center, (random_x, random_y)) < 340: #can be changed
+	if dist(player.rect.center, (random_x, random_y)) < 300: #can be changed
 			return checkdistance()
 	else:
 		return (random_x, random_y)
