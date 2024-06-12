@@ -1,6 +1,6 @@
 1
-482
-25
+476
+1510
 True
 {'type': 'weapon', 'purchased': True, 'availible': False, 'cost': 20, 'ranged': False, 'damage': 50, 'cooldown': 50, 'mincooldown': 10, 'projectiles': 1, 'speed': 7, 'duration': 80, 'spread': 0, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(60x66x32 SW)>}
 {'type': 'weapon', 'purchased': False, 'availible': True, 'cost': 40, 'ranged': False, 'damage': 80, 'cooldown': 100, 'mincooldown': 20, 'projectiles': 9, 'speed': 15, 'duration': 25, 'spread': 40, 'sprite': 'Weapons/Bullet.png', 'scaling': 3, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(66x66x32 SW)>}
