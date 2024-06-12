@@ -1270,20 +1270,23 @@ shopping = False
 shopkeep = Shop_Item("refresh",(650,575))
 
 def save():
+	global levelnum, shopping
 	savecoinamount = player.coin_amount
 	savehp = int(player.hp)
-	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
-		s.write("%s\n"%(levelnum))
-		s.write("%s\n"%(int(savehp)))
-		s.write("%s\n"%(int(savecoinamount)))
-		s.write("%s\n"%(shopping))
-		s.write("%s\n"%(weapon_data["Basic"]))
-		s.write("%s\n"%(weapon_data["Shotgun"]))
-		s.write("%s\n"%(weapon_data["Minigun"]))
-		s.write("%s\n"%(weapon_data["Lag_Maker"]))
-		enemy_group.empty()
-		collision_group.empty()
+		try:
+			s.write("%s\n"%(levelnum))
+			s.write("%s\n"%(int(savehp)))
+			s.write("%s\n"%(int(savecoinamount)))
+			s.write("%s\n"%(shopping))
+			s.write("%s\n"%(weapon_data["Basic"]))
+			s.write("%s\n"%(weapon_data["Shotgun"]))
+			s.write("%s\n"%(weapon_data["Minigun"]))
+			s.write("%s\n"%(weapon_data["Lag_Maker"]))
+			enemy_group.empty()
+			collision_group.empty()
+		except:
+			open('save_data.txt', 'w').close()
 def load_save():
 	global levelnum, shopping
 	with open("save_data.txt", "r") as s:
@@ -1443,6 +1446,7 @@ def main_menu():
 
 		pygame.display.update()
 def main_menu2():
+	global levelnum
 	meep2 = True
 	while meep2:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
@@ -1451,7 +1455,7 @@ def main_menu2():
 
 		New_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
 							text_input="NEW GAME", font=get_font(28), base_color="black", hovering_color="White")
-		if os.stat("save_data.txt").st_size != 0:
+		if levelnum != 1 and os.stat("save_data.txt").st_size != 0:
 			Continue_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
 							text_input="CONTINUE", font=get_font(28), base_color="black", hovering_color="White")
 			for button in [New_button,Continue_button]:
@@ -1486,7 +1490,10 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(levelnum)
+						pygame.mixer.music.load("Level.mp3")
+						pygame.mixer.music.play(-1)
+						restart()
+						load_save()
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 	global game_pause, options, test, goose, game_mute
@@ -1645,8 +1652,7 @@ def new_level(num):
 			collision_group.add(bg_rect)
 	except: 
 		pass
-			
-
+	
 def win_screen():
 		global jellyfish
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
