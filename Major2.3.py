@@ -1082,7 +1082,7 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					if self.spawn_time < self.bullet_lifetime/5:
+					if self.spawn_time < self.bullet_lifetime/5 and self.weapon != "Minigun":
 						x.hp -= self.damage*2
 					else:
 						x.hp -= self.damage
@@ -1205,6 +1205,8 @@ class CameraGroup(pygame.sprite.Group):
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
 		self.open_door = get_font(32).render("Press E to open door", True, (0,0,0))
+		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
+		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
@@ -1236,8 +1238,12 @@ class CameraGroup(pygame.sprite.Group):
 			self.draw_wavebar()
 		if interact == True:
 			screen.blit(self.open_door, (400, 600))
+		elif refreshinteract == True:
+			screen.blit(self.refresh_text, (400, 600))
+		elif shopinteract == True:
+			screen.blit(self.purchase_text, (400, 600))
 
-class Rect(pygame.sprite.Sprite):
+class HourRect(pygame.sprite.Sprite):
 	def __init__(self, rect):
 		super().__init__()
 		self.collisionrect = rect
@@ -1317,7 +1323,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact, shopinteract, refreshinteract
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1375,6 +1381,8 @@ def restart():
 	deathcounter = 0
 	game_mute = False
 	interact = False
+	shopinteract = False
+	refreshinteract = False
 	pygame.mixer.music.set_volume(1)
 	pygame.mixer.music.rewind()
 for item in weapon_data:
@@ -1446,7 +1454,7 @@ def main_menu():
 
 		pygame.display.update()
 def main_menu2():
-	global levelnum
+	global levelnum, shopping
 	meep2 = True
 	while meep2:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
@@ -1648,7 +1656,7 @@ def new_level(num):
 			pass
 	try:
 		for rect in level_data[num]["collision rects"]:
-			bg_rect = Rect(rect)
+			bg_rect = HourRect(rect)
 			collision_group.add(bg_rect)
 	except: 
 		pass
@@ -1752,12 +1760,15 @@ test = 0
 deathcounter = 0
 game_mute = False
 interact = False
+shopinteract = False
+refreshinteract = False
 
 while meep:
 	if len(player_group) == 0:
 		deathcounter +=1
 		death_screen()
 	elif game_pause == False:
+		bruh = 0
 		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
 			j+=1
@@ -1792,6 +1803,20 @@ while meep:
 			interact = True
 		else:
 			interact = False
+		if shopping == True and game_pause == False:
+				for item in wares_group:
+					if item.name == "refresh" and player.rect.colliderect(item.rect):
+						refreshinteract = True
+					elif item.name == "refresh" and player.rect.colliderect(item.rect) == False:
+						refreshinteract = False
+					if item.name != "refresh" and player.rect.colliderect(item.rect):
+						bruh += 1
+					else:
+						bruh -=1
+				if bruh > -4:
+						shopinteract = True
+				else:
+					shopinteract = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
