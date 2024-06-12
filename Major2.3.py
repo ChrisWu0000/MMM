@@ -1856,7 +1856,6 @@ while meep:
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
 				shopping = True
 				shop(0)
-				save()
 			if (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == False:
 				game_pause = True
 				goose = 1
