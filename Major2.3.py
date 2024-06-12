@@ -1628,13 +1628,13 @@ def new_level(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	for x in range( min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25)):
-		spawn("bell", min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25), numbell)
-	for x in range( min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25)):
-		spawn("sax", min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25), numsax)
+	for x in range(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"])):
+		spawn("bell", floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), numbell)
+	for x in range( floor(level_data[num]["num_sax"]/level_data[num]["num_wave"])):
+		spawn("sax", floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), numsax)
 	
-	for x in range( min(floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), 25)):
-		spawn("drum", min(floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), 25), numdrum)
+	for x in range( floor(level_data[num]["num_drum"]/level_data[num]["num_wave"])):
+		spawn("drum", floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), numdrum)
 	wavebar = True
 	numbell = 0
 	numsax = 0
