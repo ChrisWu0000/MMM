@@ -195,7 +195,10 @@ class Enemy(pygame.sprite.Sprite):
 				
 	def check_collision(self,player): #Chris version of collision
 		if self.hp >0:
-			if self.name == "sax" and dist(self.rect.center, player.rect.center) < 1000: # SAX stuff
+			if self.name == "sax" and dist(self.rect.center, player.rect.center) < 500:
+				self.direction.x = -self.direction.x
+				self.direction.y = -self.direction.y
+			elif self.name == "sax" and dist(self.rect.center, player.rect.center) < 1000: # SAX stuff
 
 				a = self.b*self.direction.x
 				if self.b < 0:
@@ -312,6 +315,7 @@ class Boss(pygame.sprite.Sprite):
 		self.direction = pygame.Vector2(1, 0)
 
 		self.i=0
+		self.j = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
 		self.flippedwalking=[]
@@ -519,14 +523,16 @@ class Boss(pygame.sprite.Sprite):
 		
 		self.collision_check = False
 		if self.healing == True:
+			self.j += 1
 			if self.flipped == False:
 				self.image = self.death[floor(6)]
 			else:
 				self.image = self.flippeddeath[floor(6)]
-			if self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2):
+			if (self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2)) :
 				self.healing = False
 				self.healed += 1
-			if framenum%10==0 and self.hp >0 and framenum - self.j < 2400:
+				self.j = 0
+			if framenum%10==0 and self.hp >0 :
 				self.hp+=self.maxhp/(65+self.healed*5)
 			if framenum%50==0 and self.hp >0:
 				spawn("bell2", 2, 1)
