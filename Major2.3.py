@@ -271,7 +271,7 @@ class Boss(pygame.sprite.Sprite):
 		self.weapon3 = weapon_data['top_brass3']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.maxhp = enemy_info["health"]*(difficulty_mult**1.5)
+		self.maxhp = enemy_info["health"]*(difficulty_mult**2)
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
 		self.healing = False
@@ -526,13 +526,13 @@ class Boss(pygame.sprite.Sprite):
 			if self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2):
 				self.healing = False
 				self.healed += 1
-			if framenum%10==0 and self.hp >0:
+			if framenum%10==0 and self.hp >0 and framenum - self.j < 2400:
 				self.hp+=self.maxhp/(65+self.healed*5)
 			if framenum%50==0 and self.hp >0:
 				spawn("bell2", 2, 1)
 		else:
 			self.attack(player)
-		self.take_damage()
+		#self.take_damage()
 		self.check_alive()
 		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
 			self.healing = True
@@ -1079,7 +1079,7 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					if self.spawn_time < self.bullet_lifetime/5 and self.weapon != "Minigun":
+					if self.spawn_time < self.bullet_lifetime/5 and self.weapon["name"] != "Minigun":
 						x.hp -= self.damage*2
 					else:
 						x.hp -= self.damage
@@ -1291,9 +1291,10 @@ def save():
 		except:
 			open('save_data.txt', 'w').close()
 def load_save():
-	global levelnum, shopping
+	global levelnum, shopping, difficulty_mult
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
+		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		player.hp = int(s.readline())
 		player.coin_amount = int(s.readline())
 		shop1 = s.readline()
@@ -1320,7 +1321,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact, shopinteract, refreshinteract
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact, shopinteract, refreshinteract, difficulty_mult
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1332,6 +1333,7 @@ def restart():
 	wares_group.empty() 
 	weapons_group.empty()
 	levelnum = 1
+	difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 	player.maxhp = 500
 	player.hp = player.maxhp
 	player.coin_amount = 10
@@ -1589,6 +1591,7 @@ def option_menu():
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
 def death_screen():
+	restart()
 	pygame.mixer.music.set_volume(0)
 	global deathcounter
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1612,10 +1615,8 @@ def death_screen():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if Save_button.checkForInput(MOUSE_POS):
-						restart()
 						main_menu()
 					elif Quit_button.checkForInput(MOUSE_POS):
-						restart()
 						new_level(levelnum)
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
@@ -1806,6 +1807,7 @@ while meep:
 		else:
 			interact = False
 		if shopping == True and game_pause == False:
+				bruh = 0
 				for item in wares_group:
 					if item.name == "refresh" and player.rect.colliderect(item.rect):
 						refreshinteract = True
@@ -1813,9 +1815,7 @@ while meep:
 						refreshinteract = False
 					if item.name != "refresh" and player.rect.colliderect(item.rect):
 						bruh += 1
-					else:
-						bruh -=1
-				if bruh > -4:
+				if bruh == 1:
 						shopinteract = True
 				else:
 					shopinteract = False
