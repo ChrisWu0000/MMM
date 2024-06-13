@@ -7,7 +7,7 @@ from monster_data import *
 from level_data import *
 from prop_data import *
 from weapon_data import *
-from math import floor
+from math import floor, ceil
 import Spritesheet
 import sys
 import ast
@@ -315,7 +315,7 @@ class Boss(pygame.sprite.Sprite):
 		self.direction = pygame.Vector2(1, 0)
 
 		self.i=0
-		self.j = 0
+		self.z = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
 		self.flippedwalking=[]
@@ -523,24 +523,24 @@ class Boss(pygame.sprite.Sprite):
 		
 		self.collision_check = False
 		if self.healing == True:
-			self.j += 1
+			self.z += 1
 			if self.flipped == False:
 				self.image = self.death[floor(6)]
 			else:
 				self.image = self.flippeddeath[floor(6)]
-			if (self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2)) :
+			if (self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2)) or self.z > 2400:
 				self.healing = False
 				self.healed += 1
-				self.j = 0
+				self.z = 1
 			if framenum%10==0 and self.hp >0 :
 				self.hp+=self.maxhp/(65+self.healed*5)
-			if framenum%50==0 and self.hp >0:
+			if framenum%(50/ceil(self.z/1000))==0 and self.hp >0:
 				spawn("bell2", 2, 1)
 		else:
 			self.attack(player)
 		#self.take_damage()
 		self.check_alive()
-		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
+		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < int(levelnum/3) and self.healing == False:
 			self.healing = True
 		self.ratio = self.hp/self.maxhp
 		if self.shoot_cooldown1>0:
@@ -1382,7 +1382,6 @@ def restart():
 				weapons_group.add(Shop_Item(item,(125,900)))
 			else:
 				item_group.add(Shop_Item(item,(125,900)))
-	load_save()
 	deathcounter = 0
 	game_mute = False
 	interact = False
@@ -1470,7 +1469,7 @@ def main_menu2():
 
 		New_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
 							text_input="NEW GAME", font=get_font(28), base_color="black", hovering_color="White")
-		if levelnum != 1 and os.stat("save_data.txt").st_size != 0:
+		if levelnum != 1 and levelnum != '1\n' and os.stat("save_data.txt").st_size != 0:
 			Continue_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
 							text_input="CONTINUE", font=get_font(28), base_color="black", hovering_color="White")
 			for button in [New_button,Continue_button]:
@@ -1597,7 +1596,15 @@ def option_menu():
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
 def death_screen():
-	restart()
+	with open("save_data.txt", "w") as s:
+		s.write("%s\n"%(1))
+		s.write("%s\n"%(500))
+		s.write("%s\n"%(10))
+		s.write("%s\n"%(False))
+		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":10,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":20,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":60,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":False,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
 	pygame.mixer.music.set_volume(0)
 	global deathcounter
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1621,9 +1628,11 @@ def death_screen():
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if Save_button.checkForInput(MOUSE_POS):
+						restart()
 						main_menu()
 					elif Quit_button.checkForInput(MOUSE_POS):
-						new_level(levelnum)
+						restart()
+						load_save()
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
