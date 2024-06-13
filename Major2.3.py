@@ -980,7 +980,7 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.rect.center = position
 		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
-		global refreshes
+		global refreshes, guns
 		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
 			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
 			if self.item["type"] == "refresh":
@@ -1007,6 +1007,7 @@ class Shop_Item(pygame.sprite.Sprite):
 				wares_group.remove(self)
 				camera_group.remove(self)
 				self.item["purchased"]=True
+				guns += 1
 				weapons_group.remove(self)
 			elif self.item["type"] == "healing":
 				wares_group.remove(self)
@@ -1136,12 +1137,16 @@ class Button():
 			self.text = self.font.render(self.text_input, True, self.base_color)
 	
 class CameraGroup(pygame.sprite.Group):
-	global wave, levelnum
+	global wave, levelnum, tutorial, guns
 	def __init__(self):
 		super().__init__()
 		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
 		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
 		self.open_door = get_font(32).render("Press E to open door", True, (0,0,0))
+		self.tutorial1 = my_font.render(("WASD to move"), True , (0,0,0))
+		self.tutorial2 = my_font.render(("Space/Left Click to shoot"), True , (0,0,0))
+		self.tutorial3 = my_font.render(("F/LShift/Right Click to dash"), True , (0,0,0))
+		self.tutorial4 = my_font.render(("1/2/3 to swap weapons"), True , (0,0,0))
 		self.surface=pygame.display.get_surface()	
 		self.offset = pygame.math.Vector2()
 		self.half_w = self.surface.get_size()[0] // 2
@@ -1245,7 +1250,14 @@ class CameraGroup(pygame.sprite.Group):
 			screen.blit(self.refresh_text, (400, 600))
 		elif shopinteract == True:
 			screen.blit(self.purchase_text, (400, 600))
-
+		elif tutorial == 1:
+			screen.blit(self.tutorial1, (480,600))
+		elif tutorial == 2:
+			screen.blit(self.tutorial2, (480,600))
+		elif tutorial == 3:
+			screen.blit(self.tutorial3, (480,600))
+		elif guns == 1:
+			screen.blit(self.tutorial4, (480,600))
 class HourRect(pygame.sprite.Sprite):
 	def __init__(self, rect):
 		super().__init__()
@@ -1574,7 +1586,7 @@ def option_menu():
 			'Space/Left Click to shoot',
 			'E to interact',
 			'F/LSHIFT/Right Click to dash',
-			'1/2/3/4 to change weapons'
+			'1/2/3 to change weapons'
 		]
 		y_offset = 140  
 		line_height = 60  
@@ -1780,8 +1792,22 @@ game_mute = False
 interact = False
 shopinteract = False
 refreshinteract = False
+tutorial = 0
+guns = 0
 
 while meep:
+	if framenum ==1 and levelnum == 1:
+		tutorial = 1
+	elif framenum == 600 and levelnum == 1:
+		tutorial = 2
+	elif framenum == 1200 and levelnum == 1:
+		tutorial = 3
+	elif framenum > 1800 and levelnum == 1:
+		tutorial = 0
+	if guns == 1:
+		j+=1
+		if j > 600:
+			guns += 1
 	if len(player_group) == 0:
 		deathcounter +=1
 		death_screen()
@@ -1834,6 +1860,9 @@ while meep:
 						shopinteract = True
 				else:
 					shopinteract = False
+		if shopping == False:
+			refreshinteract = False
+			shopinteract = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
