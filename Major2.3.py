@@ -7,7 +7,7 @@ from monster_data import *
 from level_data import *
 from prop_data import *
 from weapon_data import *
-from math import floor
+from math import floor, ceil
 import Spritesheet
 import sys
 import ast
@@ -21,8 +21,8 @@ refreshes=0
 pygame.mixer.music.load("Level.mp3")
 pygame.mixer.music.load("Main.mp3")
 def get_font(size):
-	return pygame.font.SysFont('Berlin Sans FB', size)
-my_font = get_font(30)
+	return pygame.font.SysFont('Verdana', size)
+my_font = get_font(24)
 difficulty_mult = 1
 class Enemy(pygame.sprite.Sprite): 
 	def __init__(self, name, position):
@@ -39,7 +39,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
 		self.image = self.currentimage
-		self.damage = int(enemy_info["attack_damage"]+2*levelnum)
+		self.damage = int(enemy_info["attack_damage"]+2*levelnum-2)
 		self.mass = enemy_info["mass"]
 		self.collision_check = False #all of these are used to detect which animation to use
 		self.flipped = False
@@ -195,7 +195,10 @@ class Enemy(pygame.sprite.Sprite):
 				
 	def check_collision(self,player): #Chris version of collision
 		if self.hp >0:
-			if self.name == "sax" and dist(self.rect.center, player.rect.center) < 1000: # SAX stuff
+			if self.name == "sax" and dist(self.rect.center, player.rect.center) < 500:
+				self.direction.x = -self.direction.x
+				self.direction.y = -self.direction.y
+			elif self.name == "sax" and dist(self.rect.center, player.rect.center) < 1000: # SAX stuff
 
 				a = self.b*self.direction.x
 				if self.b < 0:
@@ -235,7 +238,7 @@ class Enemy(pygame.sprite.Sprite):
 			self.rect.right = min(camera_group.bg_rect.right, self.rect.right)
 			self.rect.top = max(camera_group.level["top wall"], self.rect.top)
 			self.rect.bottom = min(camera_group.level["bottom wall"], self.rect.bottom)	
-		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=4-self.k:
+		if self.collision_check == True and player.lastcollision >= player.iframes and self.i >=2:
 			player.hp -= self.damage
 			self.collision_check == False
 			player.lastcollision = 0
@@ -271,7 +274,7 @@ class Boss(pygame.sprite.Sprite):
 		self.weapon3 = weapon_data['top_brass3']
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
-		self.maxhp = enemy_info["health"]*(difficulty_mult**1.5)
+		self.maxhp = enemy_info["health"]*(difficulty_mult**2)
 		self.hp = self.maxhp
 		self.ratio = self.hp/self.maxhp
 		self.healing = False
@@ -300,7 +303,7 @@ class Boss(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect()
 		self.rect.center = position
 		
-		self.collisionrect = self.rect
+		self.collisionrect = pygame.Rect(self.rect)
 		self.collisionrect.width = int(0.6*self.collisionrect.width)
 		self.collisionrect.height = int(0.8*self.collisionrect.height)
 		self.collisionrect.midbottom = self.rect.midbottom
@@ -312,6 +315,7 @@ class Boss(pygame.sprite.Sprite):
 		self.direction = pygame.Vector2(1, 0)
 
 		self.i=0
+		self.z = 0
 		self.k = 0.05 # 4/self.k = #ticks for animation to loop
 		self.walking=[]
 		self.flippedwalking=[]
@@ -377,6 +381,9 @@ class Boss(pygame.sprite.Sprite):
 					self.image = self.takedamage[floor(self.i1)]
 				else:
 					self.image = self.flippedtakedamage[floor(self.i1)]
+				mask = pygame.mask.from_surface(self.image)
+				self.image = mask.to_surface()
+				self.image.set_colorkey((0,0,0))
 			if self.i >=4-self.k and self.ishit == True:
 				self.ishit = False			
 
@@ -513,24 +520,27 @@ class Boss(pygame.sprite.Sprite):
 		global framenum,levelnum
 		self.update_direction()
 		self.check_collision(player)
-		self.take_damage()
+		
 		self.collision_check = False
 		if self.healing == True:
+			self.z += 1
 			if self.flipped == False:
 				self.image = self.death[floor(6)]
 			else:
 				self.image = self.flippeddeath[floor(6)]
-			if self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2):
+			if (self.hp <= 0 or self.hp >=self.maxhp/(1.5+self.healed/2)) or self.z > 2400:
 				self.healing = False
 				self.healed += 1
-			if framenum%10==0 and self.hp >0:
+				self.z = 1
+			if framenum%10==0 and self.hp >0 :
 				self.hp+=self.maxhp/(65+self.healed*5)
-			if framenum%50==0 and self.hp >0:
+			if framenum%(50/ceil(self.z/1000))==0 and self.hp >0:
 				spawn("bell2", 2, 1)
 		else:
 			self.attack(player)
+		#self.take_damage()
 		self.check_alive()
-		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < levelnum/3 and self.healing == False:
+		if self.hp < self.maxhp/(3+self.healed) and self.hp >0 and self.healed < int(levelnum/3) and self.healing == False:
 			self.healing = True
 		self.ratio = self.hp/self.maxhp
 		if self.shoot_cooldown1>0:
@@ -577,11 +587,12 @@ class Player(pygame.sprite.Sprite):
 		self.mass = 10
 		self.shoot = 0
 		self.coin_amount = 10
+		self.coin_magnet = 100
 		self.shoot_cooldown = 0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.mouse_coords = pygame.mouse.get_pos() 
 		self.lastcollision = 200
-		self.iframes = 60
+		self.iframes = 120
 		self.weapon = weapon_data["Basic"]
 		self.angle = 0  # Initial angle
 		self.flipped = False  # Initial flipped state
@@ -646,17 +657,29 @@ class Player(pygame.sprite.Sprite):
 				player_group.empty()
 				gun.kill()
 				self.isdead = False
-	def check_collision(self,enemy_group):
-		self.rect.x += self.direction.x * self.speed
+	def check_collision(self,collision_group):
+		if self.dashing == True:
+					self.rect.x += self.velx
+		else:
+					self.rect.x += self.direction.x * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.x -= self.direction.x * self.speed
+				if self.dashing == True:
+					self.rect.x -= self.velx
+				else:
+					self.rect.x -= self.direction.x * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
-		self.rect.y += self.direction.y * self.speed
+		if self.dashing == True:
+					self.rect.y += self.vely
+		else:
+					self.rect.y += self.direction.y * self.speed
 		for enemy in collision_group:
 			if self.rect.colliderect(enemy.collisionrect):
-				self.rect.y -= self.direction.y * self.speed
+				if self.dashing == True:
+					self.rect.y -= self.vely
+				else:
+					self.rect.y -= self.direction.y * self.speed
 				self.speed -= 0.1
 				enemy.collision_check = True
 		if self.is_hit == True:
@@ -838,8 +861,8 @@ class Player(pygame.sprite.Sprite):
 		elif(self.lastx==-1):
 			self.image=self.attacking[floor(self.i)]
 	def dash_movement(self):
-		self.rect.x +=self.velx
-		self.rect.y +=self.vely
+		#self.rect.x +=self.velx
+		#self.rect.y +=self.vely
 		self.rect.x = int(self.rect.x)
 		self.rect.y = int(self.rect.y)
 		if self.dash_duration <=0:
@@ -849,7 +872,6 @@ class Player(pygame.sprite.Sprite):
 			self.dash_duration -=1
 	def update(self,enemy_group,player):
 		self.input()
-		#self.update_gun()
 		self.screen_coord = (self.rect.centerx - camera_group.camera_rect.left+camera_group.camera_borders["left"], self.rect.centery + camera_group.camera_rect.top-camera_group.camera_borders["top"])
 		if self.shoot_cooldown > 0:
 			self.shoot_cooldown -= 1
@@ -857,25 +879,25 @@ class Player(pygame.sprite.Sprite):
 			self.dash_cooldown -= 1
 		if self.dash == True and self.dash_cooldown == 0:
 			self.dash_func()
-		elif self.shoot == 1:
+		elif self.shoot == 1 and shopping == False:
 			self.is_shooting()
-		elif self.shoot == 2:
+		elif self.shoot == 2 and shopping == False:
 			self.space_shooting()
 		if self.dashing == True:
 			self.dash_movement()
+			self.check_collision(self.prop)
 		elif self.dashing == False:
-			self.check_collision(enemy_group)
+			self.check_collision(collision_group)
 		self.check_alive()
 		if self.lastcollision < self.iframes:
 			self.lastcollision +=1
 		self.i+=self.k
-		if self.lastcollision < self.iframes:
-			self.lastcollision +=1
 		if(self.i>=4):
 			self.i=0
 		self.vector = pygame.Vector2(self.rect.center)
 		self.speed = 4
 		self.ratio = self.hp/self.maxhp
+		self.prop = [x for x in collision_group if x not in enemy_group]
 
 class Hp_Bar(pygame.sprite.Sprite):
 	def __init__(self, player):
@@ -959,8 +981,8 @@ class Shop_Item(pygame.sprite.Sprite):
 		self.cost_display = my_font.render(str(self.item["cost"]+refreshes*2), True, (0,0,0))
 	def purchase(self,player):
 		global refreshes
-		if player.coin_amount >= floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2:
-			player.coin_amount -=floor(self.item["cost"]*sqrt(difficulty_mult))+refreshes*2
+		if player.coin_amount >= floor(self.item["cost"]*difficulty_mult)+refreshes*2:
+			player.coin_amount -=floor(self.item["cost"]*difficulty_mult)+refreshes*2
 			if self.item["type"] == "refresh":
 				refreshes+=1
 				camera_group.remove(wares_group)
@@ -968,19 +990,16 @@ class Shop_Item(pygame.sprite.Sprite):
 				wares_group.add(shopkeep)
 				if len(weapons_group)>0:
 					wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					while len(wares_group.sprites())<=4:
+						wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
-						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				else:
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-					wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+					while len(wares_group.sprites())<=4:
+						wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 					for x in range(len(wares_group)-1):
-						wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+						wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 						wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)+refreshes*2), True, (0,0,0))
 				camera_group.add(wares_group.sprites()[0:5])
@@ -1014,12 +1033,12 @@ class Item(pygame.sprite.Sprite):
 		self.prop = prop_data[self.name]
 		self.image = self.prop["image"].convert_alpha()
 		self.rect = self.image.get_rect()
-		self.rect.center = position
+		self.rect.midleft = position
 		camera_group.add(self)
 		self.coin_amount = self.prop["coin_num"]
 	def update(self, enemy_group, player):
 		if self.prop["collectable"] == True:
-			if dist(self.rect.center, player.rect.center)<100:
+			if dist(self.rect.center, player.rect.center)<player.coin_magnet:
 				self.vector = pygame.Vector2(self.rect.center)
 				if 0 != pygame.Vector2.length(player.vector - self.vector):
 					self.direction = (player.vector - self.vector).normalize()
@@ -1066,9 +1085,12 @@ class Bullet(pygame.sprite.Sprite):
 		else:
 			for x in enemy_group.sprites():
 				if self.rect.colliderect(x.collisionrect):
-					x.hp -= self.damage
-					x.ishit = True
-					x.j = framenum
+					if self.spawn_time < self.bullet_lifetime/5 and self.weapon["name"] != "Minigun":
+						x.hp -= self.damage*2
+					else:
+						x.hp -= self.damage
+						x.ishit = True
+						x.j = framenum
 					if x.collision_check == False:
 						x.i = 0
 					self.kill()
@@ -1117,6 +1139,9 @@ class CameraGroup(pygame.sprite.Group):
 	global wave, levelnum
 	def __init__(self):
 		super().__init__()
+		self.purchase_text = get_font(32).render("Press E to buy item", True, (0,0,0))
+		self.refresh_text = get_font(32).render("Press E to refresh shop", True, (0,0,0))
+		self.open_door = get_font(32).render("Press E to open door", True, (0,0,0))
 		self.surface=pygame.display.get_surface()	
 		self.offset = pygame.math.Vector2()
 		self.half_w = self.surface.get_size()[0] // 2
@@ -1136,9 +1161,9 @@ class CameraGroup(pygame.sprite.Group):
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
 	def draw_wavebar(self):
 			self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
-			self.rect1 = pygame.Rect(100, 20, 2*self.half_w - 200, 14)
-			self.rect2 = pygame.Rect(100, 20, (2*self.half_w - 200)*self.ratio, 14)
-			self.rect3 = pygame.Rect(98, 18, 2*self.half_w - 196, 18)
+			self.rect1 = pygame.Rect(90, 20, 2*self.half_w - 200, 14)
+			self.rect2 = pygame.Rect(90, 20, (2*self.half_w - 200)*self.ratio, 14)
+			self.rect3 = pygame.Rect(88, 18, 2*self.half_w - 196, 18)
 			pygame.draw.rect(camera_group.surface, "black", self.rect3)
 			pygame.draw.rect(camera_group.surface, "white", self.rect1)
 			pygame.draw.rect(camera_group.surface, "blue", self.rect2)
@@ -1185,7 +1210,6 @@ class CameraGroup(pygame.sprite.Group):
 
 	def custom_draw(self, player_group):
 		self.text_surface = my_font.render(str(player.coin_amount), True, (0,0,0))
-		self.open_door = get_font(40).render("Press E to open door", True, (0,0,0))
 		self.levelnum_surface = my_font.render(("Level "+ str(levelnum)), True, (0,0,0))
 		self.fpsdisplay = my_font.render(str(int(clock.get_fps())*2), True , (0,0,0))
 		self.center_target_camera(player_group)
@@ -1208,17 +1232,21 @@ class CameraGroup(pygame.sprite.Group):
 		hp.update(enemy_group, player)
 		#gun.update()
 		self.ratio = (wave-2)/level_data[levelnum]["num_wave"]
-		screen.blit(prop_data["Coin"]["image"], (0,0))
-		screen.blit(self.text_surface, (30,2))
-		screen.blit(self.levelnum_surface, (1190,10))
+		screen.blit(prop_data["Coin"]["image"], (0,10))
+		screen.blit(self.text_surface, (30,10))
+		screen.blit(self.levelnum_surface, (1180,10))
 		if displayfps == True:
 			screen.blit(self.fpsdisplay, (0,40))
 		if wavebar == True:
 			self.draw_wavebar()
 		if interact == True:
 			screen.blit(self.open_door, (400, 600))
+		elif refreshinteract == True:
+			screen.blit(self.refresh_text, (400, 600))
+		elif shopinteract == True:
+			screen.blit(self.purchase_text, (400, 600))
 
-class Rect(pygame.sprite.Sprite):
+class HourRect(pygame.sprite.Sprite):
 	def __init__(self, rect):
 		super().__init__()
 		self.collisionrect = rect
@@ -1248,27 +1276,31 @@ physics_group.add(player)
 camera_group.add(player)
 all_sprite_group.add(player)
 shopping = False
-shopkeep = Shop_Item("refresh",(650,575))
+shopkeep = Shop_Item("refresh",(846,240))
 
 def save():
+	global levelnum, shopping
 	savecoinamount = player.coin_amount
 	savehp = int(player.hp)
-	open('save_data.txt', 'w').close()
 	with open("save_data.txt", "w") as s:
-		s.write("%s\n"%(levelnum))
-		s.write("%s\n"%(int(savehp)))
-		s.write("%s\n"%(int(savecoinamount)))
-		s.write("%s\n"%(shopping))
-		s.write("%s\n"%(weapon_data["Basic"]))
-		s.write("%s\n"%(weapon_data["Shotgun"]))
-		s.write("%s\n"%(weapon_data["Minigun"]))
-		s.write("%s\n"%(weapon_data["Lag_Maker"]))
-		enemy_group.empty()
-		collision_group.empty()
+		try:
+			s.write("%s\n"%(levelnum))
+			s.write("%s\n"%(int(savehp)))
+			s.write("%s\n"%(int(savecoinamount)))
+			s.write("%s\n"%(shopping))
+			s.write("%s\n"%(weapon_data["Basic"]))
+			s.write("%s\n"%(weapon_data["Shotgun"]))
+			s.write("%s\n"%(weapon_data["Minigun"]))
+			s.write("%s\n"%(weapon_data["Lag_Maker"]))
+			enemy_group.empty()
+			collision_group.empty()
+		except:
+			open('save_data.txt', 'w').close()
 def load_save():
-	global levelnum, shopping
+	global levelnum, shopping, difficulty_mult
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
+		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		player.hp = int(s.readline())
 		player.coin_amount = int(s.readline())
 		shop1 = s.readline()
@@ -1295,7 +1327,7 @@ def load_save():
 	else:
 		new_level(levelnum)
 def restart():
-	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact
+	global levelnum, game_pause, spawnbell, spawndrum, spawnsax, spawnenemies, displayfps, boss_spawned, bosspresent, options, test, j, goose, jellyfish, deathcounter, game_mute, interact, shopinteract, refreshinteract, difficulty_mult
 	camera_group.empty()
 	player_group.empty() 
 	enemy_group.empty() 
@@ -1307,6 +1339,7 @@ def restart():
 	wares_group.empty() 
 	weapons_group.empty()
 	levelnum = 1
+	difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 	player.maxhp = 500
 	player.hp = player.maxhp
 	player.coin_amount = 10
@@ -1349,10 +1382,11 @@ def restart():
 				weapons_group.add(Shop_Item(item,(125,900)))
 			else:
 				item_group.add(Shop_Item(item,(125,900)))
-	load_save()
 	deathcounter = 0
 	game_mute = False
 	interact = False
+	shopinteract = False
+	refreshinteract = False
 	pygame.mixer.music.set_volume(1)
 	pygame.mixer.music.rewind()
 for item in weapon_data:
@@ -1364,7 +1398,7 @@ for item in weapon_data:
 def checkdistance(): #makes sure that spawns are further than 500 from player
 	random_x = randint(camera_group.bg_rect.x+100,camera_group.background_image.get_size()[0]-100)
 	random_y = randint(camera_group.bg_rect.y+200,camera_group.background_image.get_size()[1]-50)
-	if dist(player.rect.center, (random_x, random_y)) < 340: #can be changed
+	if dist(player.rect.center, (random_x, random_y)) < 300: #can be changed
 			return checkdistance()
 	else:
 		return (random_x, random_y)
@@ -1402,9 +1436,9 @@ def main_menu():
 		MENU_MOUSE_POS = pygame.mouse.get_pos()
 
 		Play_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
-							text_input="PLAY", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="PLAY", font=get_font(28), base_color="black", hovering_color="White")
 		Quit_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
-							text_input="QUIT", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="QUIT", font=get_font(28), base_color="black", hovering_color="White")
 
 		for button in [Play_button, Quit_button]:
 			button.changeColor(MENU_MOUSE_POS)
@@ -1424,17 +1458,20 @@ def main_menu():
 
 		pygame.display.update()
 def main_menu2():
+	global levelnum, shopping
 	meep2 = True
+	with open("save_data.txt", "r") as s:
+		levelnum = s.readline()
 	while meep2:
 		screen.blit(pygame.image.load("Rooms/TitleRoom.png"), (0, 0))
 
 		MENU_MOUSE_POS = pygame.mouse.get_pos()
 
 		New_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 200), 
-							text_input="NEW GAME", font=get_font(35), base_color="black", hovering_color="White")
-		if os.stat("save_data.txt").st_size != 0:
+							text_input="NEW GAME", font=get_font(28), base_color="black", hovering_color="White")
+		if levelnum != 1 and levelnum != '1\n' and os.stat("save_data.txt").st_size != 0:
 			Continue_button = Button(image=pygame.image.load("Props/Play Rect.png"), pos=(400, 300), 
-							text_input="CONTINUE", font=get_font(35), base_color="black", hovering_color="White")
+							text_input="CONTINUE", font=get_font(28), base_color="black", hovering_color="White")
 			for button in [New_button,Continue_button]:
 				button.changeColor(MENU_MOUSE_POS)
 				button.update(screen)
@@ -1467,7 +1504,10 @@ def main_menu2():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if New_button.checkForInput(MENU_MOUSE_POS):
 						meep2 = False
-						new_level(levelnum)
+						pygame.mixer.music.load("Level.mp3")
+						pygame.mixer.music.play(-1)
+						restart()
+						load_save()
 		pygame.display.update()
 def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 	global game_pause, options, test, goose, game_mute
@@ -1478,11 +1518,11 @@ def draw_pause(): #Continue, Options, Restart, Save and quit buttons needed
 
 		if goose == 1:
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])		
-		Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(35), base_color="black", hovering_color="White")
-		Option_button = Button(image=None, pos=(640, 325), text_input="Controls", font=get_font(35), base_color="black", hovering_color="White")
-		Mute_button = Button(image=None, pos=(640, 375), text_input="Mute/Unmute", font=get_font(35), base_color="black", hovering_color="White")
-		Quit_button = Button(image=None, pos=(640, 425), text_input="Give Up", font=get_font(35), base_color="black", hovering_color="White")
-		Save_button = Button(image=None, pos=(640, 475), text_input="Save and Quit", font=get_font(35), base_color="black", hovering_color="White")
+		Continue_button = Button(image=None, pos=(640, 275), text_input="Continue", font=get_font(28), base_color="black", hovering_color="White")
+		Option_button = Button(image=None, pos=(640, 325), text_input="Controls", font=get_font(28), base_color="black", hovering_color="White")
+		Mute_button = Button(image=None, pos=(640, 375), text_input="Mute/Unmute", font=get_font(28), base_color="black", hovering_color="White")
+		Quit_button = Button(image=None, pos=(640, 425), text_input="Give Up", font=get_font(28), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Save and Quit", font=get_font(28), base_color="black", hovering_color="White")
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
 		screen.blit(surface, (0, 0))
@@ -1528,7 +1568,7 @@ def option_menu():
 		if test == 1:
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450])
-		font = get_font(30)  
+		font = get_font(24)  
 		instructions = [
 			'WASD to move',
 			'Space/Left Click to shoot',
@@ -1545,7 +1585,7 @@ def option_menu():
 			surface.blit(text_surface, text_rect)
 			y_offset += line_height 
 		screen.blit(surface, (0, 0))
-		Save_button = Button(image=None, pos=(640, 475), text_input="Back", font=get_font(35), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Back", font=get_font(28), base_color="black", hovering_color="White")
 		Save_button.changeColor(pygame.mouse.get_pos())
 		Save_button.update(screen)
 		for event in pygame.event.get():
@@ -1556,6 +1596,15 @@ def option_menu():
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
 def death_screen():
+	with open("save_data.txt", "w") as s:
+		s.write("%s\n"%(1))
+		s.write("%s\n"%(500))
+		s.write("%s\n"%(10))
+		s.write("%s\n"%(False))
+		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":10,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":20,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":60,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
+		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":False,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
 	pygame.mixer.music.set_volume(0)
 	global deathcounter
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1563,8 +1612,8 @@ def death_screen():
 	if deathcounter == 1:
 			pygame.draw.rect(surface, (255, 32, 32, 150), [0, 0, 1280, 720])
 			deathcounter += 1		
-	Quit_button = Button(image=None, pos=(640, 325), text_input="Restart", font=get_font(35), base_color="black", hovering_color="White")
-	Save_button = Button(image=None, pos=(640, 375), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+	Quit_button = Button(image=None, pos=(640, 325), text_input="Restart", font=get_font(28), base_color="black", hovering_color="White")
+	Save_button = Button(image=None, pos=(640, 375), text_input="Quit", font=get_font(28), base_color="black", hovering_color="White")
 	pygame.draw.rect(surface, (255, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 	pygame.draw.rect(surface, (255, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
 	screen.blit(surface, (0, 0))
@@ -1583,11 +1632,12 @@ def death_screen():
 						main_menu()
 					elif Quit_button.checkForInput(MOUSE_POS):
 						restart()
-						new_level(levelnum)
+						load_save()
 def new_level(num):
 	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
 	save()
 	wave = 1
+	player.coin_magnet = 100
 	camera_group.empty()
 	wares_group.empty()
 	camera_group.add(player)
@@ -1601,13 +1651,13 @@ def new_level(num):
 	t = camera_group.camera_borders['top']
 	camera_group.camera_rect = pygame.Rect(l,t,w,h)
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
-	for x in range( min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25)):
-		spawn("bell", min(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), 25), numbell)
-	for x in range( min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25)):
-		spawn("sax", min(floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), 25), numsax)
+	for x in range(floor(level_data[num]["num_bell"]/level_data[num]["num_wave"])):
+		spawn("bell", floor(level_data[num]["num_bell"]/level_data[num]["num_wave"]), numbell)
+	for x in range( floor(level_data[num]["num_sax"]/level_data[num]["num_wave"])):
+		spawn("sax", floor(level_data[num]["num_sax"]/level_data[num]["num_wave"]), numsax)
 	
-	for x in range( min(floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), 25)):
-		spawn("drum", min(floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), 25), numdrum)
+	for x in range( floor(level_data[num]["num_drum"]/level_data[num]["num_wave"])):
+		spawn("drum", floor(level_data[num]["num_drum"]/level_data[num]["num_wave"]), numdrum)
 	wavebar = True
 	numbell = 0
 	numsax = 0
@@ -1621,12 +1671,11 @@ def new_level(num):
 			pass
 	try:
 		for rect in level_data[num]["collision rects"]:
-			bg_rect = Rect(rect)
+			bg_rect = HourRect(rect)
 			collision_group.add(bg_rect)
 	except: 
 		pass
-			
-
+	
 def win_screen():
 		global jellyfish
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1635,8 +1684,8 @@ def win_screen():
 			pygame.draw.rect(surface, (32, 32, 32, 150), [0, 0, 1280, 720])
 			jellyfish += 1		
 	
-		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(35), base_color="black", hovering_color="White")
-		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(35), base_color="black", hovering_color="White")
+		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(28), base_color="black", hovering_color="White")
+		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(28), base_color="black", hovering_color="White")
 		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
 		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
 		screen.blit(surface, (0, 0))
@@ -1682,22 +1731,25 @@ def shop(num):
 	player.rect.center = (level_data[num]["spawnx"], level_data[num]["spawny"])
 	if len(weapons_group)>0:
 		wares_group.add(weapons_group.sprites()[randint(0,len(weapons_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		while len(wares_group.sprites())<=4:
+			wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
-			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].rect.center = (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	else:
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
-		wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
+		while len(wares_group.sprites())<=4:
+			wares_group.add(item_group.sprites()[randint(0,len(item_group)-1)])
 		for x in range(len(wares_group)-1):
-			wares_group.sprites()[x+1].rect.center = (125+340*x,900)
+			wares_group.sprites()[x+1].rect.center =  (100+331*x+max(x-1, 0)*41-max(x-2, 0)*24+20*(x-max(x-1, 0)),560)
 			wares_group.sprites()[x+1].cost_display = my_font.render(str(floor(wares_group.sprites()[x+1].item["cost"]*difficulty_mult)), True, (0,0,0))
 	wares_group.sprites()[0].cost_display = my_font.render(str(floor(wares_group.sprites()[0].item["cost"]*difficulty_mult)), True, (0,0,0))
 	camera_group.add(wares_group.sprites()[0:5])
+	try:
+		for rect in level_data[0]["collision rects"]:
+			bg_rect = HourRect(rect)
+			collision_group.add(bg_rect)
+	except: 
+		pass
 	
 levelnum = 1
 global framenum, numbell, numsax, numdrum
@@ -1713,7 +1765,7 @@ main_menu()
 meep = True
 game_pause = False
 sparetimer1 = pygame.USEREVENT + 1
-pygame.time.set_timer(sparetimer1, 1000)
+#pygame.time.set_timer(sparetimer1, 1000)
 j = 0
 spawnbell = False
 spawnsax = False
@@ -1726,12 +1778,15 @@ test = 0
 deathcounter = 0
 game_mute = False
 interact = False
+shopinteract = False
+refreshinteract = False
 
 while meep:
 	if len(player_group) == 0:
 		deathcounter +=1
 		death_screen()
 	elif game_pause == False:
+		bruh = 0
 		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
 		if len(enemy_group) == 0 and wave <= level_data[levelnum]["num_wave"] and shopping == False:
 			j+=1
@@ -1761,10 +1816,24 @@ while meep:
 				boss_spawned = False
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
-		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True) : #Text on screen when able to open door and continue to next level
+			player.coin_magnet = 10000
+		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.colliderect(level_data[0]["exit rect"]) and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
 			interact = False
+		if shopping == True and game_pause == False:
+				bruh = 0
+				for item in wares_group:
+					if item.name == "refresh" and player.rect.colliderect(item.rect):
+						refreshinteract = True
+					elif item.name == "refresh" and player.rect.colliderect(item.rect) == False:
+						refreshinteract = False
+					if item.name != "refresh" and player.rect.colliderect(item.rect):
+						bruh += 1
+				if bruh == 1:
+						shopinteract = True
+				else:
+					shopinteract = False
 
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -1795,14 +1864,13 @@ while meep:
 				bosshp = Hp_Bar(bigboss)
 				camera_group.add(bosshp)
 	
-			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.centerx <= 820 and player.rect.centerx >= 460 and player.rect.centery <= 320 and player.rect.centery >=100 and shopping == True and game_pause == False:
+			if event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[0]["exit rect"]) and shopping == True and game_pause == False:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
 			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
 				shopping = True
 				shop(0)
-				save()
 			if (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == False:
 				game_pause = True
 				goose = 1
