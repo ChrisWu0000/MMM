@@ -34,7 +34,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.sprite_sheet_image = enemy_info["spritesheet"].convert_alpha()
 		self.sprite_sheet = Spritesheet.SpriteSheet(self.sprite_sheet_image)
 		self.hp = enemy_info["health"]*difficulty_mult
-		self.speed = enemy_info["speed"]#*difficulty_mult
+		self.speed = enemy_info["speed"]
 		self.defaultspeed = self.speed
 		self.push_power = enemy_info["push_power"]
 		self.currentimage = self.sprite_sheet.get_image(0, enemy_info["sprite_width"], enemy_info["sprite_height"],enemy_info["sprite_width"] )
@@ -48,7 +48,7 @@ class Enemy(pygame.sprite.Sprite):
 		self.isattacking = False
 		self.enemylist = []
 		self.current_index = 0
-		self.shoot_cooldown = 0
+		self.shoot_cooldown = 0 + randint(0,150)
 		self.coin_drop_chance = enemy_info["coin_drop_chance"]
 		self.rect = self.image.get_rect()
 		self.rect.center = position
@@ -533,9 +533,13 @@ class Boss(pygame.sprite.Sprite):
 				self.healed += 1
 				self.z = 1
 			if framenum%10==0 and self.hp >0 :
-				self.hp+=self.maxhp/(65+self.healed*5)
-			if framenum%(50/ceil(self.z/1000))==0 and self.hp >0:
+				self.hp+=self.maxhp/(70+self.healed*5)
+			if framenum%(40/ceil(self.z/1000))==0 and self.hp >0:
 				spawn("bell2", 2, 1)
+				if levelnum > 3:
+					spawn("sax2", 2, 1)
+				if levelnum > 9:
+					spawn("drum2", 2, 1)
 		else:
 			self.attack(player)
 		#self.take_damage()
@@ -1022,7 +1026,7 @@ class Shop_Item(pygame.sprite.Sprite):
 					if weapon_data[item]["type"] == "weapon":
 						if self.item["change"] == "cooldown":
 							if weapon_data[item]["cooldown"] == weapon_data[item]["mincooldown"]:
-								weapon_data[item]["damage"] += 5
+								weapon_data[item]["damage"] += 6
 							else:
 								weapon_data[item]["cooldown"] = max(int(weapon_data[item]["cooldown"]*self.item["value"]), weapon_data[item]["mincooldown"])
 						elif self.item["change"] == "projectiles":
@@ -1037,6 +1041,8 @@ class Shop_Item(pygame.sprite.Sprite):
 								weapon_data[item]["speed"] = min(int(weapon_data[item]["speed"]+self.item["value"]), weapon_data[item]["maxspeed"])
 						elif self.item["change"] == "duration":
 							if weapon_data[item]["duration"] == weapon_data[item]["maxduration"]:
+								if weapon_data[item]["name"] == "Shotgun":
+									weapon_data[item]["damage"] += 10
 								weapon_data[item]["damage"] += 5
 							else:
 								weapon_data[item]["duration"] = min(int(weapon_data[item]["duration"]+self.item["value"]), weapon_data[item]["maxduration"])
@@ -1085,6 +1091,8 @@ class Bullet(pygame.sprite.Sprite):
 		if self.weapon["ranged"] == True:
 			self.speed = min(self.weapon["speed"]+(sqrt(difficulty_mult)-1), self.weapon["max_speed"])
 			self.bullet_lifetime = min(self.weapon["duration"]*(sqrt(difficulty_mult)), self.weapon["max_duration"]) 
+		elif self.weapon["name"] == "Shotgun":
+			self.speed+=randint(-5,5)
 		self.damage = self.weapon["damage"]
 		self.velx = cos(self.angle)*self.speed
 		self.vely = sin(self.angle)*self.speed
@@ -1379,10 +1387,10 @@ def restart():
 		s.write("%s\n"%(player.hp))
 		s.write("%s\n"%(player.coin_amount))
 		s.write("%s\n"%(False))
-		s.write("%s\n"%({"type":"weapon","name":"Basic","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":80,"cooldown":60,"mincooldown":20,"projectiles":1,"maxprojectiles":12,"speed":7,"maxspeed":15,"duration":80,"maxduration":160,"spread":0,"sprite":"Weapons/Pistol Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Pistol Shop.png"),"playerimage": pygame.image.load("Player/Pistol Player Fixed.png")}))
-		s.write("%s\n"%({"type":"weapon","name":"Shotgun","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":120,"cooldown":120,"mincooldown":40,"projectiles":9,"maxprojectiles":25,"speed":20,"maxspeed":40,"duration":10,"maxduration":20,"spread":25,"sprite":"Weapons/Shotgun Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Shotgun Shop.png"),"playerimage": pygame.image.load("Player/Shotgun Player Fixed.png")}))
-		s.write("%s\n"%({"type":"weapon","name":"Minigun","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":30,"cooldown":20,"mincooldown":10,"projectiles":2,"maxprojectiles":8,"speed":15,"maxspeed":25,"duration":25,"maxduration":75,"spread":35,"sprite":"Weapons/Bullet.png","scaling":2,"image": pygame.image.load("Props/Minigun Shop.png"),"playerimage": pygame.image.load("Player/Minigun Player Fixed.png")}))
-		s.write("%s\n"%({"type":"weapon","name":"Lag_Maker","purchased":False,"availible":True,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"maxprojectiles":1000,"speed":15,"maxspeed":1000,"duration":25,"maxduration":1000,"spread":300,"sprite":"Enemies/DevlinDeving.png","scaling":1,"image": pygame.image.load("Enemies/DevlinDeving.png"),"playerimage": pygame.image.load("Enemies/DevlinDeving.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Basic","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":80,"cooldown":60,"mincooldown":20,"projectiles":1,"maxprojectiles":10,"speed":7,"maxspeed":15,"duration":80,"maxduration":160,"spread":0,"sprite":"Weapons/Pistol Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Pistol Shop.png"),"playerimage": pygame.image.load("Player/Pistol Player Fixed.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Shotgun","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":30,"cooldown":120,"mincooldown":50,"projectiles":9,"maxprojectiles":25,"speed":20,"maxspeed":40,"duration":10,"maxduration":20,"spread":25,"sprite":"Weapons/Shotgun Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Shotgun Shop.png"),"playerimage": pygame.image.load("Player/Shotgun Player Fixed.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Minigun","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":40,"cooldown":20,"mincooldown":10,"projectiles":2,"maxprojectiles":8,"speed":15,"maxspeed":25,"duration":25,"maxduration":75,"spread":35,"sprite":"Weapons/Bullet.png","scaling":2,"image": pygame.image.load("Props/Minigun Shop.png"),"playerimage": pygame.image.load("Player/Minigun Player Fixed.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Lag_Maker","purchased":False,"availible":True,"cost":180,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"maxprojectiles":1000,"speed":15,"maxspeed":1000,"duration":25,"maxduration":1000,"spread":300,"sprite":"Enemies/DevlinDeving.png","scaling":1,"image": pygame.image.load("Enemies/DevlinDeving.png"),"playerimage": pygame.image.load("Enemies/DevlinDeving.png")}))
 	hp = Hp_Bar(player)
 	player_group.add(hp)
 	camera_group.add(hp)
@@ -1631,10 +1639,10 @@ def death_screen():
 		s.write("%s\n"%(500))
 		s.write("%s\n"%(10))
 		s.write("%s\n"%(False))
-		s.write("%s\n"%({"type":"weapon","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":50,"cooldown":50,"mincooldown":10,"projectiles":1,"speed":7,"duration":80,"spread":0,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Pistol Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":80,"cooldown":100,"mincooldown":20,"projectiles":9,"speed":15,"duration":25,"spread":40,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Shotgun Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":True,"cost":60,"ranged":False,"damage":15,"cooldown":15,"mincooldown":5,"projectiles":2,"speed":10,"duration":20,"spread":25,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Props/Minigun Shop.png")}))
-		s.write("%s\n"%({"type":"weapon","purchased":False,"availible":False,"cost":200,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"speed":15,"duration":25,"spread":300,"sprite":"Weapons/Bullet.png","scaling":3,"image": pygame.image.load("Enemies/DevlinDeving.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Basic","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":80,"cooldown":60,"mincooldown":20,"projectiles":1,"maxprojectiles":10,"speed":7,"maxspeed":15,"duration":80,"maxduration":160,"spread":0,"sprite":"Weapons/Pistol Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Pistol Shop.png"),"playerimage": pygame.image.load("Player/Pistol Player Fixed.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Shotgun","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":30,"cooldown":120,"mincooldown":50,"projectiles":9,"maxprojectiles":25,"speed":20,"maxspeed":40,"duration":10,"maxduration":20,"spread":25,"sprite":"Weapons/Shotgun Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Shotgun Shop.png"),"playerimage": pygame.image.load("Player/Shotgun Player Fixed.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Minigun","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":40,"cooldown":20,"mincooldown":10,"projectiles":2,"maxprojectiles":8,"speed":15,"maxspeed":25,"duration":25,"maxduration":75,"spread":35,"sprite":"Weapons/Bullet.png","scaling":2,"image": pygame.image.load("Props/Minigun Shop.png"),"playerimage": pygame.image.load("Player/Minigun Player Fixed.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Lag_Maker","purchased":False,"availible":True,"cost":180,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"maxprojectiles":1000,"speed":15,"maxspeed":1000,"duration":25,"maxduration":1000,"spread":300,"sprite":"Enemies/DevlinDeving.png","scaling":1,"image": pygame.image.load("Enemies/DevlinDeving.png"),"playerimage": pygame.image.load("Enemies/DevlinDeving.png")}))
 	pygame.mixer.music.set_volume(0)
 	global deathcounter
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
