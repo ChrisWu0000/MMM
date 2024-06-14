@@ -1607,6 +1607,7 @@ def option_menu():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if Save_button.checkForInput(pygame.mouse.get_pos()):
 						options = False
+		pygame.display.update()
 def death_screen():
 	with open("save_data.txt", "w") as s:
 		s.write("%s\n"%(1))
@@ -1698,9 +1699,25 @@ def win_screen():
 	
 		Quit_button = Button(image=None, pos=(640, 425), text_input="Main Menu", font=get_font(28), base_color="black", hovering_color="White")
 		Save_button = Button(image=None, pos=(640, 475), text_input="Quit", font=get_font(28), base_color="black", hovering_color="White")
-		pygame.draw.rect(surface, (128, 128, 128, 250), [460, 100, 360, 450]) #Dark Pause Menu Bg  
+		pygame.draw.rect(surface, (128, 128, 128, 250), [260, 100, 760, 450])
 		pygame.draw.rect(surface, (192, 192, 192, 200), [460, 115, 360, 50], 0, 10)  
+		font = get_font(24)  
+		instructions = [
+			'Game design by Chris, Sid and Ethan',
+			'Main character inspired by Trent',
+			'Music from Celeste Strawberry Jam and Noah Giesler',
+		]
+		y_offset = 240  
+		line_height = 60  
+
+		for line in instructions:
+			text_surface = font.render(line, True, (0, 0, 0, 255)) 
+			text_rect = text_surface.get_rect(center=(640, y_offset))  
+			surface.blit(text_surface, text_rect)
+			y_offset += line_height 
+		
 		screen.blit(surface, (0, 0))
+		
 		MOUSE_POS = pygame.mouse.get_pos()
 
 		for button in [Quit_button, Save_button]:
@@ -1843,7 +1860,7 @@ while meep:
 		if wave - level_data[levelnum]["num_wave"] == 1 and len(enemy_group) == 0 and shopping == False:
 			wave += 1
 			player.coin_magnet = 10000
-		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"]) or (len(enemy_group)==0 and player.rect.colliderect(level_data[0]["exit rect"]) and shopping == True) : #Text on screen when able to open door and continue to next level
+		if (len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and bosspresent == False) or (len(enemy_group)==0 and player.rect.colliderect(level_data[0]["exit rect"]) and shopping == True) : #Text on screen when able to open door and continue to next level
 			interact = True
 		else:
 			interact = False
@@ -1867,8 +1884,6 @@ while meep:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			meep = False
-		if event.type == sparetimer1:
-			print(player.rect)
 		if event.type == pygame.KEYDOWN:
 
 
@@ -1897,7 +1912,7 @@ while meep:
 				shopping = False
 				levelnum+=1
 				new_level(levelnum)		
-			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False: #I'll generalize it later
+			elif event.key == pygame.K_e and len(enemy_group)==0 and player.rect.colliderect(level_data[levelnum]["exit rect"]) and shopping == False and  wave > level_data[levelnum]["num_wave"] and game_pause == False and bosspresent == False: #I'll generalize it later
 				shopping = True
 				shop(0)
 			if (event.key == pygame.K_p or  event.key == pygame.K_ESCAPE) and game_pause == False:
