@@ -1715,7 +1715,7 @@ def new_level(num):
 			collision_group.add(bg_rect)
 	except: 
 		pass
-	
+
 def win_screen():
 		global jellyfish
 		surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
