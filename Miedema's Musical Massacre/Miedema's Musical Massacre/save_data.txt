@@ -1,0 +1,8 @@
+1
+500
+10
+False
+{'type': 'weapon', 'name': 'Basic', 'purchased': True, 'availible': False, 'cost': 20, 'ranged': False, 'damage': 80, 'cooldown': 60, 'mincooldown': 20, 'projectiles': 1, 'maxprojectiles': 10, 'speed': 7, 'maxspeed': 15, 'duration': 80, 'maxduration': 160, 'spread': 0, 'sprite': 'Weapons/Pistol Bullet.png', 'scaling': 1.2, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(60x66x32 SW)>}
+{'type': 'weapon', 'name': 'Shotgun', 'purchased': False, 'availible': True, 'cost': 40, 'ranged': False, 'damage': 50, 'cooldown': 120, 'mincooldown': 50, 'projectiles': 9, 'maxprojectiles': 25, 'speed': 20, 'maxspeed': 40, 'duration': 10, 'maxduration': 25, 'spread': 45, 'sprite': 'Weapons/Shotgun Bullet.png', 'scaling': 1.2, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(66x66x32 SW)>}
+{'type': 'weapon', 'name': 'Minigun', 'purchased': False, 'availible': True, 'cost': 75, 'ranged': False, 'damage': 40, 'cooldown': 20, 'mincooldown': 10, 'projectiles': 2, 'maxprojectiles': 8, 'speed': 15, 'maxspeed': 25, 'duration': 25, 'maxduration': 75, 'spread': 30, 'sprite': 'Weapons/Bullet.png', 'scaling': 2.4, 'image': <Surface(90x36x32 SW)>, 'playerimage': <Surface(114x66x32 SW)>}
+{'type': 'weapon', 'name': 'Lag_Maker', 'purchased': False, 'availible': True, 'cost': 180, 'ranged': False, 'damage': 200, 'cooldown': 10, 'mincooldown': 1, 'projectiles': 15, 'maxprojectiles': 1000, 'speed': 15, 'maxspeed': 1000, 'duration': 25, 'maxduration': 1000, 'spread': 300, 'sprite': 'Enemies/DevlinDeving.png', 'scaling': 1, 'image': <Surface(90x120x32 SW)>, 'playerimage': <Surface(90x120x32 SW)>}
