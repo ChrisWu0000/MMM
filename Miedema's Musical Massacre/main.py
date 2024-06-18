@@ -1334,9 +1334,10 @@ def save():
 		except:
 			open('save_data.txt', 'w').close()
 def load_save():
-	global levelnum, shopping, difficulty_mult
+	global levelnum, shopping, difficulty_mult,bosspresent
 	if bosspresent == True:
 		bosshp.kill()
+	bosspresent = False
 	with open("save_data.txt", "r") as s:
 		levelnum = int(s.readline())
 		difficulty_mult = float(1.2**(levelnum-1))*1.1**(max(0, levelnum-10))
@@ -1463,10 +1464,13 @@ def spawn(name, x, numspawn):
 		if name == "drum":
 			numdrum = -100000
 def main_menu():
-	global main_counter
+	global main_counter,bosspresent
 	pygame.mixer.music.load("Main.mp3")
 	pygame.mixer.music.play(-1)
 	global game_pause
+	if bosspresent == True:
+		bosshp.kill()
+	bosspresent=False
 	meep = True
 	game_pause = False
 	while meep:
@@ -1644,7 +1648,7 @@ def death_screen():
 		s.write("%s\n"%({"type":"weapon","name":"Basic","purchased":True,"availible":False,"cost":20,"ranged":False,"damage":80,"cooldown":60,"mincooldown":20,"projectiles":1,"maxprojectiles":10,"speed":7,"maxspeed":15,"duration":80,"maxduration":160,"spread":0,"sprite":"Weapons/Pistol Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Pistol Shop.png"),"playerimage": pygame.image.load("Player/Pistol Player Fixed.png")}))
 		s.write("%s\n"%({"type":"weapon","name":"Shotgun","purchased":False,"availible":True,"cost":40,"ranged":False,"damage":30,"cooldown":120,"mincooldown":50,"projectiles":9,"maxprojectiles":25,"speed":20,"maxspeed":40,"duration":10,"maxduration":20,"spread":25,"sprite":"Weapons/Shotgun Bullet.png","scaling":1.2,"image": pygame.image.load("Props/Shotgun Shop.png"),"playerimage": pygame.image.load("Player/Shotgun Player Fixed.png")}))
 		s.write("%s\n"%({"type":"weapon","name":"Minigun","purchased":False,"availible":True,"cost":75,"ranged":False,"damage":40,"cooldown":20,"mincooldown":10,"projectiles":2,"maxprojectiles":8,"speed":15,"maxspeed":25,"duration":25,"maxduration":75,"spread":35,"sprite":"Weapons/Bullet.png","scaling":2,"image": pygame.image.load("Props/Minigun Shop.png"),"playerimage": pygame.image.load("Player/Minigun Player Fixed.png")}))
-		s.write("%s\n"%({"type":"weapon","name":"Lag_Maker","purchased":False,"availible":True,"cost":180,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"maxprojectiles":1000,"speed":15,"maxspeed":1000,"duration":25,"maxduration":1000,"spread":300,"sprite":"Enemies/DevlinDeving.png","scaling":1,"image": pygame.image.load("Enemies/DevlinDeving.png"),"playerimage": pygame.image.load("Enemies/DevlinDeving.png")}))
+		s.write("%s\n"%({"type":"weapon","name":"Lag_Maker","purchased":False,"availible":False,"cost":180,"ranged":False,"damage":200,"cooldown":10,"mincooldown":1,"projectiles":15,"maxprojectiles":1000,"speed":15,"maxspeed":1000,"duration":25,"maxduration":1000,"spread":300,"sprite":"Enemies/DevlinDeving.png","scaling":1,"image": pygame.image.load("Enemies/DevlinDeving.png"),"playerimage": pygame.image.load("Enemies/DevlinDeving.png")}))
 	pygame.mixer.music.set_volume(0)
 	global deathcounter
 	surface = pygame.Surface((1280, 720), pygame.SRCALPHA)
@@ -1674,10 +1678,11 @@ def death_screen():
 						restart()
 						load_save()
 def new_level(num):
-	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp
+	global wave, numbell, numsax, numdrum, wavebar, savecoinamount, savehp,bosspresent
 	save()
 	wave = 1
 	player.coin_magnet = 100
+	bosspresent = False
 	camera_group.empty()
 	wares_group.empty()
 	camera_group.add(player)
@@ -1817,6 +1822,7 @@ numdrum = 0
 savecoinamount = player.coin_amount
 savehp = player.hp
 main_counter = 0
+bosspresent = False
 main_menu()
 meep = True
 game_pause = False
