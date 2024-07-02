@@ -2,7 +2,6 @@ from typing import Any
 import pygame
 from random import random, randint
 from math import *
-import pygame.freetype
 from monster_data import *
 from level_data import *
 from prop_data import *
